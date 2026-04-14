@@ -3,7 +3,6 @@ import { motion } from "framer-motion";
 import { createClient } from "@supabase/supabase-js";
 import { Shield, Trophy, Flame, ScrollText, Users, Swords, Castle, Copy, Crown, Coins } from "lucide-react";
 
-/* ── Fonts & Global CSS ───────────────────────────────────────────────────── */
 const GlobalStyles = () => (
   <style>{`
     @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cinzel+Decorative:wght@400;700;900&family=IM+Fell+English:ital@0;1&display=swap');
@@ -19,7 +18,6 @@ const GlobalStyles = () => (
     .cinzel-deco  { font-family: 'Cinzel Decorative', Georgia, serif; }
     .fell         { font-family: 'IM Fell English', Georgia, serif; }
 
-    /* ── SCROLL RODS ── */
     .scroll-rod {
       position: relative;
       height: 54px;
@@ -55,7 +53,6 @@ const GlobalStyles = () => (
     .scroll-rod::before { left: -10px; }
     .scroll-rod::after  { right: -10px; box-shadow: -3px 0 12px rgba(0,0,0,0.7); }
 
-    /* ── PARCHMENT BODY ── */
     .parchment-body {
       position: relative;
       z-index: 2;
@@ -90,16 +87,9 @@ const GlobalStyles = () => (
       pointer-events: none;
       z-index: 3;
     }
-    .parchment-body::before {
-      left: 0;
-      background: linear-gradient(90deg, rgba(60,28,4,0.35), transparent);
-    }
-    .parchment-body::after {
-      right: 0;
-      background: linear-gradient(270deg, rgba(60,28,4,0.35), transparent);
-    }
+    .parchment-body::before { left: 0; background: linear-gradient(90deg, rgba(60,28,4,0.35), transparent); }
+    .parchment-body::after  { right: 0; background: linear-gradient(270deg, rgba(60,28,4,0.35), transparent); }
 
-    /* ── INNER DECORATIVE BORDER ── */
     .parchment-frame {
       border: 2px solid rgba(90,50,10,0.55);
       padding: 22px 16px 20px;
@@ -120,7 +110,6 @@ const GlobalStyles = () => (
     .corner-bl { bottom: -1px; left: -1px;  transform: scaleY(-1); }
     .corner-br { bottom: -1px; right: -1px; transform: scale(-1); }
 
-    /* ── LOGO ── */
     .crusade-logo {
       display: block;
       width: 200px;
@@ -130,22 +119,15 @@ const GlobalStyles = () => (
       filter: drop-shadow(0 3px 8px rgba(60,28,4,0.3));
     }
 
-    /* ── SECTION CARDS ── */
     .section-card {
-      background: linear-gradient(180deg,
-        rgba(255,243,205,0.72) 0%,
-        rgba(238,214,158,0.68) 100%
-      );
+      background: linear-gradient(180deg, rgba(255,243,205,0.72) 0%, rgba(238,214,158,0.68) 100%);
       border: 1.5px solid rgba(100,58,12,0.42);
       border-radius: 3px;
       padding: 14px;
       position: relative;
-      box-shadow:
-        0 3px 10px rgba(50,24,3,0.14),
-        inset 0 1px 2px rgba(255,235,175,0.5);
+      box-shadow: 0 3px 10px rgba(50,24,3,0.14), inset 0 1px 2px rgba(255,235,175,0.5);
     }
 
-    /* ── INPUTS ── */
     .parchment-input, .parchment-select {
       width: 100%;
       padding: 10px 14px;
@@ -168,7 +150,6 @@ const GlobalStyles = () => (
     .parchment-input::placeholder { color: rgba(80,38,8,0.4); font-weight: 400; }
     .parchment-select option { background: #f5dfa0; color: #180a02; }
 
-    /* ── TOGGLE BUTTONS ── */
     .crusade-btn {
       font-family: 'Cinzel', Georgia, serif;
       font-size: 11px;
@@ -194,7 +175,6 @@ const GlobalStyles = () => (
       box-shadow: 0 2px 6px rgba(30,12,2,0.15);
     }
 
-    /* ── OPTION PILLS ── */
     .option-pill {
       width: 100%;
       padding: 9px 12px;
@@ -284,17 +264,44 @@ const QUALITATIVE = {
 
 const CATEGORIES = {
   pint: [
-    {key:"pour",  title:"Pour",  icon:Flame},
-    {key:"head",  title:"Head",  icon:Crown},
-    {key:"temp",  title:"Temp",  icon:Castle},
-    {key:"taste", title:"Taste", icon:Trophy},
+    {
+      key:"pour", title:"Pour", icon:Flame,
+      desc:"The sacred two-stage ritual separates the worthy tavern from the wretched. A true pour demands patience — settle, then crown. Haste is heresy.",
+    },
+    {
+      key:"head", title:"Head", icon:Crown,
+      desc:"The creamy crown atop thy pint is the mark of a righteous house. Too thin and the keep has failed thee. A cathedral dome of foam is the highest honour.",
+    },
+    {
+      key:"temp", title:"Temperature", icon:Castle,
+      desc:"A pint served warm is an affront to the Crusade. The noble cellar keeps its charge cool and true. Test the chill — thy palate shall know justice.",
+    },
+    {
+      key:"taste", title:"Taste", icon:Trophy,
+      desc:"The dark nectar must sing of roasted grain and Irish earth. A rich, smooth draught is the reward of the righteous. A foul sip is cause for immediate retreat.",
+    },
   ],
   pub: [
-    {key:"vibe",              title:"Vibe",               icon:ScrollText},
-    {key:"irishAuthenticity", title:"Irish Authenticity",  icon:Shield},
-    {key:"service",           title:"Service",             icon:Users},
-    {key:"price",             title:"Price",               icon:Coins},
-    {key:"pagansMoors",       title:"Pagans / Moors",      icon:Swords},
+    {
+      key:"vibe", title:"Vibe", icon:ScrollText,
+      desc:"Does this hall stir the blood of a Crusader? The air, the noise, the fellowship — a great tavern feels like a campaign won. A bleak hall is a campaign lost.",
+    },
+    {
+      key:"irishAuthenticity", title:"Irish Authenticity", icon:Shield,
+      desc:"Beware the false banner. Many a pub drapes itself in green yet harbours no true Irish soul. Seek the worn wood, the craic, the weight of history in its walls.",
+    },
+    {
+      key:"service", title:"Service", icon:Users,
+      desc:"A Crusader left waiting at the bar is a Crusader dishonoured. The steward's duty is swift, cheerful, and sure. Knightly service turns a good pint into a legendary one.",
+    },
+    {
+      key:"price", title:"Price", icon:Coins,
+      desc:"Even the holiest nectar must be fairly priced. A king's ransom for a pint is a declaration of war. Judge the tribute asked against the quality rendered.",
+    },
+    {
+      key:"pagansMoors", title:"Pagans / Moors", icon:Swords,
+      desc:"Survey the hall and take heed of those who stand apart from our familiar creed and custom. Many non-believers is cause for grave concern.",
+    },
   ],
 };
 
@@ -418,12 +425,6 @@ export default function GuinnessCrusadeApp() {
       await supabase.from("bar_crawl_scores").upsert({pub:selectedPub,judge:safeJudge,scores:next});
   };
 
-  const copySQL = async () => {
-    await navigator.clipboard.writeText(setupSql);
-    setSyncStatus("SQL copied!");
-    setTimeout(()=>setSyncStatus(backendMode==="supabase"?"Live":"Local only"), 1400);
-  };
-
   const brand = PUB_BRANDING[selectedPub] || {wordmark: selectedPub.toUpperCase()};
 
   return (
@@ -432,10 +433,8 @@ export default function GuinnessCrusadeApp() {
       <div style={{minHeight:"100vh", background:"radial-gradient(ellipse at center, #1e0e05 0%, #080301 100%)", padding:"32px 16px 64px", display:"flex", flexDirection:"column", alignItems:"center"}}>
         <div style={{width:"100%", maxWidth:"460px"}}>
 
-          {/* TOP ROD */}
           <div className="scroll-rod" />
 
-          {/* PARCHMENT */}
           <div className="parchment-body">
             <div className="parchment-frame">
 
@@ -446,7 +445,6 @@ export default function GuinnessCrusadeApp() {
 
               <div style={{display:"flex", flexDirection:"column", gap:"18px"}}>
 
-                {/* LOGO + HEADER */}
                 <div style={{textAlign:"center", padding:"8px 0 4px"}}>
                   <img src="/logo.png" alt="The Guinness Crusade" className="crusade-logo" />
                   <div className="cinzel" style={{fontSize:"8px",letterSpacing:"0.5em",color:"#6a3a10",textTransform:"uppercase",marginTop:"6px"}}>
@@ -459,7 +457,6 @@ export default function GuinnessCrusadeApp() {
 
                 <div className="ornament">⚔ ✦ ⚔</div>
 
-                {/* MUSTER */}
                 <div className="section-card">
                   <SectionHead icon={Shield}>Muster the Crusade</SectionHead>
                   <div style={{display:"grid", gap:"12px"}}>
@@ -486,7 +483,6 @@ export default function GuinnessCrusadeApp() {
                   </div>
                 </div>
 
-                {/* SCORE */}
                 <div className="section-card">
                   <SectionHead
                     icon={ScrollText}
@@ -513,15 +509,22 @@ export default function GuinnessCrusadeApp() {
                       return (
                         <motion.div key={cat.key} initial={{opacity:0,y:6}} animate={{opacity:1,y:0}}
                           style={{border:"1px solid rgba(90,50,10,0.3)",background:"linear-gradient(180deg,rgba(255,242,200,0.82),rgba(238,210,152,0.76))",borderRadius:"3px",padding:"13px",boxShadow:"0 3px 10px rgba(40,18,2,0.1)"}}>
-                          <div style={{display:"flex",alignItems:"center",gap:"9px",marginBottom:"11px"}}>
-                            <div style={{padding:"6px",border:"1px solid rgba(90,50,10,0.32)",background:"rgba(248,225,155,0.8)",borderRadius:"2px",color:"#5a2e08"}}>
+
+                          <div style={{display:"flex",alignItems:"flex-start",gap:"9px",marginBottom:"10px"}}>
+                            <div style={{padding:"6px",border:"1px solid rgba(90,50,10,0.32)",background:"rgba(248,225,155,0.8)",borderRadius:"2px",color:"#5a2e08",flexShrink:0,marginTop:"2px"}}>
                               <Icon size={13}/>
                             </div>
                             <div>
                               <div className="cinzel" style={{fontSize:"11px",fontWeight:700,color:"#1e0e04",letterSpacing:"0.08em"}}>{cat.title}</div>
-                              <div className="fell" style={{fontSize:"12px",color:"#5a2e08",fontStyle:"italic"}}>{sLabel(cat.key,cur)}</div>
+                              <div className="fell" style={{fontSize:"12px",color:"#5a2e08",fontStyle:"italic",lineHeight:1.5,marginTop:"3px"}}>{cat.desc}</div>
                             </div>
                           </div>
+
+                          <div style={{marginBottom:"8px",padding:"5px 10px",background:"rgba(200,160,80,0.2)",borderRadius:"2px",border:"1px solid rgba(90,50,10,0.2)"}}>
+                            <span className="cinzel" style={{fontSize:"9px",letterSpacing:"0.2em",color:"#5a2e08",textTransform:"uppercase",fontWeight:700}}>Verdict: </span>
+                            <span className="fell" style={{fontSize:"12px",color:"#3a1a06",fontStyle:"italic"}}>{sLabel(cat.key,cur)}</span>
+                          </div>
+
                           <div style={{display:"flex",flexDirection:"column",gap:"5px"}}>
                             {QUALITATIVE[cat.key].map(opt=>(
                               <Pill key={opt.score} active={cur===opt.score} onClick={()=>updateScore(cat.key,opt.score)}>
@@ -538,7 +541,6 @@ export default function GuinnessCrusadeApp() {
                   </div>
                 </div>
 
-                {/* SCORE SUMMARY */}
                 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:"10px"}}>
                   {[
                     {label:"Pint",    value:fmt(gAvg(currentEntry,"pint"))},
@@ -552,18 +554,8 @@ export default function GuinnessCrusadeApp() {
                   ))}
                 </div>
 
-                {/* LEADERBOARD */}
                 <div className="section-card">
-                  <SectionHead
-                    icon={Trophy}
-                    aside={
-                      <button onClick={copySQL} className="crusade-btn crusade-btn-inactive" style={{display:"flex",alignItems:"center",gap:"4px",padding:"5px 10px",cursor:"pointer"}}>
-                        <Copy size={11}/> SQL
-                      </button>
-                    }
-                  >
-                    The Order of Merit
-                  </SectionHead>
+                  <SectionHead icon={Trophy}>The Order of Merit</SectionHead>
 
                   <div style={{display:"flex",flexDirection:"column",gap:"10px"}}>
                     {leaderboard.map((item,i)=>(
@@ -602,7 +594,6 @@ export default function GuinnessCrusadeApp() {
             </div>
           </div>
 
-          {/* BOTTOM ROD */}
           <div className="scroll-rod" />
 
         </div>
