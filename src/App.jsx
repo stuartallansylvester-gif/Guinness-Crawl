@@ -14,6 +14,52 @@ import {
   Coins,
 } from "lucide-react";
 
+/* ─── Fonts ─────────────────────────────────────────────────────────────── */
+const FontImport = () => (
+  <style>{`
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cinzel+Decorative:wght@400;700&family=IM+Fell+English:ital@0;1&display=swap');
+    * { font-family: 'IM Fell English', Georgia, serif; }
+    h1, h2, .cinzel { font-family: 'Cinzel', Georgia, serif; }
+    .cinzel-deco { font-family: 'Cinzel Decorative', Georgia, serif; }
+
+    .scroll-btn {
+      font-family: 'Cinzel', Georgia, serif;
+      letter-spacing: 0.06em;
+      transition: all 0.2s ease;
+    }
+    .scroll-btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
+
+    .parchment-section {
+      background: linear-gradient(180deg, rgba(245,225,180,0.82) 0%, rgba(228,198,145,0.78) 100%);
+      border: 1.5px solid rgba(139,90,43,0.45);
+      border-radius: 6px;
+      box-shadow: inset 0 1px 3px rgba(255,240,200,0.6), 0 4px 14px rgba(80,40,10,0.18);
+    }
+
+    .pill-option {
+      font-family: 'IM Fell English', Georgia, serif;
+      transition: all 0.18s ease;
+      border-radius: 4px;
+    }
+    .pill-option:hover { filter: brightness(1.06); }
+
+    .score-badge {
+      font-family: 'Cinzel', Georgia, serif;
+      font-weight: 700;
+    }
+
+    .parchment-section::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      border-radius: inherit;
+    }
+  `}</style>
+);
+
+/* ─── Supabase ───────────────────────────────────────────────────────────── */
 const SUPABASE_URL = "https://zsmjicjsyowpnwbpbyvu.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_0o1l0knnxpTOg7aHcSKqfQ_6gkb7bck";
 const hasSupabaseConfig =
@@ -44,6 +90,7 @@ create table if not exists public.bar_crawl_scores (
 alter publication supabase_realtime add table public.bar_crawl_settings;
 alter publication supabase_realtime add table public.bar_crawl_scores;`;
 
+/* ─── Scoring Data ───────────────────────────────────────────────────────── */
 const QUALITATIVE = {
   pour: [
     { label: "Botched Pour", score: 1 },
@@ -133,37 +180,47 @@ const PUB_BRANDING = {
   "P.J. O'Brien": { wordmark: "P.J. O'BRIEN" },
 };
 
+/* ─── Helpers ────────────────────────────────────────────────────────────── */
 function average(values) {
   if (!values.length) return 0;
-  return values.reduce((sum, value) => sum + value, 0) / values.length;
+  return values.reduce((sum, v) => sum + v, 0) / values.length;
 }
-
 function formatScore(value) {
   return value ? value.toFixed(2) : "—";
 }
-
 function entryAverage(entry, keys) {
-  const values = keys.map((key) => Number(entry?.[key])).filter(Boolean);
+  const values = keys.map((k) => Number(entry?.[k])).filter(Boolean);
   return average(values);
 }
-
 function groupAverage(entry, groupKey) {
-  return entryAverage(entry, CATEGORIES[groupKey].map((item) => item.key));
+  return entryAverage(entry, CATEGORIES[groupKey].map((i) => i.key));
 }
-
 function scoreLabel(field, score) {
-  return QUALITATIVE[field].find((item) => item.score === score)?.label || "Unrated";
+  return QUALITATIVE[field].find((i) => i.score === score)?.label || "Unrated";
 }
 
-function CrusadeButton({ active, onClick, children }) {
+/* ─── Scroll-themed primitives ───────────────────────────────────────────── */
+function ScrollToggle({ active, onClick, children }) {
   return (
     <button
       onClick={onClick}
-      className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
-        active
-          ? "border-[#8f5b26] bg-[#8f5b26] text-[#f6e1bb]"
-          : "border-[#8f5b26]/40 bg-[#f2dfba]/70 text-[#5c3412]"
-      }`}
+      className="scroll-btn"
+      style={{
+        padding: "8px 18px",
+        fontSize: "11px",
+        fontWeight: active ? 700 : 600,
+        textTransform: "uppercase",
+        letterSpacing: "0.12em",
+        border: active ? "2px solid #6b3d14" : "1.5px solid rgba(107,61,20,0.4)",
+        background: active
+          ? "linear-gradient(180deg,#8f5b26 0%,#6b3d14 100%)"
+          : "linear-gradient(180deg,rgba(245,225,180,0.9) 0%,rgba(220,190,130,0.85) 100%)",
+        color: active ? "#f8e8c8" : "#5c3412",
+        borderRadius: "3px",
+        boxShadow: active
+          ? "0 4px 12px rgba(80,40,10,0.35), inset 0 1px 0 rgba(255,230,160,0.25)"
+          : "0 2px 6px rgba(80,40,10,0.15)",
+      }}
     >
       {children}
     </button>
@@ -174,41 +231,61 @@ function OptionPill({ active, onClick, children }) {
   return (
     <button
       onClick={onClick}
-      className={`w-full rounded-2xl border px-3 py-3 text-left text-sm leading-tight transition ${
-        active
-          ? "border-[#8f5b26] bg-[#8f5b26] text-[#f8e8c8] shadow-lg"
-          : "border-[#9a6b3c]/30 bg-[#f7e7c9]/75 text-[#4e2b12]"
-      }`}
+      className="pill-option"
+      style={{
+        width: "100%",
+        padding: "10px 14px",
+        textAlign: "left",
+        fontSize: "13px",
+        border: active ? "1.5px solid #6b3d14" : "1px solid rgba(139,90,43,0.35)",
+        background: active
+          ? "linear-gradient(90deg,#7a4720 0%,#9a5e2c 100%)"
+          : "rgba(245,225,175,0.6)",
+        color: active ? "#f8e8c8" : "#3e1f08",
+        boxShadow: active ? "0 3px 10px rgba(80,40,10,0.3)" : "none",
+      }}
     >
       {children}
     </button>
   );
 }
 
-function SelectBox({ value, onChange, options }) {
+function ParchmentSection({ children, style = {} }) {
   return (
-    <select
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className="w-full rounded-2xl border border-[#9a6b3c]/35 bg-[#f8e6c5]/80 px-4 py-3 text-base text-[#4c2b14] outline-none"
+    <div
+      className="parchment-section"
+      style={{ position: "relative", padding: "16px", ...style }}
     >
-      {options.map((option) => (
-        <option key={option} value={option}>
-          {option}
-        </option>
-      ))}
-    </select>
-  );
-}
-
-function ScrollSection({ children, className = "" }) {
-  return (
-    <section className={`rounded-[24px] border border-[#9a6b3c]/35 bg-[linear-gradient(180deg,rgba(248,228,193,0.92),rgba(235,201,148,0.88))] p-4 shadow-[0_10px_25px_rgba(0,0,0,0.18)] ${className}`}>
       {children}
-    </section>
+    </div>
   );
 }
 
+function SectionHeader({ icon: Icon, children, right }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "14px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+        {Icon && (
+          <div style={{
+            padding: "5px",
+            border: "1px solid rgba(139,90,43,0.4)",
+            background: "rgba(245,215,160,0.7)",
+            borderRadius: "3px",
+            color: "#5c3412",
+          }}>
+            <Icon size={14} />
+          </div>
+        )}
+        <span className="cinzel" style={{ fontSize: "12px", fontWeight: 700, letterSpacing: "0.1em", color: "#4a2610", textTransform: "uppercase" }}>
+          {children}
+        </span>
+      </div>
+      {right && <div>{right}</div>}
+    </div>
+  );
+}
+
+/* ─── Main App ───────────────────────────────────────────────────────────── */
 export default function GuinnessCrusadeApp() {
   const [pubs, setPubs] = useState(DEFAULT_PUBS);
   const [selectedPub, setSelectedPub] = useState(DEFAULT_PUBS[0]);
@@ -221,27 +298,19 @@ export default function GuinnessCrusadeApp() {
 
   useEffect(() => {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) {
-      setHydrated(true);
-      return;
-    }
+    if (!raw) { setHydrated(true); return; }
     try {
       const parsed = JSON.parse(raw);
       if (parsed.pubs?.length) setPubs(parsed.pubs);
       if (parsed.selectedPub) setSelectedPub(parsed.selectedPub);
       if (parsed.crusaderName) setCrusaderName(parsed.crusaderName);
       if (parsed.scores) setScores(parsed.scores);
-    } finally {
-      setHydrated(true);
-    }
+    } finally { setHydrated(true); }
   }, []);
 
   useEffect(() => {
     if (!hydrated) return;
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify({ pubs, selectedPub, crusaderName, scores })
-    );
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ pubs, selectedPub, crusaderName, scores }));
   }, [hydrated, pubs, selectedPub, crusaderName, scores]);
 
   useEffect(() => {
@@ -250,17 +319,13 @@ export default function GuinnessCrusadeApp() {
     const init = async () => {
       setSyncStatus("Loading campaign…");
       const { data: scoreRows, error } = await supabase.from("bar_crawl_scores").select("pub, judge, scores");
-      if (error) {
-        setSyncStatus("Run setup SQL first");
-        return;
-      }
+      if (error) { setSyncStatus("Run setup SQL first"); return; }
       const incoming = {};
       (scoreRows || []).forEach((row) => {
         incoming[`${row.pub}__${row.judge}`] = row.scores || {};
       });
       setScores(incoming);
       setSyncStatus("Live");
-
       scoreChannel = supabase
         .channel("gc-scores")
         .on("postgres_changes", { event: "*", schema: "public", table: "bar_crawl_scores" }, (payload) => {
@@ -271,9 +336,7 @@ export default function GuinnessCrusadeApp() {
         .subscribe();
     };
     init();
-    return () => {
-      if (scoreChannel) supabase.removeChannel(scoreChannel);
-    };
+    return () => { if (scoreChannel) supabase.removeChannel(scoreChannel); };
   }, [backendMode, hydrated]);
 
   const safeJudge = crusaderName.trim();
@@ -291,12 +354,10 @@ export default function GuinnessCrusadeApp() {
         return {
           pub,
           entries: entries.length,
-          pint: average(entries.map((entry) => groupAverage(entry, "pint")).filter(Boolean)),
-          pubScore: average(entries.map((entry) => groupAverage(entry, "pub")).filter(Boolean)),
+          pint: average(entries.map((e) => groupAverage(e, "pint")).filter(Boolean)),
+          pubScore: average(entries.map((e) => groupAverage(e, "pub")).filter(Boolean)),
           overall: average(
-            entries
-              .map((entry) => entryAverage(entry, [...CATEGORIES.pint, ...CATEGORIES.pub].map((item) => item.key)))
-              .filter(Boolean)
+            entries.map((e) => entryAverage(e, [...CATEGORIES.pint, ...CATEGORIES.pub].map((i) => i.key))).filter(Boolean)
           ),
         };
       })
@@ -321,174 +382,332 @@ export default function GuinnessCrusadeApp() {
   const heroBrand = PUB_BRANDING[selectedPub] || { wordmark: selectedPub.toUpperCase() };
 
   return (
-    <div className="min-h-screen bg-[linear-gradient(180deg,#5a3418_0%,#2c180b_22%,#1a1008_100%)] px-2 py-3 text-[#4d2d15]">
-      <div className="mx-auto max-w-md rounded-[34px] bg-[linear-gradient(180deg,#a86a32_0%,#6e431d_10%,#2d170b_16%,#2d170b_100%)] p-2 shadow-2xl shadow-black/40">
-        <div className="overflow-hidden rounded-[30px] bg-[linear-gradient(180deg,#f0d3a1_0%,#e6c18a_8%,#f5dfb8_20%,#f0d3a1_100%)]">
-          <div className="relative px-4 pb-5 pt-3">
-            <div className="absolute left-0 right-0 top-0 h-16 bg-[linear-gradient(180deg,#b97b3f_0%,#e7c98f_100%)] shadow-[0_10px_20px_rgba(0,0,0,0.22)]" />
-            <div className="absolute left-4 right-4 top-[52px] bottom-4 rounded-[26px] border-[3px] border-[#8b5a2a] bg-[radial-gradient(circle_at_top,#f8e7c5_0%,#efd3a2_55%,#ddb171_100%)]" />
-            <div className="absolute left-6 right-6 top-[64px] bottom-6 rounded-[22px] border-4 border-[#9a6b3c]" />
-            <div className="absolute left-8 right-8 top-[76px] bottom-8 rounded-[18px] border border-[#8d5f33]/60" />
-            <div className="absolute bottom-0 left-0 right-0 h-16 bg-[linear-gradient(180deg,#e7c98f_0%,#b97b3f_100%)] shadow-[0_-10px_20px_rgba(0,0,0,0.18)]" />
+    <>
+      <FontImport />
+      <div style={{
+        minHeight: "100vh",
+        background: "linear-gradient(180deg,#1a0e05 0%,#0f0803 100%)",
+        padding: "0 0 48px",
+      }}>
+        <div style={{ maxWidth: "480px", margin: "0 auto", position: "relative" }}>
+          <div style={{
+            position: "relative",
+            backgroundImage: "url('/scroll.png')",
+            backgroundSize: "100% 100%",
+            backgroundRepeat: "no-repeat",
+            paddingTop: "13%",
+            paddingBottom: "13%",
+            paddingLeft: "10%",
+            paddingRight: "10%",
+          }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "16px", position: "relative", zIndex: 1 }}>
 
-            <div className="relative z-10 px-2 pt-2">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <div className="text-[11px] uppercase tracking-[0.35em] text-[#7c4a22]">Toronto Crusade</div>
-                  <h1 className="mt-2 text-3xl font-black leading-none text-[#3f210d]">The Guinness Crusade</h1>
-                  <p className="mt-2 text-sm text-[#704322]">An illuminated score scroll for noble pints and worthy halls.</p>
+              {/* Logo + Title */}
+              <div style={{ textAlign: "center", paddingBottom: "4px" }}>
+                <img
+                  src="/logo.png"
+                  alt="The Guinness Crusade"
+                  style={{
+                    width: "180px",
+                    maxWidth: "100%",
+                    margin: "0 auto 4px",
+                    display: "block",
+                    filter: "drop-shadow(0 6px 18px rgba(0,0,0,0.45))",
+                  }}
+                />
+                <div className="cinzel" style={{ fontSize: "9px", letterSpacing: "0.42em", color: "#7c4a22", textTransform: "uppercase", marginTop: "6px" }}>
+                  Toronto · Anno Domini 2025
                 </div>
-                <div className="rounded-full border border-[#8f5b26]/35 bg-[#f7e5c3]/75 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#6a3f1d]">
-                  {backendMode === "supabase" ? syncStatus : "Local"}
-                </div>
-              </div>
-
-              <div className="mt-4 flex items-center justify-center">
-                <img src="/logo.png" alt="The Guinness Crusade logo" className="w-36 max-w-full drop-shadow-[0_10px_16px_rgba(0,0,0,0.25)]" />
-              </div>
-
-              <div className="mt-4 grid grid-cols-2 gap-3">
-                <CrusadeButton active={backendMode === "local"} onClick={() => setBackendMode("local")}>Local Keep</CrusadeButton>
-                <CrusadeButton active={backendMode === "supabase"} onClick={() => setBackendMode("supabase")}>Live Crusade</CrusadeButton>
-              </div>
-            </div>
-          </div>
-
-          <div className="relative z-10 space-y-4 px-4 pb-8 pt-2">
-            <ScrollSection>
-              <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-[#6a3d18]">
-                <Shield className="h-4 w-4" /> Muster the crusade
-              </div>
-              <div className="grid gap-3">
-                <div>
-                  <label className="mb-2 block text-xs uppercase tracking-[0.22em] text-[#8a6038]">Crusader name</label>
-                  <input
-                    value={crusaderName}
-                    onChange={(e) => setCrusaderName(e.target.value)}
-                    placeholder="Enter your name"
-                    className="w-full rounded-2xl border border-[#9a6b3c]/35 bg-[#f8e6c5]/85 px-4 py-3 text-base text-[#4c2b14] outline-none placeholder:text-[#9a7551]"
-                  />
-                </div>
-                <div>
-                  <label className="mb-2 block text-xs uppercase tracking-[0.22em] text-[#8a6038]">Pub</label>
-                  <SelectBox value={selectedPub} onChange={setSelectedPub} options={pubs} />
-                </div>
-              </div>
-              <div className="mt-4 rounded-2xl border border-[#9a6b3c]/30 bg-[#f7e4c1]/70 p-4 text-center shadow-inner">
-                <div className="text-[11px] uppercase tracking-[0.3em] text-[#8d6032]">Current target</div>
-                <div className="mt-2 text-2xl font-black text-[#3f210d]">{heroBrand.wordmark}</div>
-              </div>
-            </ScrollSection>
-
-            <ScrollSection>
-              <div className="mb-3 flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2 text-sm font-semibold text-[#6a3d18]">
-                  <ScrollText className="h-4 w-4" /> Score the siege
-                </div>
-                <div className="rounded-full border border-[#9a6b3c]/25 bg-[#f7e4c1]/70 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-[#8a6038]">
-                  Illuminated Scroll
+                <div style={{
+                  display: "inline-block",
+                  marginTop: "8px",
+                  padding: "4px 14px",
+                  border: "1px solid rgba(139,90,43,0.5)",
+                  background: "rgba(245,220,170,0.7)",
+                  borderRadius: "2px",
+                  fontSize: "10px",
+                  fontFamily: "'Cinzel', serif",
+                  letterSpacing: "0.18em",
+                  color: "#5c3412",
+                  textTransform: "uppercase",
+                }}>
+                  {backendMode === "supabase" ? syncStatus : "Local Keep"}
                 </div>
               </div>
 
-              <div className="mb-4 grid grid-cols-2 gap-3">
-                <CrusadeButton active={selectedGroup === "pint"} onClick={() => setSelectedGroup("pint")}>The Pint</CrusadeButton>
-                <CrusadeButton active={selectedGroup === "pub"} onClick={() => setSelectedGroup("pub")}>The Pub</CrusadeButton>
+              <div style={{ textAlign: "center", color: "#9a6b3c", fontSize: "16px", letterSpacing: "6px", opacity: 0.7 }}>
+                ⚔ ✦ ⚔
               </div>
 
-              {!safeJudge && (
-                <div className="mb-4 rounded-2xl border border-dashed border-[#9a6b3c]/35 bg-[#f7e4c1]/60 px-4 py-3 text-sm text-[#7a5130]">
-                  Enter your crusader name above to begin scoring.
-                </div>
-              )}
-
-              <div className="space-y-4">
-                {activeCategories.map((category) => {
-                  const Icon = category.icon;
-                  const currentScore = Number(currentEntry?.[category.key] || 0);
-                  return (
-                    <motion.div
-                      key={category.key}
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="rounded-3xl border border-[#9a6b3c]/30 bg-[linear-gradient(180deg,rgba(248,230,197,0.9),rgba(239,208,158,0.82))] p-4 shadow-[0_10px_20px_rgba(88,49,20,0.12)]"
-                    >
-                      <div className="mb-3 flex items-center gap-2">
-                        <div className="rounded-2xl border border-[#9a6b3c]/30 bg-[#f7dfb2]/85 p-2 text-[#6a3d18]">
-                          <Icon className="h-4 w-4" />
-                        </div>
-                        <div>
-                          <div className="font-semibold text-[#4b2812]">{category.title}</div>
-                          <div className="text-sm text-[#7a5130]">{scoreLabel(category.key, currentScore)}</div>
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-1 gap-2">
-                        {QUALITATIVE[category.key].map((option) => (
-                          <OptionPill key={option.score} active={currentScore === option.score} onClick={() => updateScore(category.key, option.score)}>
-                            <div className="flex items-center justify-between gap-3">
-                              <span>{option.label}</span>
-                              <span className="rounded-full border border-current/20 px-2 py-0.5 text-xs">{option.score}/5</span>
-                            </div>
-                          </OptionPill>
-                        ))}
-                      </div>
-                    </motion.div>
-                  );
-                })}
-              </div>
-            </ScrollSection>
-
-            <div className="grid grid-cols-3 gap-3">
-              <ScrollSection className="p-3 text-center">
-                <div className="text-[11px] uppercase tracking-[0.25em] text-[#8a6038]">Pint</div>
-                <div className="mt-2 text-2xl font-black text-[#4b2812]">{formatScore(groupAverage(currentEntry, "pint"))}</div>
-              </ScrollSection>
-              <ScrollSection className="p-3 text-center">
-                <div className="text-[11px] uppercase tracking-[0.25em] text-[#8a6038]">Pub</div>
-                <div className="mt-2 text-2xl font-black text-[#4b2812]">{formatScore(groupAverage(currentEntry, "pub"))}</div>
-              </ScrollSection>
-              <ScrollSection className="p-3 text-center">
-                <div className="text-[11px] uppercase tracking-[0.25em] text-[#8a6038]">Overall</div>
-                <div className="mt-2 text-2xl font-black text-[#4b2812]">{formatScore(entryAverage(currentEntry, [...CATEGORIES.pint, ...CATEGORIES.pub].map((item) => item.key)))}</div>
-              </ScrollSection>
-            </div>
-
-            <ScrollSection>
-              <div className="mb-3 flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2 text-sm font-semibold text-[#6a3d18]">
-                  <Trophy className="h-4 w-4" /> Leaderboard
-                </div>
-                <button onClick={copySetupSql} className="rounded-2xl border border-[#9a6b3c]/35 bg-[#f7e4c1]/80 px-3 py-2 text-xs text-[#6f4321]">
-                  <Copy className="mr-1 inline h-3 w-3" /> SQL
-                </button>
-              </div>
-
-              <div className="space-y-3">
-                {leaderboard.map((item, index) => (
-                  <div key={item.pub} className="rounded-2xl border border-[#9a6b3c]/30 bg-[#f7e4c1]/70 p-3">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="rounded-full bg-[#8f5b26] px-2 py-1 text-xs font-bold text-[#f7e4c1]">#{index + 1}</span>
-                          <span className="font-semibold text-[#4b2812]">{item.pub}</span>
-                        </div>
-                        <div className="mt-1 text-sm text-[#7a5130]">{item.entries} scorecard{item.entries === 1 ? "" : "s"}</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-2xl font-black text-[#4b2812]">{formatScore(item.overall)}</div>
-                        <div className="text-xs text-[#8a6038]">overall</div>
-                      </div>
-                    </div>
-                    <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
-                      <div className="rounded-xl bg-[#efd7ab]/70 px-3 py-2 text-[#6a4020]">Pint: <span className="font-semibold text-[#4b2812]">{formatScore(item.pint)}</span></div>
-                      <div className="rounded-xl bg-[#efd7ab]/70 px-3 py-2 text-[#6a4020]">Pub: <span className="font-semibold text-[#4b2812]">{formatScore(item.pubScore)}</span></div>
-                    </div>
+              {/* Muster */}
+              <ParchmentSection>
+                <SectionHeader icon={Shield}>Muster the Crusade</SectionHeader>
+                <div style={{ display: "grid", gap: "12px" }}>
+                  <div>
+                    <label className="cinzel" style={{ display: "block", fontSize: "9px", letterSpacing: "0.3em", color: "#8a5a2a", textTransform: "uppercase", marginBottom: "6px" }}>
+                      Crusader Name
+                    </label>
+                    <input
+                      value={crusaderName}
+                      onChange={(e) => setCrusaderName(e.target.value)}
+                      placeholder="Enter your name"
+                      style={{
+                        width: "100%",
+                        padding: "10px 14px",
+                        border: "1px solid rgba(139,90,43,0.4)",
+                        background: "rgba(252,238,205,0.8)",
+                        color: "#3e1f08",
+                        fontSize: "14px",
+                        fontFamily: "'IM Fell English', Georgia, serif",
+                        outline: "none",
+                        borderRadius: "3px",
+                        boxSizing: "border-box",
+                      }}
+                    />
                   </div>
+                  <div>
+                    <label className="cinzel" style={{ display: "block", fontSize: "9px", letterSpacing: "0.3em", color: "#8a5a2a", textTransform: "uppercase", marginBottom: "6px" }}>
+                      Tavern
+                    </label>
+                    <select
+                      value={selectedPub}
+                      onChange={(e) => setSelectedPub(e.target.value)}
+                      style={{
+                        width: "100%",
+                        padding: "10px 14px",
+                        border: "1px solid rgba(139,90,43,0.4)",
+                        background: "rgba(252,238,205,0.8)",
+                        color: "#3e1f08",
+                        fontSize: "14px",
+                        fontFamily: "'IM Fell English', Georgia, serif",
+                        outline: "none",
+                        borderRadius: "3px",
+                        appearance: "none",
+                      }}
+                    >
+                      {pubs.map((p) => <option key={p} value={p}>{p}</option>)}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Current Pillaging */}
+                <div style={{
+                  marginTop: "14px",
+                  padding: "14px",
+                  border: "1.5px solid rgba(139,90,43,0.5)",
+                  background: "linear-gradient(180deg,rgba(252,230,180,0.7) 0%,rgba(230,195,130,0.65) 100%)",
+                  borderRadius: "3px",
+                  textAlign: "center",
+                  boxShadow: "inset 0 1px 3px rgba(255,240,200,0.5)",
+                }}>
+                  <div className="cinzel" style={{ fontSize: "9px", letterSpacing: "0.35em", color: "#8d6032", textTransform: "uppercase" }}>
+                    Current Pillaging
+                  </div>
+                  <div className="cinzel-deco" style={{ marginTop: "6px", fontSize: "20px", fontWeight: 700, color: "#3f210d", letterSpacing: "0.06em" }}>
+                    {heroBrand.wordmark}
+                  </div>
+                </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginTop: "14px" }}>
+                  <ScrollToggle active={backendMode === "local"} onClick={() => setBackendMode("local")}>Local Keep</ScrollToggle>
+                  <ScrollToggle active={backendMode === "supabase"} onClick={() => setBackendMode("supabase")}>Live Crusade</ScrollToggle>
+                </div>
+              </ParchmentSection>
+
+              {/* Score */}
+              <ParchmentSection>
+                <SectionHeader
+                  icon={ScrollText}
+                  right={
+                    <span className="cinzel" style={{ fontSize: "9px", letterSpacing: "0.2em", color: "#8a6038", textTransform: "uppercase", padding: "4px 10px", border: "1px solid rgba(154,107,60,0.3)", background: "rgba(247,228,193,0.7)", borderRadius: "2px" }}>
+                      Illuminated Scroll
+                    </span>
+                  }
+                >
+                  Score the Siege
+                </SectionHeader>
+
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "16px" }}>
+                  <ScrollToggle active={selectedGroup === "pint"} onClick={() => setSelectedGroup("pint")}>The Pint</ScrollToggle>
+                  <ScrollToggle active={selectedGroup === "pub"} onClick={() => setSelectedGroup("pub")}>The Pub</ScrollToggle>
+                </div>
+
+                {!safeJudge && (
+                  <div style={{
+                    marginBottom: "14px",
+                    padding: "12px 14px",
+                    border: "1px dashed rgba(154,107,60,0.45)",
+                    background: "rgba(247,228,193,0.55)",
+                    fontSize: "13px",
+                    color: "#7a5130",
+                    borderRadius: "3px",
+                    fontStyle: "italic",
+                  }}>
+                    Enter thy crusader name above to begin the reckoning.
+                  </div>
+                )}
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+                  {activeCategories.map((category) => {
+                    const Icon = category.icon;
+                    const currentScore = Number(currentEntry?.[category.key] || 0);
+                    return (
+                      <motion.div
+                        key={category.key}
+                        initial={{ opacity: 0, y: 6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        style={{
+                          border: "1px solid rgba(139,90,43,0.35)",
+                          background: "linear-gradient(180deg,rgba(250,232,195,0.88) 0%,rgba(235,205,150,0.8) 100%)",
+                          borderRadius: "4px",
+                          padding: "14px",
+                          boxShadow: "0 4px 12px rgba(80,40,10,0.1)",
+                        }}
+                      >
+                        <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "12px" }}>
+                          <div style={{
+                            padding: "6px",
+                            border: "1px solid rgba(139,90,43,0.35)",
+                            background: "rgba(245,215,155,0.8)",
+                            borderRadius: "3px",
+                            color: "#6a3d18",
+                          }}>
+                            <Icon size={14} />
+                          </div>
+                          <div>
+                            <div className="cinzel" style={{ fontSize: "12px", fontWeight: 700, color: "#3f1f08", letterSpacing: "0.08em" }}>{category.title}</div>
+                            <div style={{ fontSize: "12px", color: "#7a5130", fontStyle: "italic" }}>{scoreLabel(category.key, currentScore)}</div>
+                          </div>
+                        </div>
+                        <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                          {QUALITATIVE[category.key].map((option) => (
+                            <OptionPill key={option.score} active={currentScore === option.score} onClick={() => updateScore(category.key, option.score)}>
+                              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px" }}>
+                                <span>{option.label}</span>
+                                <span className="score-badge" style={{
+                                  fontSize: "10px",
+                                  padding: "2px 7px",
+                                  border: "1px solid currentColor",
+                                  borderRadius: "2px",
+                                  opacity: 0.75,
+                                  letterSpacing: "0.05em",
+                                }}>
+                                  {option.score}/5
+                                </span>
+                              </div>
+                            </OptionPill>
+                          ))}
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </ParchmentSection>
+
+              {/* Score summary */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px" }}>
+                {[
+                  { label: "Pint", value: formatScore(groupAverage(currentEntry, "pint")) },
+                  { label: "Pub", value: formatScore(groupAverage(currentEntry, "pub")) },
+                  { label: "Overall", value: formatScore(entryAverage(currentEntry, [...CATEGORIES.pint, ...CATEGORIES.pub].map((i) => i.key))) },
+                ].map((item) => (
+                  <ParchmentSection key={item.label} style={{ padding: "12px 8px", textAlign: "center" }}>
+                    <div className="cinzel" style={{ fontSize: "9px", letterSpacing: "0.3em", color: "#8a6038", textTransform: "uppercase" }}>{item.label}</div>
+                    <div className="cinzel" style={{ marginTop: "6px", fontSize: "22px", fontWeight: 900, color: "#3f1f08" }}>{item.value}</div>
+                  </ParchmentSection>
                 ))}
               </div>
-            </ScrollSection>
+
+              {/* Leaderboard */}
+              <ParchmentSection>
+                <SectionHeader
+                  icon={Trophy}
+                  right={
+                    <button
+                      onClick={copySetupSql}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "4px",
+                        padding: "5px 10px",
+                        border: "1px solid rgba(154,107,60,0.4)",
+                        background: "rgba(247,228,193,0.8)",
+                        borderRadius: "3px",
+                        fontSize: "11px",
+                        fontFamily: "'Cinzel', serif",
+                        color: "#6f4321",
+                        cursor: "pointer",
+                        letterSpacing: "0.06em",
+                      }}
+                    >
+                      <Copy size={11} /> SQL
+                    </button>
+                  }
+                >
+                  The Order of Merit
+                </SectionHeader>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                  {leaderboard.map((item, index) => (
+                    <div key={item.pub} style={{
+                      border: "1px solid rgba(139,90,43,0.35)",
+                      background: "rgba(247,228,185,0.65)",
+                      borderRadius: "4px",
+                      padding: "12px",
+                    }}>
+                      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "10px" }}>
+                        <div>
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                            <span className="cinzel" style={{
+                              padding: "2px 8px",
+                              background: "#7a4a20",
+                              color: "#f7e4c1",
+                              fontSize: "11px",
+                              fontWeight: 700,
+                              borderRadius: "2px",
+                              letterSpacing: "0.05em",
+                            }}>#{index + 1}</span>
+                            <span className="cinzel" style={{ fontWeight: 700, fontSize: "13px", color: "#3f1f08" }}>{item.pub}</span>
+                          </div>
+                          <div style={{ marginTop: "4px", fontSize: "12px", color: "#7a5130", fontStyle: "italic" }}>
+                            {item.entries} {item.entries === 1 ? "scorecard" : "scorecards"}
+                          </div>
+                        </div>
+                        <div style={{ textAlign: "right" }}>
+                          <div className="cinzel" style={{ fontSize: "24px", fontWeight: 900, color: "#3f1f08", lineHeight: 1 }}>{formatScore(item.overall)}</div>
+                          <div className="cinzel" style={{ fontSize: "9px", letterSpacing: "0.2em", color: "#8a6038", textTransform: "uppercase" }}>overall</div>
+                        </div>
+                      </div>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", marginTop: "10px" }}>
+                        {[
+                          { label: "Pint", value: formatScore(item.pint) },
+                          { label: "Pub", value: formatScore(item.pubScore) },
+                        ].map((s) => (
+                          <div key={s.label} style={{
+                            padding: "8px 10px",
+                            background: "rgba(239,215,171,0.7)",
+                            borderRadius: "3px",
+                            fontSize: "13px",
+                            color: "#6a4020",
+                          }}>
+                            <span className="cinzel" style={{ fontSize: "10px", letterSpacing: "0.1em", textTransform: "uppercase" }}>{s.label}: </span>
+                            <span className="cinzel" style={{ fontWeight: 700, color: "#3f1f08" }}>{s.value}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </ParchmentSection>
+
+              <div style={{ textAlign: "center", color: "#9a6b3c", fontSize: "14px", letterSpacing: "8px", opacity: 0.6, paddingBottom: "4px" }}>
+                ✦ ⚔ ✦
+              </div>
+
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
