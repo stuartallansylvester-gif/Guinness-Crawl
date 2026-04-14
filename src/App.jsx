@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { createClient } from "@supabase/supabase-js";
 import { Shield, Trophy, Flame, ScrollText, Users, Swords, Castle, Copy, Crown, Coins } from "lucide-react";
 
+/* ── Fonts & Global CSS ───────────────────────────────────────────────────── */
 const GlobalStyles = () => (
   <style>{`
     @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cinzel+Decorative:wght@400;700;900&family=IM+Fell+English:ital@0;1&display=swap');
@@ -227,6 +228,7 @@ const CornerOrnament = () => (
   </svg>
 );
 
+/* ── Supabase ─────────────────────────────────────────────────────────────── */
 const SUPABASE_URL = "https://zsmjicjsyowpnwbpbyvu.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_0o1l0knnxpTOg7aHcSKqfQ_6gkb7bck";
 const hasSupabaseConfig =
@@ -250,6 +252,7 @@ create table if not exists public.bar_crawl_scores (
 alter publication supabase_realtime add table public.bar_crawl_settings;
 alter publication supabase_realtime add table public.bar_crawl_scores;`;
 
+/* ── Scoring data ─────────────────────────────────────────────────────────── */
 const QUALITATIVE = {
   pour:             [{label:"Botched Pour",score:1},{label:"Uneven Pour",score:2},{label:"Decent Pour",score:3},{label:"Proper Pour",score:4},{label:"Royal Pour",score:5}],
   head:             [{label:"Flat Crown",score:1},{label:"Thin Crown",score:2},{label:"Fair Head",score:3},{label:"Stately Head",score:4},{label:"Cathedral Crown",score:5}],
@@ -300,7 +303,7 @@ const CATEGORIES = {
     },
     {
       key:"pagansMoors", title:"Pagans / Moors", icon:Swords,
-      desc:"Survey the hall and take heed of those who stand apart from our familiar creed and custom. Many non-believers is cause for grave concern.",
+      desc:"Survey the hall and count those who do not drink Guinness. A great Irish house shall be free of infidel influence. Many non-believers is cause for grave concern.",
     },
   ],
 };
@@ -312,12 +315,14 @@ const PUB_BRANDING = {
   "P.J. O'Brien":{wordmark:"P.J. O'BRIEN"},
 };
 
+/* ── Helpers ──────────────────────────────────────────────────────────────── */
 const avg    = arr => arr.length ? arr.reduce((s,v)=>s+v,0)/arr.length : 0;
 const fmt    = v   => v ? v.toFixed(2) : "—";
 const eAvg   = (e,keys) => avg(keys.map(k=>Number(e?.[k])).filter(Boolean));
 const gAvg   = (e,gk)   => eAvg(e, CATEGORIES[gk].map(i=>i.key));
 const sLabel = (f,s)    => QUALITATIVE[f].find(i=>i.score===s)?.label || "Unrated";
 
+/* ── Small components ─────────────────────────────────────────────────────── */
 const Btn = ({active, onClick, children}) => (
   <button onClick={onClick} className={`crusade-btn ${active?"crusade-btn-active":"crusade-btn-inactive"}`}>
     {children}
@@ -352,6 +357,7 @@ const SectionHead = ({icon:Icon, children, aside}) => (
   </div>
 );
 
+/* ── Main App ─────────────────────────────────────────────────────────────── */
 export default function GuinnessCrusadeApp() {
   const [pubs, setPubs]                   = useState(DEFAULT_PUBS);
   const [selectedPub, setSelectedPub]     = useState(DEFAULT_PUBS[0]);
@@ -433,8 +439,10 @@ export default function GuinnessCrusadeApp() {
       <div style={{minHeight:"100vh", background:"radial-gradient(ellipse at center, #1e0e05 0%, #080301 100%)", padding:"32px 16px 64px", display:"flex", flexDirection:"column", alignItems:"center"}}>
         <div style={{width:"100%", maxWidth:"460px"}}>
 
+          {/* TOP ROD */}
           <div className="scroll-rod" />
 
+          {/* PARCHMENT */}
           <div className="parchment-body">
             <div className="parchment-frame">
 
@@ -445,6 +453,7 @@ export default function GuinnessCrusadeApp() {
 
               <div style={{display:"flex", flexDirection:"column", gap:"18px"}}>
 
+                {/* LOGO + HEADER */}
                 <div style={{textAlign:"center", padding:"8px 0 4px"}}>
                   <img src="/logo.png" alt="The Guinness Crusade" className="crusade-logo" />
                   <div className="cinzel" style={{fontSize:"8px",letterSpacing:"0.5em",color:"#6a3a10",textTransform:"uppercase",marginTop:"6px"}}>
@@ -457,6 +466,7 @@ export default function GuinnessCrusadeApp() {
 
                 <div className="ornament">⚔ ✦ ⚔</div>
 
+                {/* MUSTER */}
                 <div className="section-card">
                   <SectionHead icon={Shield}>Muster the Crusade</SectionHead>
                   <div style={{display:"grid", gap:"12px"}}>
@@ -483,6 +493,7 @@ export default function GuinnessCrusadeApp() {
                   </div>
                 </div>
 
+                {/* SCORE */}
                 <div className="section-card">
                   <SectionHead
                     icon={ScrollText}
@@ -510,6 +521,7 @@ export default function GuinnessCrusadeApp() {
                         <motion.div key={cat.key} initial={{opacity:0,y:6}} animate={{opacity:1,y:0}}
                           style={{border:"1px solid rgba(90,50,10,0.3)",background:"linear-gradient(180deg,rgba(255,242,200,0.82),rgba(238,210,152,0.76))",borderRadius:"3px",padding:"13px",boxShadow:"0 3px 10px rgba(40,18,2,0.1)"}}>
 
+                          {/* Category header */}
                           <div style={{display:"flex",alignItems:"flex-start",gap:"9px",marginBottom:"10px"}}>
                             <div style={{padding:"6px",border:"1px solid rgba(90,50,10,0.32)",background:"rgba(248,225,155,0.8)",borderRadius:"2px",color:"#5a2e08",flexShrink:0,marginTop:"2px"}}>
                               <Icon size={13}/>
@@ -520,11 +532,13 @@ export default function GuinnessCrusadeApp() {
                             </div>
                           </div>
 
+                          {/* Current rating label */}
                           <div style={{marginBottom:"8px",padding:"5px 10px",background:"rgba(200,160,80,0.2)",borderRadius:"2px",border:"1px solid rgba(90,50,10,0.2)"}}>
                             <span className="cinzel" style={{fontSize:"9px",letterSpacing:"0.2em",color:"#5a2e08",textTransform:"uppercase",fontWeight:700}}>Verdict: </span>
                             <span className="fell" style={{fontSize:"12px",color:"#3a1a06",fontStyle:"italic"}}>{sLabel(cat.key,cur)}</span>
                           </div>
 
+                          {/* Options */}
                           <div style={{display:"flex",flexDirection:"column",gap:"5px"}}>
                             {QUALITATIVE[cat.key].map(opt=>(
                               <Pill key={opt.score} active={cur===opt.score} onClick={()=>updateScore(cat.key,opt.score)}>
@@ -541,6 +555,7 @@ export default function GuinnessCrusadeApp() {
                   </div>
                 </div>
 
+                {/* SCORE SUMMARY */}
                 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:"10px"}}>
                   {[
                     {label:"Pint",    value:fmt(gAvg(currentEntry,"pint"))},
@@ -554,6 +569,7 @@ export default function GuinnessCrusadeApp() {
                   ))}
                 </div>
 
+                {/* LEADERBOARD */}
                 <div className="section-card">
                   <SectionHead icon={Trophy}>The Order of Merit</SectionHead>
 
@@ -594,6 +610,7 @@ export default function GuinnessCrusadeApp() {
             </div>
           </div>
 
+          {/* BOTTOM ROD */}
           <div className="scroll-rod" />
 
         </div>
