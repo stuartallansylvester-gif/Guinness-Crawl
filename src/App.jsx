@@ -51,9 +51,24 @@ const FontImport = () => (
       content: '';
       position: absolute;
       inset: 0;
-      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
       pointer-events: none;
       border-radius: inherit;
+    }
+
+    .crusader-input::placeholder {
+      color: rgba(62, 31, 8, 0.55);
+      font-family: 'Cinzel', Georgia, serif;
+    }
+
+    .crusader-input, .crusader-select {
+      color: #2a1005 !important;
+      font-weight: 600;
+    }
+
+    .crusader-select option {
+      color: #2a1005;
+      background: #f8e6c5;
+      font-family: 'Cinzel', Georgia, serif;
     }
   `}</style>
 );
@@ -236,7 +251,7 @@ function OptionPill({ active, onClick, children }) {
         background: active
           ? "linear-gradient(90deg,#7a4720 0%,#9a5e2c 100%)"
           : "rgba(245,225,175,0.6)",
-        color: active ? "#f8e8c8" : "#3e1f08",
+        color: active ? "#f8e8c8" : "#2a1005",
         boxShadow: active ? "0 3px 10px rgba(80,40,10,0.3)" : "none",
       }}
     >
@@ -384,11 +399,14 @@ export default function GuinnessCrusadeApp() {
         padding: "0 0 48px",
       }}>
         <div style={{ maxWidth: "480px", margin: "0 auto", position: "relative" }}>
+
+          {/* Scroll background wrapper */}
           <div style={{
             position: "relative",
             backgroundImage: "url('/scroll.jpg')",
             backgroundSize: "100% 100%",
             backgroundRepeat: "no-repeat",
+            backgroundColor: "#e8c98a",
             paddingTop: "13%",
             paddingBottom: "13%",
             paddingLeft: "10%",
@@ -396,7 +414,7 @@ export default function GuinnessCrusadeApp() {
           }}>
             <div style={{ display: "flex", flexDirection: "column", gap: "16px", position: "relative", zIndex: 1 }}>
 
-              {/* Logo + Title */}
+              {/* Logo — no white box, blends into parchment */}
               <div style={{ textAlign: "center", paddingBottom: "4px" }}>
                 <img
                   src="/logo.png"
@@ -406,7 +424,8 @@ export default function GuinnessCrusadeApp() {
                     maxWidth: "100%",
                     margin: "0 auto 4px",
                     display: "block",
-                    filter: "drop-shadow(0 6px 18px rgba(0,0,0,0.45))",
+                    mixBlendMode: "multiply",
+                    filter: "drop-shadow(0 4px 10px rgba(0,0,0,0.2))",
                   }}
                 />
                 <div className="cinzel" style={{ fontSize: "9px", letterSpacing: "0.42em", color: "#7c4a22", textTransform: "uppercase", marginTop: "6px" }}>
@@ -438,21 +457,23 @@ export default function GuinnessCrusadeApp() {
                 <SectionHeader icon={Shield}>Muster the Crusade</SectionHeader>
                 <div style={{ display: "grid", gap: "12px" }}>
                   <div>
-                    <label className="cinzel" style={{ display: "block", fontSize: "9px", letterSpacing: "0.3em", color: "#8a5a2a", textTransform: "uppercase", marginBottom: "6px" }}>
+                    <label className="cinzel" style={{ display: "block", fontSize: "9px", letterSpacing: "0.3em", color: "#5a2e08", textTransform: "uppercase", marginBottom: "6px", fontWeight: 700 }}>
                       Crusader Name
                     </label>
                     <input
                       value={crusaderName}
                       onChange={(e) => setCrusaderName(e.target.value)}
                       placeholder="Enter your name"
+                      className="crusader-input"
                       style={{
                         width: "100%",
                         padding: "10px 14px",
-                        border: "1px solid rgba(139,90,43,0.4)",
-                        background: "rgba(252,238,205,0.8)",
-                        color: "#3e1f08",
+                        border: "1.5px solid rgba(100,55,20,0.6)",
+                        background: "rgba(252,238,205,0.95)",
+                        color: "#2a1005",
                         fontSize: "14px",
                         fontFamily: "'Cinzel', Georgia, serif",
+                        fontWeight: 600,
                         outline: "none",
                         borderRadius: "3px",
                         boxSizing: "border-box",
@@ -460,20 +481,22 @@ export default function GuinnessCrusadeApp() {
                     />
                   </div>
                   <div>
-                    <label className="cinzel" style={{ display: "block", fontSize: "9px", letterSpacing: "0.3em", color: "#8a5a2a", textTransform: "uppercase", marginBottom: "6px" }}>
+                    <label className="cinzel" style={{ display: "block", fontSize: "9px", letterSpacing: "0.3em", color: "#5a2e08", textTransform: "uppercase", marginBottom: "6px", fontWeight: 700 }}>
                       Tavern
                     </label>
                     <select
                       value={selectedPub}
                       onChange={(e) => setSelectedPub(e.target.value)}
+                      className="crusader-select"
                       style={{
                         width: "100%",
                         padding: "10px 14px",
-                        border: "1px solid rgba(139,90,43,0.4)",
-                        background: "rgba(252,238,205,0.8)",
-                        color: "#3e1f08",
+                        border: "1.5px solid rgba(100,55,20,0.6)",
+                        background: "rgba(252,238,205,0.95)",
+                        color: "#2a1005",
                         fontSize: "14px",
                         fontFamily: "'Cinzel', Georgia, serif",
+                        fontWeight: 600,
                         outline: "none",
                         borderRadius: "3px",
                         appearance: "none",
@@ -494,7 +517,7 @@ export default function GuinnessCrusadeApp() {
                   textAlign: "center",
                   boxShadow: "inset 0 1px 3px rgba(255,240,200,0.5)",
                 }}>
-                  <div className="cinzel" style={{ fontSize: "9px", letterSpacing: "0.35em", color: "#8d6032", textTransform: "uppercase" }}>
+                  <div className="cinzel" style={{ fontSize: "9px", letterSpacing: "0.35em", color: "#6b3d10", textTransform: "uppercase", fontWeight: 700 }}>
                     Current Pillaging
                   </div>
                   <div className="cinzel-deco" style={{ marginTop: "6px", fontSize: "20px", fontWeight: 700, color: "#3f210d", letterSpacing: "0.06em" }}>
@@ -513,7 +536,7 @@ export default function GuinnessCrusadeApp() {
                 <SectionHeader
                   icon={ScrollText}
                   right={
-                    <span className="cinzel" style={{ fontSize: "9px", letterSpacing: "0.2em", color: "#8a6038", textTransform: "uppercase", padding: "4px 10px", border: "1px solid rgba(154,107,60,0.3)", background: "rgba(247,228,193,0.7)", borderRadius: "2px" }}>
+                    <span className="cinzel" style={{ fontSize: "9px", letterSpacing: "0.2em", color: "#6b3d10", textTransform: "uppercase", padding: "4px 10px", border: "1px solid rgba(154,107,60,0.3)", background: "rgba(247,228,193,0.7)", borderRadius: "2px", fontWeight: 700 }}>
                       Illuminated Scroll
                     </span>
                   }
@@ -533,7 +556,7 @@ export default function GuinnessCrusadeApp() {
                     border: "1px dashed rgba(154,107,60,0.45)",
                     background: "rgba(247,228,193,0.55)",
                     fontSize: "13px",
-                    color: "#7a5130",
+                    color: "#5a2e08",
                     borderRadius: "3px",
                     fontStyle: "italic",
                   }}>
@@ -569,8 +592,8 @@ export default function GuinnessCrusadeApp() {
                             <Icon size={14} />
                           </div>
                           <div>
-                            <div className="cinzel" style={{ fontSize: "12px", fontWeight: 700, color: "#3f1f08", letterSpacing: "0.08em" }}>{category.title}</div>
-                            <div style={{ fontSize: "12px", color: "#7a5130", fontStyle: "italic" }}>{scoreLabel(category.key, currentScore)}</div>
+                            <div className="cinzel" style={{ fontSize: "12px", fontWeight: 700, color: "#2a1005", letterSpacing: "0.08em" }}>{category.title}</div>
+                            <div style={{ fontSize: "12px", color: "#5a2e08", fontStyle: "italic" }}>{scoreLabel(category.key, currentScore)}</div>
                           </div>
                         </div>
                         <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
@@ -606,8 +629,8 @@ export default function GuinnessCrusadeApp() {
                   { label: "Overall", value: formatScore(entryAverage(currentEntry, [...CATEGORIES.pint, ...CATEGORIES.pub].map((i) => i.key))) },
                 ].map((item) => (
                   <ParchmentSection key={item.label} style={{ padding: "12px 8px", textAlign: "center" }}>
-                    <div className="cinzel" style={{ fontSize: "9px", letterSpacing: "0.3em", color: "#8a6038", textTransform: "uppercase" }}>{item.label}</div>
-                    <div className="cinzel" style={{ marginTop: "6px", fontSize: "22px", fontWeight: 900, color: "#3f1f08" }}>{item.value}</div>
+                    <div className="cinzel" style={{ fontSize: "9px", letterSpacing: "0.3em", color: "#5a2e08", textTransform: "uppercase", fontWeight: 700 }}>{item.label}</div>
+                    <div className="cinzel" style={{ marginTop: "6px", fontSize: "22px", fontWeight: 900, color: "#2a1005" }}>{item.value}</div>
                   </ParchmentSection>
                 ))}
               </div>
@@ -629,9 +652,10 @@ export default function GuinnessCrusadeApp() {
                         borderRadius: "3px",
                         fontSize: "11px",
                         fontFamily: "'Cinzel', serif",
-                        color: "#6f4321",
+                        color: "#4a2008",
                         cursor: "pointer",
                         letterSpacing: "0.06em",
+                        fontWeight: 700,
                       }}
                     >
                       <Copy size={11} /> SQL
@@ -661,15 +685,15 @@ export default function GuinnessCrusadeApp() {
                               borderRadius: "2px",
                               letterSpacing: "0.05em",
                             }}>#{index + 1}</span>
-                            <span className="cinzel" style={{ fontWeight: 700, fontSize: "13px", color: "#3f1f08" }}>{item.pub}</span>
+                            <span className="cinzel" style={{ fontWeight: 700, fontSize: "13px", color: "#2a1005" }}>{item.pub}</span>
                           </div>
-                          <div style={{ marginTop: "4px", fontSize: "12px", color: "#7a5130", fontStyle: "italic" }}>
+                          <div style={{ marginTop: "4px", fontSize: "12px", color: "#5a2e08", fontStyle: "italic" }}>
                             {item.entries} {item.entries === 1 ? "scorecard" : "scorecards"}
                           </div>
                         </div>
                         <div style={{ textAlign: "right" }}>
-                          <div className="cinzel" style={{ fontSize: "24px", fontWeight: 900, color: "#3f1f08", lineHeight: 1 }}>{formatScore(item.overall)}</div>
-                          <div className="cinzel" style={{ fontSize: "9px", letterSpacing: "0.2em", color: "#8a6038", textTransform: "uppercase" }}>overall</div>
+                          <div className="cinzel" style={{ fontSize: "24px", fontWeight: 900, color: "#2a1005", lineHeight: 1 }}>{formatScore(item.overall)}</div>
+                          <div className="cinzel" style={{ fontSize: "9px", letterSpacing: "0.2em", color: "#5a2e08", textTransform: "uppercase", fontWeight: 700 }}>overall</div>
                         </div>
                       </div>
                       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", marginTop: "10px" }}>
@@ -682,10 +706,10 @@ export default function GuinnessCrusadeApp() {
                             background: "rgba(239,215,171,0.7)",
                             borderRadius: "3px",
                             fontSize: "13px",
-                            color: "#6a4020",
+                            color: "#4a2008",
                           }}>
-                            <span className="cinzel" style={{ fontSize: "10px", letterSpacing: "0.1em", textTransform: "uppercase" }}>{s.label}: </span>
-                            <span className="cinzel" style={{ fontWeight: 700, color: "#3f1f08" }}>{s.value}</span>
+                            <span className="cinzel" style={{ fontSize: "10px", letterSpacing: "0.1em", textTransform: "uppercase", fontWeight: 700 }}>{s.label}: </span>
+                            <span className="cinzel" style={{ fontWeight: 700, color: "#2a1005" }}>{s.value}</span>
                           </div>
                         ))}
                       </div>
