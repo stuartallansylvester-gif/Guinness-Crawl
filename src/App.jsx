@@ -1,34 +1,25 @@
-import React, { useEffect, useMemo, useState } from 'react'
-import { Trophy, Beer, Plus, Users, Trash2, Copy, Wifi } from 'lucide-react'
-import { createClient } from '@supabase/supabase-js'
-import { motion } from 'framer-motion'
+import React, { useEffect, useMemo, useState } from "react";
+import { motion } from "framer-motion";
+import { createClient } from "@supabase/supabase-js";
+import { Shield, Trophy, Flame, ScrollText, Users, Swords, Castle, Copy } from "lucide-react";
 
-const PINT_FIELDS = [
-  { key: 'pour', label: 'Pour' },
-  { key: 'head', label: 'Head' },
-  { key: 'temp', label: 'Temp' },
-  { key: 'taste', label: 'Taste' },
-]
+const SUPABASE_URL = "https://zsmjicjsyowpnwbpbyvu.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_0o1l0knnxpTOg7aHcSKqfQ_6gkb7bck";
+const hasSupabaseConfig =
+  SUPABASE_URL &&
+  SUPABASE_ANON_KEY &&
+  !SUPABASE_URL.includes("YOUR_PROJECT") &&
+  !SUPABASE_ANON_KEY.includes("YOUR_SUPABASE");
+const supabase = hasSupabaseConfig ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
-const PUB_FIELDS = [
-  { key: 'vibe', label: 'Vibe' },
-  { key: 'irishAuthenticity', label: 'Irish Authenticity' },
-  { key: 'service', label: 'Service' },
-  { key: 'pagansMoors', label: 'Pagans / Moors' },
-]
+const STORAGE_KEY = "guinness-crusade-v4";
+const DEFAULT_PUBS = ["Allen's", "Noonan's", "McVeigh's", "P.J. O'Brien"];
+const DEFAULT_PLAYERS = ["Edward", "Stuart"];
 
-const DEFAULT_PUBS = ["Allen's", "Noonan's", "McVeigh's", "P.J. O'Brien"]
-const DEFAULT_JUDGES = ['Judge 1', 'Judge 2', 'Judge 3']
-
-const SUPABASE_URL = 'https://zsmjicjsyowpnwbpbyvu.supabase.co'
-const SUPABASE_ANON_KEY = 'sb_publishable_0o1l0knnxpTOg7aHcSKqfQ_6gkb7bck'
-
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-
-const SETUP_SQL = `create table if not exists public.bar_crawl_settings (
+const setupSql = `create table if not exists public.bar_crawl_settings (
   id int primary key,
   pubs jsonb not null,
-  judges jsonb not null,
+  players jsonb not null,
   updated_at timestamptz not null default now()
 );
 
@@ -41,438 +32,429 @@ create table if not exists public.bar_crawl_scores (
 );
 
 alter publication supabase_realtime add table public.bar_crawl_settings;
-alter publication supabase_realtime add table public.bar_crawl_scores;`
+alter publication supabase_realtime add table public.bar_crawl_scores;`;
 
-const BRANDS = {
-  "Allen's": {
-    palette: 'from-slate-900 via-slate-800 to-amber-950',
-    label: 'Gold on navy',
-    note: 'Classic awning feel',
-  },
-  "Noonan's": {
-    palette: 'from-neutral-950 via-zinc-900 to-red-950',
-    label: 'Gold and red',
-    note: 'Irish pub signage feel',
-  },
-  "McVeigh's": {
-    palette: 'from-zinc-950 via-slate-900 to-emerald-950',
-    label: 'Irish tricolour feel',
-    note: 'Flag-inspired styling',
-  },
-  "P.J. O'Brien": {
-    palette: 'from-blue-950 via-slate-900 to-amber-950',
-    label: 'Blue and gold',
-    note: 'Corner pub frontage feel',
-  },
-}
+const QUALITATIVE = {
+  pour: [
+    { label: "Botched Pour", score: 1 },
+    { label: "Uneven Pour", score: 2 },
+    { label: "Decent Pour", score: 3 },
+    { label: "Proper Pour", score: 4 },
+    { label: "Royal Pour", score: 5 },
+  ],
+  head: [
+    { label: "Flat Crown", score: 1 },
+    { label: "Thin Crown", score: 2 },
+    { label: "Fair Head", score: 3 },
+    { label: "Stately Head", score: 4 },
+    { label: "Cathedral Crown", score: 5 },
+  ],
+  temp: [
+    { label: "Campfire Warm", score: 1 },
+    { label: "Off-Temp", score: 2 },
+    { label: "Serviceable", score: 3 },
+    { label: "Well Kept", score: 4 },
+    { label: "Cellar Perfect", score: 5 },
+  ],
+  taste: [
+    { label: "Spoiled Draught", score: 1 },
+    { label: "Rough Sip", score: 2 },
+    { label: "Sound Pint", score: 3 },
+    { label: "Rich Draught", score: 4 },
+    { label: "Holy Nectar", score: 5 },
+  ],
+  vibe: [
+    { label: "Bleak Hall", score: 1 },
+    { label: "Cold Keep", score: 2 },
+    { label: "Lively Hall", score: 3 },
+    { label: "Noble Tavern", score: 4 },
+    { label: "Legendary Great Hall", score: 5 },
+  ],
+  irishAuthenticity: [
+    { label: "False Banner", score: 1 },
+    { label: "Tourist Relic", score: 2 },
+    { label: "Somewhat True", score: 3 },
+    { label: "Faithful House", score: 4 },
+    { label: "Emerald Sanctum", score: 5 },
+  ],
+  service: [
+    { label: "Abandoned Post", score: 1 },
+    { label: "Slow Watch", score: 2 },
+    { label: "Steady Service", score: 3 },
+    { label: "Swift Stewardship", score: 4 },
+    { label: "Knightly Service", score: 5 },
+  ],
+  pagansMoors: [
+    { label: "Infidel Stronghold", score: 1 },
+    { label: "Heavy Resistance", score: 2 },
+    { label: "Scattered Forces", score: 3 },
+    { label: "Lone Saracen", score: 4 },
+    { label: "Safe Ground", score: 5 },
+  ],
+};
 
-function avg(values) {
-  return values.length ? values.reduce((a, b) => a + b, 0) / values.length : 0
-}
+const CATEGORIES = {
+  pint: [
+    { key: "pour", title: "Pour", icon: Flame },
+    { key: "head", title: "Head", icon: Shield },
+    { key: "temp", title: "Temp", icon: Castle },
+    { key: "taste", title: "Taste", icon: Trophy },
+  ],
+  pub: [
+    { key: "vibe", title: "Vibe", icon: ScrollText },
+    { key: "irishAuthenticity", title: "Irish Authenticity", icon: Shield },
+    { key: "service", title: "Service", icon: Users },
+    { key: "pagansMoors", title: "Pagans / Moors", icon: Swords },
+  ],
+};
 
-function scoreAverage(entry, fields) {
-  const values = fields.map((field) => Number(entry?.[field.key])).filter((n) => !Number.isNaN(n) && n > 0)
-  return avg(values)
-}
+const PUB_BRANDING = {
+  "Allen's": { wordmark: "ALLEN'S", note: "Classic frontage", palette: "from-stone-950 via-neutral-900 to-amber-950" },
+  "Noonan's": { wordmark: "NOONAN'S", note: "141 Irish Pub feel", palette: "from-zinc-950 via-black to-red-950" },
+  "McVeigh's": { wordmark: "McVEIGH'S", note: "Flag-and-crest spirit", palette: "from-neutral-950 via-slate-900 to-emerald-950" },
+  "P.J. O'Brien": { wordmark: "P.J. O'BRIEN", note: "Blue-and-gold house", palette: "from-slate-950 via-blue-950 to-amber-950" },
+};
 
-function totalAverage(entry) {
-  return scoreAverage(entry, [...PINT_FIELDS, ...PUB_FIELDS])
+function average(values) {
+  if (!values.length) return 0;
+  return values.reduce((sum, value) => sum + value, 0) / values.length;
 }
 
 function formatScore(value) {
-  return value ? value.toFixed(2) : '—'
+  return value ? value.toFixed(2) : "—";
 }
 
-function cardClass(pub) {
-  const brand = BRANDS[pub] || { palette: 'from-slate-900 to-slate-700' }
-  return `bg-gradient-to-br ${brand.palette} text-white`
+function entryAverage(entry, keys) {
+  const values = keys.map((key) => Number(entry?.[key])).filter(Boolean);
+  return average(values);
 }
 
-function Button({ children, className = '', variant = 'solid', ...props }) {
-  const base = 'rounded-xl px-4 py-2 text-sm font-medium transition active:scale-[0.99]'
-  const style = variant === 'outline'
-    ? 'border border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
-    : 'bg-slate-900 text-white hover:bg-slate-800'
-  return <button className={`${base} ${style} ${className}`} {...props}>{children}</button>
+function groupAverage(entry, groupKey) {
+  return entryAverage(entry, CATEGORIES[groupKey].map((item) => item.key));
 }
 
-function Card({ children, className = '' }) {
-  return <div className={`rounded-3xl bg-white shadow-sm ring-1 ring-slate-200 ${className}`}>{children}</div>
+function scoreLabel(field, score) {
+  return QUALITATIVE[field].find((item) => item.score === score)?.label || "Unrated";
 }
 
-function ScoreInput({ label, value, onChange }) {
+function CrusadeButton({ active, onClick, children }) {
   return (
-    <label className="block rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200">
-      <div className="mb-2 text-sm font-medium text-slate-700">{label}</div>
-      <input
-        type="number"
-        min="1"
-        max="10"
-        step="1"
-        value={value ?? ''}
-        onChange={onChange}
-        className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 outline-none focus:border-slate-500"
-      />
-    </label>
-  )
+    <button
+      onClick={onClick}
+      className={`rounded-2xl border px-4 py-3 text-sm font-semibold transition ${active ? "border-amber-300 bg-amber-300 text-black shadow-lg shadow-amber-400/20" : "border-white/10 bg-white/5 text-stone-200"}`}
+    >
+      {children}
+    </button>
+  );
 }
 
-export default function App() {
-  const [pubs, setPubs] = useState(DEFAULT_PUBS)
-  const [judges, setJudges] = useState(DEFAULT_JUDGES)
-  const [selectedPub, setSelectedPub] = useState(DEFAULT_PUBS[0])
-  const [selectedJudge, setSelectedJudge] = useState(DEFAULT_JUDGES[0])
-  const [scores, setScores] = useState({})
-  const [newPub, setNewPub] = useState('')
-  const [newJudge, setNewJudge] = useState('')
-  const [syncStatus, setSyncStatus] = useState('Connecting')
-  const [activeTab, setActiveTab] = useState('pint')
+function OptionPill({ active, onClick, children }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`w-full rounded-2xl border px-3 py-3 text-left text-sm leading-tight transition ${active ? "border-amber-300 bg-amber-200 text-black shadow-lg shadow-amber-500/20" : "border-white/10 bg-black/20 text-stone-100"}`}
+    >
+      {children}
+    </button>
+  );
+}
+
+function SelectBox({ value, onChange, options }) {
+  return (
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-base text-stone-100 outline-none"
+    >
+      {options.map((option) => (
+        <option key={option} value={option} className="bg-stone-950 text-stone-100">
+          {option}
+        </option>
+      ))}
+    </select>
+  );
+}
+
+export default function GuinnessCrusadeApp() {
+  const [pubs, setPubs] = useState(DEFAULT_PUBS);
+  const [players, setPlayers] = useState(DEFAULT_PLAYERS);
+  const [selectedPub, setSelectedPub] = useState(DEFAULT_PUBS[0]);
+  const [selectedPlayer, setSelectedPlayer] = useState(DEFAULT_PLAYERS[0]);
+  const [selectedGroup, setSelectedGroup] = useState("pint");
+  const [scores, setScores] = useState({});
+  const [backendMode, setBackendMode] = useState(hasSupabaseConfig ? "supabase" : "local");
+  const [syncStatus, setSyncStatus] = useState(hasSupabaseConfig ? "Connecting…" : "Local only");
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    const boot = async () => {
-      const { data: settings, error: settingsError } = await supabase
-        .from('bar_crawl_settings')
-        .select('*')
-        .eq('id', 1)
-        .maybeSingle()
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) {
+      setHydrated(true);
+      return;
+    }
+    try {
+      const parsed = JSON.parse(raw);
+      if (parsed.pubs?.length) setPubs(parsed.pubs);
+      if (parsed.players?.length) setPlayers(parsed.players);
+      if (parsed.selectedPub) setSelectedPub(parsed.selectedPub);
+      if (parsed.selectedPlayer) setSelectedPlayer(parsed.selectedPlayer);
+      if (parsed.scores) setScores(parsed.scores);
+    } finally {
+      setHydrated(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ pubs, players, selectedPub, selectedPlayer, scores })
+    );
+  }, [hydrated, pubs, players, selectedPub, selectedPlayer, scores]);
+
+  useEffect(() => {
+    if (!supabase || !hydrated || backendMode !== "supabase") return;
+    let scoreChannel;
+    let settingsChannel;
+
+    const init = async () => {
+      setSyncStatus("Loading shared data…");
+      const { data: settingsRow, error: settingsError } = await supabase
+        .from("bar_crawl_settings")
+        .select("*")
+        .eq("id", 1)
+        .maybeSingle();
 
       if (settingsError) {
-        setSyncStatus('Run SQL setup')
-        return
+        setSyncStatus("Run setup SQL first");
+        return;
       }
 
-      if (!settings) {
-        await supabase.from('bar_crawl_settings').upsert({
-          id: 1,
-          pubs: DEFAULT_PUBS,
-          judges: DEFAULT_JUDGES,
-        })
+      if (!settingsRow) {
+        await supabase.from("bar_crawl_settings").upsert({ id: 1, pubs: DEFAULT_PUBS, players: DEFAULT_PLAYERS });
       } else {
-        if (Array.isArray(settings.pubs) && settings.pubs.length) setPubs(settings.pubs)
-        if (Array.isArray(settings.judges) && settings.judges.length) setJudges(settings.judges)
+        if (Array.isArray(settingsRow.pubs) && settingsRow.pubs.length) setPubs(settingsRow.pubs);
+        if (Array.isArray(settingsRow.players) && settingsRow.players.length) setPlayers(settingsRow.players);
       }
 
-      const { data: scoreRows, error: scoreError } = await supabase
-        .from('bar_crawl_scores')
-        .select('pub, judge, scores')
+      const { data: scoreRows } = await supabase.from("bar_crawl_scores").select("pub, judge, scores");
+      const incoming = {};
+      (scoreRows || []).forEach((row) => {
+        incoming[`${row.pub}__${row.judge}`] = row.scores || {};
+      });
+      setScores(incoming);
+      setSyncStatus("Live");
 
-      if (scoreError) {
-        setSyncStatus('Score error')
-        return
-      }
+      scoreChannel = supabase
+        .channel("gc-scores")
+        .on("postgres_changes", { event: "*", schema: "public", table: "bar_crawl_scores" }, (payload) => {
+          const row = payload.new;
+          if (!row?.pub || !row?.judge) return;
+          setScores((prev) => ({ ...prev, [`${row.pub}__${row.judge}`]: row.scores || {} }));
+        })
+        .subscribe();
 
-      const nextScores = {}
-      ;(scoreRows || []).forEach((row) => {
-        nextScores[`${row.pub}__${row.judge}`] = row.scores || {}
-      })
-      setScores(nextScores)
-      setSyncStatus('Live')
-    }
+      settingsChannel = supabase
+        .channel("gc-settings")
+        .on("postgres_changes", { event: "*", schema: "public", table: "bar_crawl_settings" }, (payload) => {
+          const row = payload.new;
+          if (!row) return;
+          if (Array.isArray(row.pubs) && row.pubs.length) setPubs(row.pubs);
+          if (Array.isArray(row.players) && row.players.length) setPlayers(row.players);
+        })
+        .subscribe();
+    };
 
-    boot()
-
-    const scoreChannel = supabase
-      .channel('scores-live')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'bar_crawl_scores' }, (payload) => {
-        const row = payload.new
-        if (!row?.pub || !row?.judge) return
-        setScores((prev) => ({ ...prev, [`${row.pub}__${row.judge}`]: row.scores || {} }))
-      })
-      .subscribe()
-
-    const settingsChannel = supabase
-      .channel('settings-live')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'bar_crawl_settings' }, (payload) => {
-        const row = payload.new
-        if (!row) return
-        if (Array.isArray(row.pubs)) setPubs(row.pubs)
-        if (Array.isArray(row.judges)) setJudges(row.judges)
-      })
-      .subscribe()
-
+    init();
     return () => {
-      supabase.removeChannel(scoreChannel)
-      supabase.removeChannel(settingsChannel)
-    }
-  }, [])
+      if (scoreChannel) supabase.removeChannel(scoreChannel);
+      if (settingsChannel) supabase.removeChannel(settingsChannel);
+    };
+  }, [backendMode, hydrated]);
 
   useEffect(() => {
-    if (pubs.length && !pubs.includes(selectedPub)) setSelectedPub(pubs[0])
-  }, [pubs, selectedPub])
+    if (!supabase || !hydrated || backendMode !== "supabase") return;
+    supabase.from("bar_crawl_settings").upsert({ id: 1, pubs, players });
+  }, [backendMode, hydrated, pubs, players]);
 
-  useEffect(() => {
-    if (judges.length && !judges.includes(selectedJudge)) setSelectedJudge(judges[0])
-  }, [judges, selectedJudge])
-
-  const key = `${selectedPub}__${selectedJudge}`
-  const current = scores[key] || {}
+  const currentKey = `${selectedPub}__${selectedPlayer}`;
+  const currentEntry = scores[currentKey] || {};
+  const activeCategories = CATEGORIES[selectedGroup];
 
   const leaderboard = useMemo(() => {
     return pubs
       .map((pub) => {
-        const entries = judges.map((judge) => scores[`${pub}__${judge}`]).filter(Boolean)
+        const entries = players.map((player) => scores[`${pub}__${player}`]).filter(Boolean);
         return {
           pub,
           entries: entries.length,
-          pint: avg(entries.map((entry) => scoreAverage(entry, PINT_FIELDS)).filter(Boolean)),
-          pubScore: avg(entries.map((entry) => scoreAverage(entry, PUB_FIELDS)).filter(Boolean)),
-          overall: avg(entries.map((entry) => totalAverage(entry)).filter(Boolean)),
-        }
+          pint: average(entries.map((entry) => groupAverage(entry, "pint")).filter(Boolean)),
+          pubScore: average(entries.map((entry) => groupAverage(entry, "pub")).filter(Boolean)),
+          overall: average(entries.map((entry) => entryAverage(entry, [...CATEGORIES.pint, ...CATEGORIES.pub].map((item) => item.key))).filter(Boolean)),
+        };
       })
-      .sort((a, b) => b.overall - a.overall)
-  }, [pubs, judges, scores])
+      .sort((a, b) => b.overall - a.overall);
+  }, [pubs, players, scores]);
 
-  const judgeProgress = useMemo(() => {
-    return judges.map((judge) => {
-      const entries = pubs.map((pub) => scores[`${pub}__${judge}`]).filter(Boolean)
-      return { judge, completed: entries.length, avg: avg(entries.map((entry) => totalAverage(entry)).filter(Boolean)) }
-    })
-  }, [judges, pubs, scores])
+  const updateScore = async (field, score) => {
+    const nextEntry = { ...currentEntry, [field]: score };
+    setScores((prev) => ({ ...prev, [currentKey]: nextEntry }));
+    if (supabase && backendMode === "supabase") {
+      await supabase.from("bar_crawl_scores").upsert({ pub: selectedPub, judge: selectedPlayer, scores: nextEntry });
+    }
+  };
 
-  async function syncSettings(nextPubs, nextJudges) {
-    await supabase.from('bar_crawl_settings').upsert({ id: 1, pubs: nextPubs, judges: nextJudges })
-  }
+  const copySetupSql = async () => {
+    await navigator.clipboard.writeText(setupSql);
+    setSyncStatus("SQL copied");
+    setTimeout(() => setSyncStatus(backendMode === "supabase" ? "Live" : "Local only"), 1200);
+  };
 
-  async function updateField(field, value) {
-    const nextValue = value === '' ? '' : Math.max(1, Math.min(10, Number(value)))
-    const nextEntry = { ...current, [field]: nextValue }
-    setScores((prev) => ({ ...prev, [key]: nextEntry }))
-    await supabase.from('bar_crawl_scores').upsert({ pub: selectedPub, judge: selectedJudge, scores: nextEntry })
-  }
-
-  async function addPub() {
-    const value = newPub.trim()
-    if (!value || pubs.includes(value)) return
-    const next = [...pubs, value]
-    setPubs(next)
-    setSelectedPub(value)
-    setNewPub('')
-    await syncSettings(next, judges)
-  }
-
-  async function addJudge() {
-    const value = newJudge.trim()
-    if (!value || judges.includes(value)) return
-    const next = [...judges, value]
-    setJudges(next)
-    setSelectedJudge(value)
-    setNewJudge('')
-    await syncSettings(pubs, next)
-  }
-
-  async function removePub(pubToRemove) {
-    const next = pubs.filter((pub) => pub !== pubToRemove)
-    setPubs(next)
-    setScores((prev) => {
-      const copy = { ...prev }
-      Object.keys(copy).forEach((entryKey) => {
-        if (entryKey.startsWith(`${pubToRemove}__`)) delete copy[entryKey]
-      })
-      return copy
-    })
-    await supabase.from('bar_crawl_scores').delete().eq('pub', pubToRemove)
-    await syncSettings(next, judges)
-  }
-
-  async function removeJudge(judgeToRemove) {
-    const next = judges.filter((judge) => judge !== judgeToRemove)
-    setJudges(next)
-    setScores((prev) => {
-      const copy = { ...prev }
-      Object.keys(copy).forEach((entryKey) => {
-        if (entryKey.endsWith(`__${judgeToRemove}`)) delete copy[entryKey]
-      })
-      return copy
-    })
-    await supabase.from('bar_crawl_scores').delete().eq('judge', judgeToRemove)
-    await syncSettings(pubs, next)
-  }
-
-  async function resetScores() {
-    setScores({})
-    await supabase.from('bar_crawl_scores').delete().neq('pub', '')
-  }
-
-  async function copySql() {
-    await navigator.clipboard.writeText(SETUP_SQL)
-    alert('Supabase SQL copied. Paste it into SQL Editor and click Run.')
-  }
-
-  function exportResults() {
-    const blob = new Blob([JSON.stringify({ pubs, judges, scores, leaderboard }, null, 2)], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'bar-crawl-results.json'
-    a.click()
-    URL.revokeObjectURL(url)
-  }
+  const heroBrand = PUB_BRANDING[selectedPub] || { wordmark: selectedPub.toUpperCase(), note: "Chosen stop", palette: "from-neutral-950 via-stone-900 to-amber-950" };
 
   return (
-    <div className="min-h-screen bg-slate-50 px-4 py-6 md:px-8">
-      <div className="mx-auto max-w-7xl space-y-6">
-        <div className="grid gap-4 lg:grid-cols-[1.6fr_1fr]">
-          <Card className="p-6">
-            <div className="mb-3 flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2 text-sm text-slate-500">
-                <Beer className="h-4 w-4" /> Guinness Bar Crawl Scoring
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(245,158,11,0.2),_transparent_30%),linear-gradient(180deg,#120f0a_0%,#090909_45%,#130e08_100%)] text-stone-100">
+      <div className="mx-auto max-w-md px-4 pb-10 pt-5">
+        <div className="overflow-hidden rounded-[28px] border border-amber-300/15 bg-black/30 shadow-2xl shadow-black/40 backdrop-blur">
+          <div className={`bg-gradient-to-br ${heroBrand.palette} px-5 pb-6 pt-5`}>
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <div className="text-[11px] uppercase tracking-[0.35em] text-amber-200/80">Toronto Crusade</div>
+                <h1 className="mt-2 text-3xl font-black leading-none text-amber-100">The Guinness Crusade</h1>
+                <p className="mt-2 text-sm text-stone-300">Mobile scorecard for noble pints and worthy halls.</p>
               </div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1 text-xs text-slate-600">
-                <Wifi className="h-3.5 w-3.5" /> {syncStatus}
+              <div className="rounded-full border border-amber-200/25 bg-black/25 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-100">
+                {backendMode === "supabase" ? syncStatus : "Local"}
               </div>
             </div>
-            <h1 className="text-3xl font-bold tracking-tight text-slate-900">Live pub leaderboard</h1>
-            <p className="mt-2 text-slate-600">Score each stop across The Pint and The Pub. Everyone on their phone can use the same link once you deploy this project to Vercel.</p>
-          </Card>
-          <Card className="p-6">
-            <h2 className="text-lg font-semibold text-slate-900">First-time setup</h2>
-            <p className="mt-2 text-sm text-slate-600">If the status says Run SQL setup, click the button below, paste into Supabase SQL Editor, and run it once.</p>
-            <div className="mt-4 flex flex-wrap gap-3">
-              <Button variant="outline" onClick={copySql}><Copy className="mr-2 h-4 w-4" /> Copy SQL</Button>
-              <Button variant="outline" onClick={exportResults}>Export JSON</Button>
+
+            <div className="mt-5 flex items-center justify-center">
+              <img src="/logo.png" alt="The Guinness Crusade logo" className="w-40 drop-shadow-2xl" />
             </div>
-          </Card>
-        </div>
 
-        <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
-          <div className="space-y-6">
-            <Card className="p-6">
-              <h2 className="text-xl font-semibold text-slate-900">Enter scores</h2>
-              <p className="mt-1 text-sm text-slate-600">Choose a Toronto pub stop and judge, then score all 8 categories.</p>
-
-              <div className={`mt-5 rounded-3xl p-5 ${cardClass(selectedPub)}`}>
-                <div className="text-xs uppercase tracking-[0.35em] text-white/60">Toronto</div>
-                <div className="mt-2 text-3xl font-semibold tracking-[0.14em]">{selectedPub}</div>
-                <div className="mt-4 flex flex-wrap gap-2 text-sm text-white/80">
-                  <span className="rounded-full border border-white/20 px-3 py-1">{BRANDS[selectedPub]?.label || 'Custom stop'}</span>
-                  <span className="rounded-full border border-white/20 px-3 py-1">{BRANDS[selectedPub]?.note || 'Added manually'}</span>
-                </div>
-              </div>
-
-              <div className="mt-5 grid gap-4 md:grid-cols-2">
-                <label>
-                  <div className="mb-2 text-sm font-medium text-slate-700">Pub</div>
-                  <select value={selectedPub} onChange={(e) => setSelectedPub(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2">
-                    {pubs.map((pub) => <option key={pub} value={pub}>{pub}</option>)}
-                  </select>
-                </label>
-                <label>
-                  <div className="mb-2 text-sm font-medium text-slate-700">Judge</div>
-                  <select value={selectedJudge} onChange={(e) => setSelectedJudge(e.target.value)} className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2">
-                    {judges.map((judge) => <option key={judge} value={judge}>{judge}</option>)}
-                  </select>
-                </label>
-              </div>
-
-              <div className="mt-6 inline-flex rounded-2xl bg-slate-100 p-1">
-                <button onClick={() => setActiveTab('pint')} className={`rounded-xl px-4 py-2 text-sm ${activeTab === 'pint' ? 'bg-white shadow-sm' : 'text-slate-600'}`}>The Pint</button>
-                <button onClick={() => setActiveTab('pub')} className={`rounded-xl px-4 py-2 text-sm ${activeTab === 'pub' ? 'bg-white shadow-sm' : 'text-slate-600'}`}>The Pub</button>
-              </div>
-
-              <div className="mt-4 grid gap-4 md:grid-cols-2">
-                {(activeTab === 'pint' ? PINT_FIELDS : PUB_FIELDS).map((field) => (
-                  <ScoreInput key={field.key} label={field.label} value={current[field.key]} onChange={(e) => updateField(field.key, e.target.value)} />
-                ))}
-              </div>
-
-              <div className="mt-6 grid gap-3 md:grid-cols-3">
-                <Card className="p-4"><div className="text-sm text-slate-500">Pint average</div><div className="mt-1 text-2xl font-semibold">{formatScore(scoreAverage(current, PINT_FIELDS))}</div></Card>
-                <Card className="p-4"><div className="text-sm text-slate-500">Pub average</div><div className="mt-1 text-2xl font-semibold">{formatScore(scoreAverage(current, PUB_FIELDS))}</div></Card>
-                <Card className="p-4"><div className="text-sm text-slate-500">Overall</div><div className="mt-1 text-2xl font-semibold">{formatScore(totalAverage(current))}</div></Card>
-              </div>
-            </Card>
-
-            <div className="grid gap-6 md:grid-cols-2">
-              <Card className="p-6">
-                <h3 className="flex items-center gap-2 text-lg font-semibold"><Plus className="h-4 w-4" /> Add pubs</h3>
-                <div className="mt-4 flex gap-2">
-                  <input value={newPub} onChange={(e) => setNewPub(e.target.value)} placeholder="Add pub name" className="w-full rounded-xl border border-slate-300 px-3 py-2" />
-                  <Button onClick={addPub}>Add</Button>
-                </div>
-                <div className="mt-4 space-y-2">
-                  {pubs.map((pub) => (
-                    <div key={pub} className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2 ring-1 ring-slate-200">
-                      <span>{pub}</span>
-                      <button onClick={() => removePub(pub)} className="rounded-lg p-2 text-slate-500 hover:bg-slate-200"><Trash2 className="h-4 w-4" /></button>
-                    </div>
-                  ))}
-                </div>
-              </Card>
-              <Card className="p-6">
-                <h3 className="flex items-center gap-2 text-lg font-semibold"><Users className="h-4 w-4" /> Add judges</h3>
-                <div className="mt-4 flex gap-2">
-                  <input value={newJudge} onChange={(e) => setNewJudge(e.target.value)} placeholder="Add judge name" className="w-full rounded-xl border border-slate-300 px-3 py-2" />
-                  <Button onClick={addJudge}>Add</Button>
-                </div>
-                <div className="mt-4 space-y-2">
-                  {judges.map((judge) => (
-                    <div key={judge} className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2 ring-1 ring-slate-200">
-                      <span>{judge}</span>
-                      <button onClick={() => removeJudge(judge)} className="rounded-lg p-2 text-slate-500 hover:bg-slate-200"><Trash2 className="h-4 w-4" /></button>
-                    </div>
-                  ))}
-                </div>
-              </Card>
+            <div className="mt-5 grid grid-cols-2 gap-3">
+              <CrusadeButton active={backendMode === "local"} onClick={() => setBackendMode("local")}>Local Keep</CrusadeButton>
+              <CrusadeButton active={backendMode === "supabase"} onClick={() => setBackendMode("supabase")}>Live Crusade</CrusadeButton>
             </div>
           </div>
 
-          <div className="space-y-6">
-            <Card className="p-6">
-              <h2 className="flex items-center gap-2 text-xl font-semibold"><Trophy className="h-5 w-5" /> Leaderboard</h2>
-              <p className="mt-1 text-sm text-slate-600">Ranked by overall average across all judges and categories.</p>
-              <div className="mt-4 space-y-3">
+          <div className="space-y-5 px-4 py-5">
+            <section className="rounded-3xl border border-white/8 bg-white/5 p-4">
+              <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-amber-100">
+                <Shield className="h-4 w-4" /> Select your campaign
+              </div>
+              <div className="grid gap-3">
+                <div>
+                  <label className="mb-2 block text-xs uppercase tracking-[0.22em] text-stone-400">Pub</label>
+                  <SelectBox value={selectedPub} onChange={setSelectedPub} options={pubs} />
+                </div>
+                <div>
+                  <label className="mb-2 block text-xs uppercase tracking-[0.22em] text-stone-400">Crusader</label>
+                  <SelectBox value={selectedPlayer} onChange={setSelectedPlayer} options={players} />
+                </div>
+              </div>
+              <div className="mt-4 rounded-2xl border border-amber-200/10 bg-black/20 p-4">
+                <div className="text-[11px] uppercase tracking-[0.3em] text-amber-200/70">Current target</div>
+                <div className="mt-2 text-2xl font-black text-amber-100">{heroBrand.wordmark}</div>
+                <div className="text-sm text-stone-400">{heroBrand.note}</div>
+              </div>
+            </section>
+
+            <section className="rounded-3xl border border-white/8 bg-white/5 p-4">
+              <div className="mb-3 flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 text-sm font-semibold text-amber-100">
+                  <ScrollText className="h-4 w-4" /> Score the siege
+                </div>
+                <div className="rounded-full border border-white/10 px-3 py-1 text-xs text-stone-300">
+                  {selectedGroup === "pint" ? "The Pint" : "The Pub"}
+                </div>
+              </div>
+
+              <div className="mb-4 grid grid-cols-2 gap-3">
+                <CrusadeButton active={selectedGroup === "pint"} onClick={() => setSelectedGroup("pint")}>The Pint</CrusadeButton>
+                <CrusadeButton active={selectedGroup === "pub"} onClick={() => setSelectedGroup("pub")}>The Pub</CrusadeButton>
+              </div>
+
+              <div className="space-y-4">
+                {activeCategories.map((category) => {
+                  const Icon = category.icon;
+                  const currentScore = Number(currentEntry?.[category.key] || 0);
+                  return (
+                    <motion.div key={category.key} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="rounded-3xl border border-white/8 bg-black/20 p-4">
+                      <div className="mb-3 flex items-center gap-2">
+                        <div className="rounded-2xl border border-amber-300/20 bg-amber-300/10 p-2 text-amber-100"><Icon className="h-4 w-4" /></div>
+                        <div>
+                          <div className="font-semibold text-stone-100">{category.title}</div>
+                          <div className="text-sm text-stone-400">{scoreLabel(category.key, currentScore)}</div>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 gap-2">
+                        {QUALITATIVE[category.key].map((option) => (
+                          <OptionPill key={option.score} active={currentScore === option.score} onClick={() => updateScore(category.key, option.score)}>
+                            <div className="flex items-center justify-between gap-3">
+                              <span>{option.label}</span>
+                              <span className="rounded-full border border-current/20 px-2 py-0.5 text-xs">{option.score}/5</span>
+                            </div>
+                          </OptionPill>
+                        ))}
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            </section>
+
+            <section className="grid grid-cols-3 gap-3">
+              <div className="rounded-3xl border border-white/8 bg-white/5 p-3 text-center">
+                <div className="text-[11px] uppercase tracking-[0.25em] text-stone-400">Pint</div>
+                <div className="mt-2 text-2xl font-black text-amber-100">{formatScore(groupAverage(currentEntry, "pint"))}</div>
+              </div>
+              <div className="rounded-3xl border border-white/8 bg-white/5 p-3 text-center">
+                <div className="text-[11px] uppercase tracking-[0.25em] text-stone-400">Pub</div>
+                <div className="mt-2 text-2xl font-black text-amber-100">{formatScore(groupAverage(currentEntry, "pub"))}</div>
+              </div>
+              <div className="rounded-3xl border border-white/8 bg-white/5 p-3 text-center">
+                <div className="text-[11px] uppercase tracking-[0.25em] text-stone-400">Overall</div>
+                <div className="mt-2 text-2xl font-black text-amber-100">{formatScore(entryAverage(currentEntry, [...CATEGORIES.pint, ...CATEGORIES.pub].map((item) => item.key)))}</div>
+              </div>
+            </section>
+
+            <section className="rounded-3xl border border-white/8 bg-white/5 p-4">
+              <div className="mb-3 flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 text-sm font-semibold text-amber-100">
+                  <Trophy className="h-4 w-4" /> Leaderboard
+                </div>
+                <button onClick={copySetupSql} className="rounded-2xl border border-white/10 bg-black/20 px-3 py-2 text-xs text-stone-300">
+                  <Copy className="mr-1 inline h-3 w-3" /> SQL
+                </button>
+              </div>
+              <div className="space-y-3">
                 {leaderboard.map((item, index) => (
-                  <motion.div key={item.pub} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className={`rounded-3xl p-4 ${cardClass(item.pub)}`}>
-                    <div className="flex items-start justify-between gap-4">
+                  <div key={item.pub} className="rounded-2xl border border-white/8 bg-black/20 p-3">
+                    <div className="flex items-start justify-between gap-3">
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="rounded-full bg-white/15 px-2.5 py-1 text-xs">#{index + 1}</span>
-                          <div className="text-lg font-semibold tracking-[0.12em]">{item.pub}</div>
+                          <span className="rounded-full bg-amber-300 px-2 py-1 text-xs font-bold text-black">#{index + 1}</span>
+                          <span className="font-semibold text-stone-100">{item.pub}</span>
                         </div>
-                        <div className="mt-2 text-sm text-white/70">{item.entries} scorecard{item.entries === 1 ? '' : 's'} submitted</div>
+                        <div className="mt-1 text-sm text-stone-400">{item.entries} scorecard{item.entries === 1 ? "" : "s"}</div>
                       </div>
                       <div className="text-right">
-                        <div className="text-3xl font-bold">{formatScore(item.overall)}</div>
-                        <div className="text-xs text-white/70">overall</div>
+                        <div className="text-2xl font-black text-amber-100">{formatScore(item.overall)}</div>
+                        <div className="text-xs text-stone-400">overall</div>
                       </div>
                     </div>
-                    <div className="mt-4 grid grid-cols-2 gap-3">
-                      <div className="rounded-2xl bg-white/10 p-3"><div className="text-xs text-white/70">The Pint</div><div className="mt-1 text-lg font-semibold">{formatScore(item.pint)}</div></div>
-                      <div className="rounded-2xl bg-white/10 p-3"><div className="text-xs text-white/70">The Pub</div><div className="mt-1 text-lg font-semibold">{formatScore(item.pubScore)}</div></div>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </Card>
-
-            <Card className="p-6">
-              <h2 className="text-xl font-semibold">Judge progress</h2>
-              <div className="mt-4 space-y-3">
-                {judgeProgress.map((item) => (
-                  <div key={item.judge} className="flex items-center justify-between rounded-2xl bg-slate-50 p-3 ring-1 ring-slate-200">
-                    <div>
-                      <div className="font-medium">{item.judge}</div>
-                      <div className="text-sm text-slate-500">{item.completed} of {pubs.length} pubs scored</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-semibold">{formatScore(item.avg)}</div>
-                      <div className="text-xs text-slate-500">avg given</div>
+                    <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
+                      <div className="rounded-xl bg-white/5 px-3 py-2 text-stone-300">Pint: <span className="font-semibold text-amber-100">{formatScore(item.pint)}</span></div>
+                      <div className="rounded-xl bg-white/5 px-3 py-2 text-stone-300">Pub: <span className="font-semibold text-amber-100">{formatScore(item.pubScore)}</span></div>
                     </div>
                   </div>
                 ))}
               </div>
-            </Card>
-
-            <Card className="p-6">
-              <h2 className="text-lg font-semibold">Actions</h2>
-              <div className="mt-4 flex flex-wrap gap-3">
-                <Button variant="outline" onClick={resetScores}>Reset scores</Button>
-                <Button variant="outline" onClick={exportResults}>Export results</Button>
-              </div>
-            </Card>
+            </section>
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }
