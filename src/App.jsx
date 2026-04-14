@@ -11,8 +11,7 @@ import {
   Castle,
   Copy,
   Crown,
-  Sparkles,
-  Scroll,
+  Coins,
 } from "lucide-react";
 
 const SUPABASE_URL = "https://zsmjicjsyowpnwbpbyvu.supabase.co";
@@ -24,9 +23,8 @@ const hasSupabaseConfig =
   !SUPABASE_ANON_KEY.includes("YOUR_SUPABASE");
 const supabase = hasSupabaseConfig ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
-const STORAGE_KEY = "guinness-crusade-v5";
+const STORAGE_KEY = "guinness-crusade-v6";
 const DEFAULT_PUBS = ["Allen's", "Noonan's", "McVeigh's", "P.J. O'Brien"];
-const DEFAULT_PLAYERS = [];
 
 const setupSql = `create table if not exists public.bar_crawl_settings (
   id int primary key,
@@ -96,6 +94,13 @@ const QUALITATIVE = {
     { label: "Swift Stewardship", score: 4 },
     { label: "Knightly Service", score: 5 },
   ],
+  price: [
+    { label: "King's Ransom", score: 1 },
+    { label: "Heavy Tribute", score: 2 },
+    { label: "Fair Levy", score: 3 },
+    { label: "Worthy Coin", score: 4 },
+    { label: "Crusader's Bargain", score: 5 },
+  ],
   pagansMoors: [
     { label: "Infidel Stronghold", score: 1 },
     { label: "Heavy Resistance", score: 2 },
@@ -116,15 +121,16 @@ const CATEGORIES = {
     { key: "vibe", title: "Vibe", icon: ScrollText },
     { key: "irishAuthenticity", title: "Irish Authenticity", icon: Shield },
     { key: "service", title: "Service", icon: Users },
+    { key: "price", title: "Price", icon: Coins },
     { key: "pagansMoors", title: "Pagans / Moors", icon: Swords },
   ],
 };
 
 const PUB_BRANDING = {
-  "Allen's": { wordmark: "ALLEN'S", palette: "from-stone-950 via-neutral-900 to-amber-950" },
-  "Noonan's": { wordmark: "NOONAN'S", palette: "from-zinc-950 via-black to-red-950" },
-  "McVeigh's": { wordmark: "McVEIGH'S", palette: "from-neutral-950 via-slate-900 to-emerald-950" },
-  "P.J. O'Brien": { wordmark: "P.J. O'BRIEN", palette: "from-slate-950 via-blue-950 to-amber-950" },
+  "Allen's": { wordmark: "ALLEN'S" },
+  "Noonan's": { wordmark: "NOONAN'S" },
+  "McVeigh's": { wordmark: "McVEIGH'S" },
+  "P.J. O'Brien": { wordmark: "P.J. O'BRIEN" },
 };
 
 function average(values) {
@@ -153,10 +159,10 @@ function CrusadeButton({ active, onClick, children }) {
   return (
     <button
       onClick={onClick}
-      className={`rounded-2xl border px-4 py-3 text-sm font-semibold transition ${
+      className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
         active
-          ? "border-amber-300 bg-amber-300 text-black shadow-lg shadow-amber-400/20"
-          : "border-amber-100/10 bg-black/20 text-stone-200"
+          ? "border-[#8f5b26] bg-[#8f5b26] text-[#f6e1bb]"
+          : "border-[#8f5b26]/40 bg-[#f2dfba]/70 text-[#5c3412]"
       }`}
     >
       {children}
@@ -170,8 +176,8 @@ function OptionPill({ active, onClick, children }) {
       onClick={onClick}
       className={`w-full rounded-2xl border px-3 py-3 text-left text-sm leading-tight transition ${
         active
-          ? "border-amber-300 bg-amber-200 text-black shadow-lg shadow-amber-500/20"
-          : "border-amber-100/10 bg-black/15 text-stone-100"
+          ? "border-[#8f5b26] bg-[#8f5b26] text-[#f8e8c8] shadow-lg"
+          : "border-[#9a6b3c]/30 bg-[#f7e7c9]/75 text-[#4e2b12]"
       }`}
     >
       {children}
@@ -179,16 +185,15 @@ function OptionPill({ active, onClick, children }) {
   );
 }
 
-function SelectBox({ value, onChange, options, placeholder }) {
+function SelectBox({ value, onChange, options }) {
   return (
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="w-full rounded-2xl border border-amber-100/10 bg-black/20 px-4 py-3 text-base text-stone-100 outline-none"
+      className="w-full rounded-2xl border border-[#9a6b3c]/35 bg-[#f8e6c5]/80 px-4 py-3 text-base text-[#4c2b14] outline-none"
     >
-      {!value && <option value="">{placeholder}</option>}
       {options.map((option) => (
-        <option key={option} value={option} className="bg-stone-950 text-stone-100">
+        <option key={option} value={option}>
           {option}
         </option>
       ))}
@@ -196,9 +201,9 @@ function SelectBox({ value, onChange, options, placeholder }) {
   );
 }
 
-function SectionFrame({ children, className = "" }) {
+function ScrollSection({ children, className = "" }) {
   return (
-    <section className={`rounded-[28px] border border-amber-100/10 bg-[linear-gradient(180deg,rgba(255,248,220,0.08),rgba(0,0,0,0.18))] p-4 shadow-lg shadow-black/20 ${className}`}>
+    <section className={`rounded-[24px] border border-[#9a6b3c]/35 bg-[linear-gradient(180deg,rgba(248,228,193,0.92),rgba(235,201,148,0.88))] p-4 shadow-[0_10px_25px_rgba(0,0,0,0.18)] ${className}`}>
       {children}
     </section>
   );
@@ -206,11 +211,9 @@ function SectionFrame({ children, className = "" }) {
 
 export default function GuinnessCrusadeApp() {
   const [pubs, setPubs] = useState(DEFAULT_PUBS);
-  const [players, setPlayers] = useState(DEFAULT_PLAYERS);
   const [selectedPub, setSelectedPub] = useState(DEFAULT_PUBS[0]);
-  const [selectedPlayer, setSelectedPlayer] = useState("");
+  const [crusaderName, setCrusaderName] = useState("");
   const [selectedGroup, setSelectedGroup] = useState("pint");
-  const [newCrusader, setNewCrusader] = useState("");
   const [scores, setScores] = useState({});
   const [backendMode, setBackendMode] = useState(hasSupabaseConfig ? "supabase" : "local");
   const [syncStatus, setSyncStatus] = useState(hasSupabaseConfig ? "Connecting…" : "Local only");
@@ -225,9 +228,8 @@ export default function GuinnessCrusadeApp() {
     try {
       const parsed = JSON.parse(raw);
       if (parsed.pubs?.length) setPubs(parsed.pubs);
-      if (parsed.players?.length) setPlayers(parsed.players);
       if (parsed.selectedPub) setSelectedPub(parsed.selectedPub);
-      if (parsed.selectedPlayer) setSelectedPlayer(parsed.selectedPlayer);
+      if (parsed.crusaderName) setCrusaderName(parsed.crusaderName);
       if (parsed.scores) setScores(parsed.scores);
     } finally {
       setHydrated(true);
@@ -238,44 +240,20 @@ export default function GuinnessCrusadeApp() {
     if (!hydrated) return;
     localStorage.setItem(
       STORAGE_KEY,
-      JSON.stringify({ pubs, players, selectedPub, selectedPlayer, scores })
+      JSON.stringify({ pubs, selectedPub, crusaderName, scores })
     );
-  }, [hydrated, pubs, players, selectedPub, selectedPlayer, scores]);
-
-  useEffect(() => {
-    if (!players.length) {
-      setSelectedPlayer("");
-    } else if (!players.includes(selectedPlayer)) {
-      setSelectedPlayer(players[0]);
-    }
-  }, [players, selectedPlayer]);
+  }, [hydrated, pubs, selectedPub, crusaderName, scores]);
 
   useEffect(() => {
     if (!supabase || !hydrated || backendMode !== "supabase") return;
     let scoreChannel;
-    let settingsChannel;
-
     const init = async () => {
-      setSyncStatus("Loading shared data…");
-      const { data: settingsRow, error: settingsError } = await supabase
-        .from("bar_crawl_settings")
-        .select("*")
-        .eq("id", 1)
-        .maybeSingle();
-
-      if (settingsError) {
+      setSyncStatus("Loading campaign…");
+      const { data: scoreRows, error } = await supabase.from("bar_crawl_scores").select("pub, judge, scores");
+      if (error) {
         setSyncStatus("Run setup SQL first");
         return;
       }
-
-      if (!settingsRow) {
-        await supabase.from("bar_crawl_settings").upsert({ id: 1, pubs: DEFAULT_PUBS, players: DEFAULT_PLAYERS });
-      } else {
-        if (Array.isArray(settingsRow.pubs) && settingsRow.pubs.length) setPubs(settingsRow.pubs);
-        if (Array.isArray(settingsRow.players)) setPlayers(settingsRow.players);
-      }
-
-      const { data: scoreRows } = await supabase.from("bar_crawl_scores").select("pub, judge, scores");
       const incoming = {};
       (scoreRows || []).forEach((row) => {
         incoming[`${row.pub}__${row.judge}`] = row.scores || {};
@@ -291,50 +269,25 @@ export default function GuinnessCrusadeApp() {
           setScores((prev) => ({ ...prev, [`${row.pub}__${row.judge}`]: row.scores || {} }));
         })
         .subscribe();
-
-      settingsChannel = supabase
-        .channel("gc-settings")
-        .on("postgres_changes", { event: "*", schema: "public", table: "bar_crawl_settings" }, (payload) => {
-          const row = payload.new;
-          if (!row) return;
-          if (Array.isArray(row.pubs) && row.pubs.length) setPubs(row.pubs);
-          if (Array.isArray(row.players)) setPlayers(row.players);
-        })
-        .subscribe();
     };
-
     init();
     return () => {
       if (scoreChannel) supabase.removeChannel(scoreChannel);
-      if (settingsChannel) supabase.removeChannel(settingsChannel);
     };
   }, [backendMode, hydrated]);
 
-  useEffect(() => {
-    if (!supabase || !hydrated || backendMode !== "supabase") return;
-    supabase.from("bar_crawl_settings").upsert({ id: 1, pubs, players });
-  }, [backendMode, hydrated, pubs, players]);
-
-  const addCrusader = async () => {
-    const name = newCrusader.trim();
-    if (!name || players.includes(name)) return;
-    const nextPlayers = [...players, name];
-    setPlayers(nextPlayers);
-    setSelectedPlayer(name);
-    setNewCrusader("");
-    if (supabase && backendMode === "supabase") {
-      await supabase.from("bar_crawl_settings").upsert({ id: 1, pubs, players: nextPlayers });
-    }
-  };
-
-  const currentKey = `${selectedPub}__${selectedPlayer}`;
+  const safeJudge = crusaderName.trim();
+  const currentKey = `${selectedPub}__${safeJudge}`;
   const currentEntry = scores[currentKey] || {};
   const activeCategories = CATEGORIES[selectedGroup];
 
   const leaderboard = useMemo(() => {
     return pubs
       .map((pub) => {
-        const entries = players.map((player) => scores[`${pub}__${player}`]).filter(Boolean);
+        const entries = Object.entries(scores)
+          .filter(([key]) => key.startsWith(`${pub}__`))
+          .map(([, entry]) => entry)
+          .filter(Boolean);
         return {
           pub,
           entries: entries.length,
@@ -348,14 +301,14 @@ export default function GuinnessCrusadeApp() {
         };
       })
       .sort((a, b) => b.overall - a.overall);
-  }, [pubs, players, scores]);
+  }, [pubs, scores]);
 
   const updateScore = async (field, score) => {
-    if (!selectedPlayer) return;
+    if (!safeJudge) return;
     const nextEntry = { ...currentEntry, [field]: score };
     setScores((prev) => ({ ...prev, [currentKey]: nextEntry }));
     if (supabase && backendMode === "supabase") {
-      await supabase.from("bar_crawl_scores").upsert({ pub: selectedPub, judge: selectedPlayer, scores: nextEntry });
+      await supabase.from("bar_crawl_scores").upsert({ pub: selectedPub, judge: safeJudge, scores: nextEntry });
     }
   };
 
@@ -365,106 +318,74 @@ export default function GuinnessCrusadeApp() {
     setTimeout(() => setSyncStatus(backendMode === "supabase" ? "Live" : "Local only"), 1200);
   };
 
-  const heroBrand = PUB_BRANDING[selectedPub] || {
-    wordmark: selectedPub.toUpperCase(),
-    palette: "from-neutral-950 via-stone-900 to-amber-950",
-  };
+  const heroBrand = PUB_BRANDING[selectedPub] || { wordmark: selectedPub.toUpperCase() };
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(245,158,11,0.22),_transparent_28%),linear-gradient(180deg,#1a140d_0%,#0b0908_40%,#160f0a_100%)] text-stone-100">
-      <div className="mx-auto max-w-md px-3 pb-10 pt-4">
-        <div className="overflow-hidden rounded-[32px] border border-amber-200/15 bg-black/35 shadow-2xl shadow-black/50 backdrop-blur">
-          <div className={`relative bg-gradient-to-br ${heroBrand.palette} px-5 pb-6 pt-5`}>
-            <div className="absolute inset-x-0 bottom-0 h-px bg-amber-200/20" />
-            <div className="absolute left-4 top-4 text-amber-200/15"><Sparkles className="h-8 w-8" /></div>
-            <div className="absolute right-4 top-4 text-amber-200/15"><Crown className="h-8 w-8" /></div>
+    <div className="min-h-screen bg-[linear-gradient(180deg,#5a3418_0%,#2c180b_22%,#1a1008_100%)] px-2 py-3 text-[#4d2d15]">
+      <div className="mx-auto max-w-md rounded-[34px] bg-[linear-gradient(180deg,#a86a32_0%,#6e431d_10%,#2d170b_16%,#2d170b_100%)] p-2 shadow-2xl shadow-black/40">
+        <div className="overflow-hidden rounded-[30px] bg-[linear-gradient(180deg,#f0d3a1_0%,#e6c18a_8%,#f5dfb8_20%,#f0d3a1_100%)]">
+          <div className="relative px-4 pb-5 pt-3">
+            <div className="absolute left-0 right-0 top-0 h-16 bg-[linear-gradient(180deg,#b97b3f_0%,#e7c98f_100%)] shadow-[0_10px_20px_rgba(0,0,0,0.22)]" />
+            <div className="absolute left-4 right-4 top-[52px] bottom-4 rounded-[26px] border-[3px] border-[#8b5a2a] bg-[radial-gradient(circle_at_top,#f8e7c5_0%,#efd3a2_55%,#ddb171_100%)]" />
+            <div className="absolute left-6 right-6 top-[64px] bottom-6 rounded-[22px] border-4 border-[#9a6b3c]" />
+            <div className="absolute left-8 right-8 top-[76px] bottom-8 rounded-[18px] border border-[#8d5f33]/60" />
+            <div className="absolute bottom-0 left-0 right-0 h-16 bg-[linear-gradient(180deg,#e7c98f_0%,#b97b3f_100%)] shadow-[0_-10px_20px_rgba(0,0,0,0.18)]" />
 
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <div className="text-[11px] uppercase tracking-[0.35em] text-amber-200/80">Toronto Crusade</div>
-                <h1 className="mt-2 text-3xl font-black leading-none text-amber-100">The Guinness Crusade</h1>
-                <p className="mt-2 text-sm text-stone-300">A modern scroll for noble pints, worthy halls, and hard-fought campaigns.</p>
-                <div className="mt-3 flex items-center gap-2 text-amber-100/75">
-                  <Swords className="h-4 w-4" />
-                  <span className="text-[11px] uppercase tracking-[0.22em]">Order of the Black Pint</span>
+            <div className="relative z-10 px-2 pt-2">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <div className="text-[11px] uppercase tracking-[0.35em] text-[#7c4a22]">Toronto Crusade</div>
+                  <h1 className="mt-2 text-3xl font-black leading-none text-[#3f210d]">The Guinness Crusade</h1>
+                  <p className="mt-2 text-sm text-[#704322]">An illuminated score scroll for noble pints and worthy halls.</p>
+                </div>
+                <div className="rounded-full border border-[#8f5b26]/35 bg-[#f7e5c3]/75 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#6a3f1d]">
+                  {backendMode === "supabase" ? syncStatus : "Local"}
                 </div>
               </div>
-              <div className="rounded-full border border-amber-200/25 bg-black/25 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-100">
-                {backendMode === "supabase" ? syncStatus : "Local"}
+
+              <div className="mt-4 flex items-center justify-center">
+                <img src="/logo.png" alt="The Guinness Crusade logo" className="w-36 max-w-full drop-shadow-[0_10px_16px_rgba(0,0,0,0.25)]" />
               </div>
-            </div>
 
-            <div className="mt-5 flex items-center justify-center">
-              <div className="relative">
-                <div className="absolute inset-0 rounded-full bg-amber-300/10 blur-2xl" />
-                <img src="/logo.png" alt="The Guinness Crusade logo" className="relative z-10 w-40 drop-shadow-2xl" />
+              <div className="mt-4 grid grid-cols-2 gap-3">
+                <CrusadeButton active={backendMode === "local"} onClick={() => setBackendMode("local")}>Local Keep</CrusadeButton>
+                <CrusadeButton active={backendMode === "supabase"} onClick={() => setBackendMode("supabase")}>Live Crusade</CrusadeButton>
               </div>
-            </div>
-
-            <div className="mt-5 grid grid-cols-3 gap-2 text-center text-[10px] uppercase tracking-[0.22em] text-stone-300">
-              <div className="rounded-2xl border border-white/10 bg-black/20 px-2 py-3">Pints</div>
-              <div className="rounded-2xl border border-white/10 bg-black/20 px-2 py-3">Honour</div>
-              <div className="rounded-2xl border border-white/10 bg-black/20 px-2 py-3">Victory</div>
-            </div>
-
-            <div className="mt-4 grid grid-cols-2 gap-3">
-              <CrusadeButton active={backendMode === "local"} onClick={() => setBackendMode("local")}>Local Keep</CrusadeButton>
-              <CrusadeButton active={backendMode === "supabase"} onClick={() => setBackendMode("supabase")}>Live Crusade</CrusadeButton>
             </div>
           </div>
 
-          <div className="space-y-5 bg-[linear-gradient(180deg,rgba(245,222,179,0.06),rgba(0,0,0,0))] px-4 py-5">
-            <SectionFrame>
-              <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-amber-100">
+          <div className="relative z-10 space-y-4 px-4 pb-8 pt-2">
+            <ScrollSection>
+              <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-[#6a3d18]">
                 <Shield className="h-4 w-4" /> Muster the crusade
               </div>
-
               <div className="grid gap-3">
                 <div>
-                  <label className="mb-2 block text-xs uppercase tracking-[0.22em] text-stone-400">Add crusader</label>
-                  <div className="flex gap-2">
-                    <input
-                      value={newCrusader}
-                      onChange={(e) => setNewCrusader(e.target.value)}
-                      placeholder="Enter your name"
-                      className="w-full rounded-2xl border border-amber-100/10 bg-black/20 px-4 py-3 text-base text-stone-100 outline-none placeholder:text-stone-500"
-                    />
-                    <button
-                      onClick={addCrusader}
-                      className="rounded-2xl border border-amber-300/20 bg-amber-300 px-4 py-3 text-sm font-bold text-black"
-                    >
-                      Add
-                    </button>
-                  </div>
+                  <label className="mb-2 block text-xs uppercase tracking-[0.22em] text-[#8a6038]">Crusader name</label>
+                  <input
+                    value={crusaderName}
+                    onChange={(e) => setCrusaderName(e.target.value)}
+                    placeholder="Enter your name"
+                    className="w-full rounded-2xl border border-[#9a6b3c]/35 bg-[#f8e6c5]/85 px-4 py-3 text-base text-[#4c2b14] outline-none placeholder:text-[#9a7551]"
+                  />
                 </div>
                 <div>
-                  <label className="mb-2 block text-xs uppercase tracking-[0.22em] text-stone-400">Pub</label>
-                  <SelectBox value={selectedPub} onChange={setSelectedPub} options={pubs} placeholder="Select pub" />
-                </div>
-                <div>
-                  <label className="mb-2 block text-xs uppercase tracking-[0.22em] text-stone-400">Crusader</label>
-                  {players.length ? (
-                    <SelectBox value={selectedPlayer} onChange={setSelectedPlayer} options={players} placeholder="Select crusader" />
-                  ) : (
-                    <div className="rounded-2xl border border-dashed border-amber-100/10 bg-black/20 px-4 py-3 text-sm text-stone-400">
-                      Add your crusader name above to begin scoring.
-                    </div>
-                  )}
+                  <label className="mb-2 block text-xs uppercase tracking-[0.22em] text-[#8a6038]">Pub</label>
+                  <SelectBox value={selectedPub} onChange={setSelectedPub} options={pubs} />
                 </div>
               </div>
-
-              <div className="mt-4 rounded-2xl border border-amber-200/10 bg-black/20 p-4 text-center">
-                <div className="text-[11px] uppercase tracking-[0.3em] text-amber-200/70">Current target</div>
-                <div className="mt-2 text-2xl font-black text-amber-100">{heroBrand.wordmark}</div>
+              <div className="mt-4 rounded-2xl border border-[#9a6b3c]/30 bg-[#f7e4c1]/70 p-4 text-center shadow-inner">
+                <div className="text-[11px] uppercase tracking-[0.3em] text-[#8d6032]">Current target</div>
+                <div className="mt-2 text-2xl font-black text-[#3f210d]">{heroBrand.wordmark}</div>
               </div>
-            </SectionFrame>
+            </ScrollSection>
 
-            <SectionFrame>
+            <ScrollSection>
               <div className="mb-3 flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2 text-sm font-semibold text-amber-100">
-                  <Scroll className="h-4 w-4" /> Score the siege
+                <div className="flex items-center gap-2 text-sm font-semibold text-[#6a3d18]">
+                  <ScrollText className="h-4 w-4" /> Score the siege
                 </div>
-                <div className="rounded-full border border-amber-300/15 bg-amber-300/5 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-amber-100">
+                <div className="rounded-full border border-[#9a6b3c]/25 bg-[#f7e4c1]/70 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-[#8a6038]">
                   Illuminated Scroll
                 </div>
               </div>
@@ -474,7 +395,13 @@ export default function GuinnessCrusadeApp() {
                 <CrusadeButton active={selectedGroup === "pub"} onClick={() => setSelectedGroup("pub")}>The Pub</CrusadeButton>
               </div>
 
-              <div className="relative space-y-4 before:pointer-events-none before:absolute before:-left-2 before:top-0 before:bottom-0 before:w-px before:bg-amber-200/10 after:pointer-events-none after:absolute after:-right-2 after:top-0 after:bottom-0 after:w-px after:bg-amber-200/10">
+              {!safeJudge && (
+                <div className="mb-4 rounded-2xl border border-dashed border-[#9a6b3c]/35 bg-[#f7e4c1]/60 px-4 py-3 text-sm text-[#7a5130]">
+                  Enter your crusader name above to begin scoring.
+                </div>
+              )}
+
+              <div className="space-y-4">
                 {activeCategories.map((category) => {
                   const Icon = category.icon;
                   const currentScore = Number(currentEntry?.[category.key] || 0);
@@ -483,14 +410,15 @@ export default function GuinnessCrusadeApp() {
                       key={category.key}
                       initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="rounded-3xl border border-amber-200/10 bg-[linear-gradient(180deg,rgba(255,248,220,0.09),rgba(0,0,0,0.24))] p-4 shadow-lg shadow-black/20"
+                      className="rounded-3xl border border-[#9a6b3c]/30 bg-[linear-gradient(180deg,rgba(248,230,197,0.9),rgba(239,208,158,0.82))] p-4 shadow-[0_10px_20px_rgba(88,49,20,0.12)]"
                     >
                       <div className="mb-3 flex items-center gap-2">
-                        <div className="h-px flex-1 bg-amber-200/10" />
-                        <div className="rounded-2xl border border-amber-300/20 bg-amber-300/10 p-2 text-amber-100"><Icon className="h-4 w-4" /></div>
-                        <div className="min-w-0 flex-1">
-                          <div className="font-semibold text-stone-100">{category.title}</div>
-                          <div className="text-sm text-stone-400">{scoreLabel(category.key, currentScore)}</div>
+                        <div className="rounded-2xl border border-[#9a6b3c]/30 bg-[#f7dfb2]/85 p-2 text-[#6a3d18]">
+                          <Icon className="h-4 w-4" />
+                        </div>
+                        <div>
+                          <div className="font-semibold text-[#4b2812]">{category.title}</div>
+                          <div className="text-sm text-[#7a5130]">{scoreLabel(category.key, currentScore)}</div>
                         </div>
                       </div>
                       <div className="grid grid-cols-1 gap-2">
@@ -507,63 +435,57 @@ export default function GuinnessCrusadeApp() {
                   );
                 })}
               </div>
-            </SectionFrame>
+            </ScrollSection>
 
             <div className="grid grid-cols-3 gap-3">
-              <SectionFrame className="p-3 text-center">
-                <div className="text-[11px] uppercase tracking-[0.25em] text-stone-400">Pint</div>
-                <div className="mt-2 text-2xl font-black text-amber-100">{formatScore(groupAverage(currentEntry, "pint"))}</div>
-              </SectionFrame>
-              <SectionFrame className="p-3 text-center">
-                <div className="text-[11px] uppercase tracking-[0.25em] text-stone-400">Pub</div>
-                <div className="mt-2 text-2xl font-black text-amber-100">{formatScore(groupAverage(currentEntry, "pub"))}</div>
-              </SectionFrame>
-              <SectionFrame className="p-3 text-center">
-                <div className="text-[11px] uppercase tracking-[0.25em] text-stone-400">Overall</div>
-                <div className="mt-2 text-2xl font-black text-amber-100">{formatScore(entryAverage(currentEntry, [...CATEGORIES.pint, ...CATEGORIES.pub].map((item) => item.key)))}</div>
-              </SectionFrame>
+              <ScrollSection className="p-3 text-center">
+                <div className="text-[11px] uppercase tracking-[0.25em] text-[#8a6038]">Pint</div>
+                <div className="mt-2 text-2xl font-black text-[#4b2812]">{formatScore(groupAverage(currentEntry, "pint"))}</div>
+              </ScrollSection>
+              <ScrollSection className="p-3 text-center">
+                <div className="text-[11px] uppercase tracking-[0.25em] text-[#8a6038]">Pub</div>
+                <div className="mt-2 text-2xl font-black text-[#4b2812]">{formatScore(groupAverage(currentEntry, "pub"))}</div>
+              </ScrollSection>
+              <ScrollSection className="p-3 text-center">
+                <div className="text-[11px] uppercase tracking-[0.25em] text-[#8a6038]">Overall</div>
+                <div className="mt-2 text-2xl font-black text-[#4b2812]">{formatScore(entryAverage(currentEntry, [...CATEGORIES.pint, ...CATEGORIES.pub].map((item) => item.key)))}</div>
+              </ScrollSection>
             </div>
 
-            <SectionFrame>
+            <ScrollSection>
               <div className="mb-3 flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2 text-sm font-semibold text-amber-100">
+                <div className="flex items-center gap-2 text-sm font-semibold text-[#6a3d18]">
                   <Trophy className="h-4 w-4" /> Leaderboard
                 </div>
-                <button onClick={copySetupSql} className="rounded-2xl border border-amber-100/10 bg-black/20 px-3 py-2 text-xs text-stone-300">
+                <button onClick={copySetupSql} className="rounded-2xl border border-[#9a6b3c]/35 bg-[#f7e4c1]/80 px-3 py-2 text-xs text-[#6f4321]">
                   <Copy className="mr-1 inline h-3 w-3" /> SQL
                 </button>
               </div>
 
-              <div className="mb-4 grid grid-cols-3 gap-2 text-center text-[10px] uppercase tracking-[0.22em] text-stone-400">
-                <div className="rounded-2xl border border-white/10 bg-black/20 px-2 py-2">Banner</div>
-                <div className="rounded-2xl border border-white/10 bg-black/20 px-2 py-2">Ale</div>
-                <div className="rounded-2xl border border-white/10 bg-black/20 px-2 py-2">Fortress</div>
-              </div>
-
               <div className="space-y-3">
                 {leaderboard.map((item, index) => (
-                  <div key={item.pub} className="rounded-2xl border border-amber-100/10 bg-black/20 p-3">
+                  <div key={item.pub} className="rounded-2xl border border-[#9a6b3c]/30 bg-[#f7e4c1]/70 p-3">
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="rounded-full bg-amber-300 px-2 py-1 text-xs font-bold text-black">#{index + 1}</span>
-                          <span className="font-semibold text-stone-100">{item.pub}</span>
+                          <span className="rounded-full bg-[#8f5b26] px-2 py-1 text-xs font-bold text-[#f7e4c1]">#{index + 1}</span>
+                          <span className="font-semibold text-[#4b2812]">{item.pub}</span>
                         </div>
-                        <div className="mt-1 text-sm text-stone-400">{item.entries} scorecard{item.entries === 1 ? "" : "s"}</div>
+                        <div className="mt-1 text-sm text-[#7a5130]">{item.entries} scorecard{item.entries === 1 ? "" : "s"}</div>
                       </div>
                       <div className="text-right">
-                        <div className="text-2xl font-black text-amber-100">{formatScore(item.overall)}</div>
-                        <div className="text-xs text-stone-400">overall</div>
+                        <div className="text-2xl font-black text-[#4b2812]">{formatScore(item.overall)}</div>
+                        <div className="text-xs text-[#8a6038]">overall</div>
                       </div>
                     </div>
                     <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
-                      <div className="rounded-xl bg-white/5 px-3 py-2 text-stone-300">Pint: <span className="font-semibold text-amber-100">{formatScore(item.pint)}</span></div>
-                      <div className="rounded-xl bg-white/5 px-3 py-2 text-stone-300">Pub: <span className="font-semibold text-amber-100">{formatScore(item.pubScore)}</span></div>
+                      <div className="rounded-xl bg-[#efd7ab]/70 px-3 py-2 text-[#6a4020]">Pint: <span className="font-semibold text-[#4b2812]">{formatScore(item.pint)}</span></div>
+                      <div className="rounded-xl bg-[#efd7ab]/70 px-3 py-2 text-[#6a4020]">Pub: <span className="font-semibold text-[#4b2812]">{formatScore(item.pubScore)}</span></div>
                     </div>
                   </div>
                 ))}
               </div>
-            </SectionFrame>
+            </ScrollSection>
           </div>
         </div>
       </div>
