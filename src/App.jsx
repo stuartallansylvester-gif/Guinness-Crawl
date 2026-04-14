@@ -14,7 +14,6 @@ import {
   Coins,
 } from "lucide-react";
 
-/* ─── Fonts ─────────────────────────────────────────────────────────────── */
 const FontImport = () => (
   <style>{`
     @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cinzel+Decorative:wght@400;700&family=IM+Fell+English:ital@0;1&display=swap');
@@ -59,7 +58,6 @@ const FontImport = () => (
   `}</style>
 );
 
-/* ─── Supabase ───────────────────────────────────────────────────────────── */
 const SUPABASE_URL = "https://zsmjicjsyowpnwbpbyvu.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_0o1l0knnxpTOg7aHcSKqfQ_6gkb7bck";
 const hasSupabaseConfig =
@@ -90,7 +88,6 @@ create table if not exists public.bar_crawl_scores (
 alter publication supabase_realtime add table public.bar_crawl_settings;
 alter publication supabase_realtime add table public.bar_crawl_scores;`;
 
-/* ─── Scoring Data ───────────────────────────────────────────────────────── */
 const QUALITATIVE = {
   pour: [
     { label: "Botched Pour", score: 1 },
@@ -180,7 +177,6 @@ const PUB_BRANDING = {
   "P.J. O'Brien": { wordmark: "P.J. O'BRIEN" },
 };
 
-/* ─── Helpers ────────────────────────────────────────────────────────────── */
 function average(values) {
   if (!values.length) return 0;
   return values.reduce((sum, v) => sum + v, 0) / values.length;
@@ -199,7 +195,6 @@ function scoreLabel(field, score) {
   return QUALITATIVE[field].find((i) => i.score === score)?.label || "Unrated";
 }
 
-/* ─── Scroll-themed primitives ───────────────────────────────────────────── */
 function ScrollToggle({ active, onClick, children }) {
   return (
     <button
@@ -285,7 +280,6 @@ function SectionHeader({ icon: Icon, children, right }) {
   );
 }
 
-/* ─── Main App ───────────────────────────────────────────────────────────── */
 export default function GuinnessCrusadeApp() {
   const [pubs, setPubs] = useState(DEFAULT_PUBS);
   const [selectedPub, setSelectedPub] = useState(DEFAULT_PUBS[0]);
@@ -392,7 +386,7 @@ export default function GuinnessCrusadeApp() {
         <div style={{ maxWidth: "480px", margin: "0 auto", position: "relative" }}>
           <div style={{
             position: "relative",
-            backgroundImage: "url('/scroll.png')",
+            backgroundImage: "url('/scroll.jpg')",
             backgroundSize: "100% 100%",
             backgroundRepeat: "no-repeat",
             paddingTop: "13%",
@@ -458,7 +452,7 @@ export default function GuinnessCrusadeApp() {
                         background: "rgba(252,238,205,0.8)",
                         color: "#3e1f08",
                         fontSize: "14px",
-                        fontFamily: "'IM Fell English', Georgia, serif",
+                        fontFamily: "'Cinzel', Georgia, serif",
                         outline: "none",
                         borderRadius: "3px",
                         boxSizing: "border-box",
@@ -479,7 +473,7 @@ export default function GuinnessCrusadeApp() {
                         background: "rgba(252,238,205,0.8)",
                         color: "#3e1f08",
                         fontSize: "14px",
-                        fontFamily: "'IM Fell English', Georgia, serif",
+                        fontFamily: "'Cinzel', Georgia, serif",
                         outline: "none",
                         borderRadius: "3px",
                         appearance: "none",
