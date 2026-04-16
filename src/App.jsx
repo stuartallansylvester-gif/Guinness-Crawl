@@ -1,9 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { createClient } from "@supabase/supabase-js";
-import { Shield, Trophy, Flame, ScrollText, Users, Swords, Castle, Copy, Crown, Coins, Beer } from "lucide-react";
+import { Shield, Trophy, Flame, ScrollText, Users, Swords, Castle, Crown, Coins, Beer } from "lucide-react";
 
-/* ── Fonts & Global CSS ───────────────────────────────────────────────────── */
 const GlobalStyles = () => (
   <style>{`
     @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cinzel+Decorative:wght@400;700;900&family=IM+Fell+English:ital@0;1&display=swap');
@@ -26,27 +25,23 @@ const GlobalStyles = () => (
       margin-left: -20px;
       border-radius: 27px;
       background: linear-gradient(180deg,
-        #0e0604 0%,   #2e1408 6%,   #6a3418 15%,
-        #b06828 28%,  #d89848 40%,  #f0b858 48%,
-        #ffd070 50%,  #f0b858 52%,  #d89848 60%,
-        #b06828 72%,  #6a3418 85%,  #2e1408 94%,
+        #0e0604 0%, #2e1408 6%, #6a3418 15%,
+        #b06828 28%, #d89848 40%, #f0b858 48%,
+        #ffd070 50%, #f0b858 52%, #d89848 60%,
+        #b06828 72%, #6a3418 85%, #2e1408 94%,
         #0e0604 100%
       );
       box-shadow:
-        0 10px 32px rgba(0,0,0,0.85),
-        0 3px 8px rgba(0,0,0,0.6),
-        inset 0 1px 3px rgba(255,220,140,0.25),
-        inset 0 -1px 2px rgba(0,0,0,0.4);
+        0 10px 32px rgba(0,0,0,0.85), 0 3px 8px rgba(0,0,0,0.6),
+        inset 0 1px 3px rgba(255,220,140,0.25), inset 0 -1px 2px rgba(0,0,0,0.4);
       z-index: 4;
     }
-
     .scroll-rod::before, .scroll-rod::after {
       content: '';
       position: absolute;
       top: 50%;
       transform: translateY(-50%);
-      width: 26px;
-      height: 46px;
+      width: 26px; height: 46px;
       border-radius: 50%;
       background: radial-gradient(ellipse 55% 50% at 38% 45%, #e8b050, #7a3808 80%);
       box-shadow: 3px 0 12px rgba(0,0,0,0.7);
@@ -55,18 +50,16 @@ const GlobalStyles = () => (
     .scroll-rod::after  { right: -10px; box-shadow: -3px 0 12px rgba(0,0,0,0.7); }
 
     .parchment-body {
-      position: relative;
-      z-index: 2;
-      margin-top: -18px;
-      margin-bottom: -18px;
+      position: relative; z-index: 2;
+      margin-top: -18px; margin-bottom: -18px;
       padding: 34px 28px 34px;
       background:
-        radial-gradient(ellipse at 8%  12%,  rgba(155, 95, 18, 0.38) 0%, transparent 42%),
-        radial-gradient(ellipse at 92% 10%,  rgba(140, 82, 12, 0.28) 0%, transparent 36%),
-        radial-gradient(ellipse at 15% 55%,  rgba(120, 72, 10, 0.18) 0%, transparent 30%),
-        radial-gradient(ellipse at 88% 60%,  rgba(130, 78, 12, 0.22) 0%, transparent 34%),
-        radial-gradient(ellipse at 50% 92%,  rgba(145, 88, 15, 0.32) 0%, transparent 40%),
-        radial-gradient(ellipse at 50% 50%,  rgba(255,240,195,0.12) 0%, transparent 60%),
+        radial-gradient(ellipse at 8%  12%, rgba(155,95,18,0.38) 0%, transparent 42%),
+        radial-gradient(ellipse at 92% 10%, rgba(140,82,12,0.28) 0%, transparent 36%),
+        radial-gradient(ellipse at 15% 55%, rgba(120,72,10,0.18) 0%, transparent 30%),
+        radial-gradient(ellipse at 88% 60%, rgba(130,78,12,0.22) 0%, transparent 34%),
+        radial-gradient(ellipse at 50% 92%, rgba(145,88,15,0.32) 0%, transparent 40%),
+        radial-gradient(ellipse at 50% 50%, rgba(255,240,195,0.12) 0%, transparent 60%),
         linear-gradient(180deg,
           #c89838 0%, #ddb048 5%, #edcc78 12%,
           #f5dfa0 22%, #faf0cc 38%, #f8eac4 50%,
@@ -74,19 +67,12 @@ const GlobalStyles = () => (
           #c89838 100%
         );
       box-shadow:
-        inset 14px 0 28px rgba(70,35,5,0.32),
-        inset -14px 0 28px rgba(70,35,5,0.32),
-        inset 0 8px 16px rgba(50,25,3,0.22),
-        inset 0 -8px 16px rgba(50,25,3,0.22);
+        inset 14px 0 28px rgba(70,35,5,0.32), inset -14px 0 28px rgba(70,35,5,0.32),
+        inset 0 8px 16px rgba(50,25,3,0.22), inset 0 -8px 16px rgba(50,25,3,0.22);
     }
-
     .parchment-body::before, .parchment-body::after {
-      content: '';
-      position: absolute;
-      top: 0; bottom: 0;
-      width: 18px;
-      pointer-events: none;
-      z-index: 3;
+      content: ''; position: absolute; top: 0; bottom: 0;
+      width: 18px; pointer-events: none; z-index: 3;
     }
     .parchment-body::before { left: 0; background: linear-gradient(90deg, rgba(60,28,4,0.35), transparent); }
     .parchment-body::after  { right: 0; background: linear-gradient(270deg, rgba(60,28,4,0.35), transparent); }
@@ -97,52 +83,36 @@ const GlobalStyles = () => (
       position: relative;
     }
     .parchment-frame::before {
-      content: '';
-      position: absolute;
-      inset: 5px;
-      border: 1px solid rgba(90,50,10,0.28);
-      pointer-events: none;
+      content: ''; position: absolute; inset: 5px;
+      border: 1px solid rgba(90,50,10,0.28); pointer-events: none;
     }
 
     .corner { position: absolute; width: 28px; height: 28px; }
     .corner svg { width: 100%; height: 100%; }
-    .corner-tl { top: -1px;    left: -1px;  }
-    .corner-tr { top: -1px;    right: -1px; transform: scaleX(-1); }
-    .corner-bl { bottom: -1px; left: -1px;  transform: scaleY(-1); }
+    .corner-tl { top: -1px; left: -1px; }
+    .corner-tr { top: -1px; right: -1px; transform: scaleX(-1); }
+    .corner-bl { bottom: -1px; left: -1px; transform: scaleY(-1); }
     .corner-br { bottom: -1px; right: -1px; transform: scale(-1); }
 
     .crusade-logo {
-      display: block;
-      width: 200px;
-      max-width: 80%;
-      margin: 0 auto 6px;
-      mix-blend-mode: multiply;
-      filter: drop-shadow(0 3px 8px rgba(60,28,4,0.3));
+      display: block; width: 200px; max-width: 80%; margin: 0 auto 6px;
+      mix-blend-mode: multiply; filter: drop-shadow(0 3px 8px rgba(60,28,4,0.3));
     }
 
     .section-card {
       background: linear-gradient(180deg, rgba(255,243,205,0.72) 0%, rgba(238,214,158,0.68) 100%);
-      border: 1.5px solid rgba(100,58,12,0.42);
-      border-radius: 3px;
-      padding: 14px;
+      border: 1.5px solid rgba(100,58,12,0.42); border-radius: 3px; padding: 14px;
       position: relative;
       box-shadow: 0 3px 10px rgba(50,24,3,0.14), inset 0 1px 2px rgba(255,235,175,0.5);
     }
 
     .parchment-input, .parchment-select {
-      width: 100%;
-      padding: 10px 14px;
+      width: 100%; padding: 10px 14px;
       border: 1.5px solid rgba(80,40,8,0.55);
-      background: rgba(255,243,210,0.92);
-      color: #180a02;
-      font-size: 14px;
-      font-family: 'Cinzel', Georgia, serif;
-      font-weight: 600;
-      outline: none;
-      border-radius: 2px;
-      letter-spacing: 0.04em;
-      box-shadow: inset 0 2px 4px rgba(60,28,4,0.12);
-      transition: border-color 0.2s;
+      background: rgba(255,243,210,0.92); color: #180a02;
+      font-size: 14px; font-family: 'Cinzel', Georgia, serif; font-weight: 600;
+      outline: none; border-radius: 2px; letter-spacing: 0.04em;
+      box-shadow: inset 0 2px 4px rgba(60,28,4,0.12); transition: border-color 0.2s;
     }
     .parchment-input:focus, .parchment-select:focus {
       border-color: rgba(80,40,8,0.85);
@@ -152,21 +122,13 @@ const GlobalStyles = () => (
     .parchment-select option { background: #f5dfa0; color: #180a02; }
 
     .parchment-number {
-      width: 100%;
-      padding: 10px 14px;
+      width: 100%; padding: 10px 14px;
       border: 1.5px solid rgba(80,40,8,0.55);
-      background: rgba(255,243,210,0.92);
-      color: #180a02;
-      font-size: 22px;
-      font-family: 'Cinzel', Georgia, serif;
-      font-weight: 900;
-      outline: none;
-      border-radius: 2px;
-      letter-spacing: 0.04em;
-      box-shadow: inset 0 2px 4px rgba(60,28,4,0.12);
-      transition: border-color 0.2s;
-      text-align: center;
-      -moz-appearance: textfield;
+      background: rgba(255,243,210,0.92); color: #180a02;
+      font-size: 28px; font-family: 'Cinzel', Georgia, serif; font-weight: 900;
+      outline: none; border-radius: 2px; letter-spacing: 0.04em;
+      box-shadow: inset 0 2px 4px rgba(60,28,4,0.12); transition: border-color 0.2s;
+      text-align: center; -moz-appearance: textfield;
     }
     .parchment-number::-webkit-outer-spin-button,
     .parchment-number::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
@@ -176,86 +138,57 @@ const GlobalStyles = () => (
     }
 
     .crusade-btn {
-      font-family: 'Cinzel', Georgia, serif;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      border-radius: 2px;
-      padding: 9px 14px;
-      cursor: pointer;
-      transition: all 0.18s ease;
+      font-family: 'Cinzel', Georgia, serif; font-size: 11px; font-weight: 700;
+      letter-spacing: 0.14em; text-transform: uppercase; border-radius: 2px;
+      padding: 9px 14px; cursor: pointer; transition: all 0.18s ease;
     }
     .crusade-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
     .crusade-btn-active {
       background: linear-gradient(180deg, #8a4e1c 0%, #5c3010 100%);
-      border: 2px solid #3e1e08;
-      color: #f8e8c0;
+      border: 2px solid #3e1e08; color: #f8e8c0;
       box-shadow: 0 4px 14px rgba(30,12,2,0.45), inset 0 1px 0 rgba(255,210,130,0.2);
     }
     .crusade-btn-inactive {
       background: linear-gradient(180deg, rgba(255,240,195,0.85) 0%, rgba(230,200,140,0.8) 100%);
-      border: 1.5px solid rgba(90,48,10,0.45);
-      color: #3a1a06;
+      border: 1.5px solid rgba(90,48,10,0.45); color: #3a1a06;
       box-shadow: 0 2px 6px rgba(30,12,2,0.15);
     }
 
     .option-pill {
-      width: 100%;
-      padding: 9px 12px;
-      text-align: left;
-      font-family: 'IM Fell English', Georgia, serif;
-      font-size: 13px;
-      border-radius: 2px;
-      cursor: pointer;
-      transition: all 0.15s ease;
+      width: 100%; padding: 9px 12px; text-align: left;
+      font-family: 'IM Fell English', Georgia, serif; font-size: 13px;
+      border-radius: 2px; cursor: pointer; transition: all 0.15s ease;
     }
     .option-pill-active {
       background: linear-gradient(90deg, #6e3a10 0%, #9a5820 100%);
-      border: 1.5px solid #4a2208;
-      color: #f8e8c0;
+      border: 1.5px solid #4a2208; color: #f8e8c0;
       box-shadow: 0 3px 10px rgba(30,10,2,0.35);
     }
     .option-pill-inactive {
       background: rgba(255,240,195,0.55);
-      border: 1px solid rgba(90,48,10,0.32);
-      color: #1e0e04;
+      border: 1px solid rgba(90,48,10,0.32); color: #1e0e04;
     }
     .option-pill-inactive:hover { background: rgba(245,225,165,0.75); }
 
     .lb-row {
       border: 1px solid rgba(100,58,12,0.38);
-      background: rgba(248,230,180,0.6);
-      border-radius: 3px;
-      padding: 12px;
+      background: rgba(248,230,180,0.6); border-radius: 3px; padding: 12px;
     }
 
     .ornament {
-      text-align: center;
-      font-family: 'Cinzel', serif;
-      color: rgba(90,50,10,0.6);
-      font-size: 13px;
-      letter-spacing: 10px;
-      padding: 2px 0;
+      text-align: center; font-family: 'Cinzel', serif;
+      color: rgba(90,50,10,0.6); font-size: 13px; letter-spacing: 10px; padding: 2px 0;
     }
 
     .stepper-btn {
-      width: 42px;
-      height: 42px;
-      border-radius: 2px;
-      font-family: 'Cinzel', Georgia, serif;
-      font-size: 22px;
-      font-weight: 700;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      width: 100%; padding: 8px 0;
+      border-radius: 2px; font-family: 'Cinzel', Georgia, serif;
+      font-size: 20px; font-weight: 700; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
       transition: all 0.15s ease;
       background: linear-gradient(180deg, #8a4e1c 0%, #5c3010 100%);
-      border: 2px solid #3e1e08;
-      color: #f8e8c0;
+      border: 2px solid #3e1e08; color: #f8e8c0;
       box-shadow: 0 3px 10px rgba(30,12,2,0.35);
-      flex-shrink: 0;
     }
     .stepper-btn:hover { filter: brightness(1.15); transform: translateY(-1px); }
     .stepper-btn:active { transform: translateY(0); filter: brightness(0.95); }
@@ -273,7 +206,6 @@ const CornerOrnament = () => (
   </svg>
 );
 
-/* ── Supabase ─────────────────────────────────────────────────────────────── */
 const SUPABASE_URL = "https://zsmjicjsyowpnwbpbyvu.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_0o1l0knnxpTOg7aHcSKqfQ_6gkb7bck";
 const hasSupabaseConfig =
@@ -285,7 +217,6 @@ const STORAGE_KEY = "guinness-crusade-v7";
 const GUINNESS_PUB_KEY = "__guinness__";
 const DEFAULT_PUBS = ["Allen's", "Noonan's", "McVeigh's", "P.J. O'Brien", "The Queen & Beaver"];
 
-/* ── Scoring data ─────────────────────────────────────────────────────────── */
 const QUALITATIVE = {
   pour:             [{label:"Botched Pour",score:1},{label:"Uneven Pour",score:2},{label:"Decent Pour",score:3},{label:"Proper Pour",score:4},{label:"Royal Pour",score:5}],
   head:             [{label:"Flat Crown",score:1},{label:"Thin Crown",score:2},{label:"Fair Head",score:3},{label:"Stately Head",score:4},{label:"Cathedral Crown",score:5}],
@@ -315,21 +246,19 @@ const CATEGORIES = {
 };
 
 const PUB_BRANDING = {
-  "Allen's":            {wordmark:"ALLEN'S"},
-  "Noonan's":           {wordmark:"NOONAN'S"},
-  "McVeigh's":          {wordmark:"McVEIGH'S"},
-  "P.J. O'Brien":       {wordmark:"P.J. O'BRIEN"},
-  "The Queen & Beaver": {wordmark:"THE QUEEN & BEAVER"},
+  "Allen's":            { wordmark:"ALLEN'S" },
+  "Noonan's":           { wordmark:"NOONAN'S" },
+  "McVeigh's":          { wordmark:"McVEIGH'S" },
+  "P.J. O'Brien":       { wordmark:"P.J. O'BRIEN" },
+  "The Queen & Beaver": { wordmark:"THE QUEEN & BEAVER" },
 };
 
-/* ── Helpers ──────────────────────────────────────────────────────────────── */
 const avg    = arr => arr.length ? arr.reduce((s,v)=>s+v,0)/arr.length : 0;
 const fmt    = v   => v ? v.toFixed(2) : "—";
 const eAvg   = (e,keys) => avg(keys.map(k=>Number(e?.[k])).filter(Boolean));
 const gAvg   = (e,gk)   => eAvg(e, CATEGORIES[gk].map(i=>i.key));
 const sLabel = (f,s)    => QUALITATIVE[f].find(i=>i.score===s)?.label || "Unrated";
 
-/* ── Small components ─────────────────────────────────────────────────────── */
 const Btn = ({active, onClick, children}) => (
   <button onClick={onClick} className={`crusade-btn ${active?"crusade-btn-active":"crusade-btn-inactive"}`}>
     {children}
@@ -364,7 +293,6 @@ const SectionHead = ({icon:Icon, children, aside}) => (
   </div>
 );
 
-/* ── Main App ─────────────────────────────────────────────────────────────── */
 export default function GuinnessCrusadeApp() {
   const [pubs, setPubs]                     = useState(DEFAULT_PUBS);
   const [selectedPub, setSelectedPub]       = useState(DEFAULT_PUBS[0]);
@@ -380,11 +308,11 @@ export default function GuinnessCrusadeApp() {
     if (!raw) { setHydrated(true); return; }
     try {
       const p = JSON.parse(raw);
-      if (p.pubs?.length)    setPubs(p.pubs);
-      if (p.selectedPub)     setSelectedPub(p.selectedPub);
-      if (p.crusaderName)    setCrusaderName(p.crusaderName);
-      if (p.scores)          setScores(p.scores);
-      if (p.guinnessCounts)  setGuinnessCounts(p.guinnessCounts);
+      if (p.pubs?.length)   setPubs(p.pubs);
+      if (p.selectedPub)    setSelectedPub(p.selectedPub);
+      if (p.crusaderName)   setCrusaderName(p.crusaderName);
+      if (p.scores)         setScores(p.scores);
+      if (p.guinnessCounts) setGuinnessCounts(p.guinnessCounts);
     } finally { setHydrated(true); }
   }, []);
 
@@ -431,8 +359,8 @@ export default function GuinnessCrusadeApp() {
   const activeCats   = CATEGORIES[selectedGroup];
   const allKeys      = [...CATEGORIES.pint,...CATEGORIES.pub].map(i=>i.key);
 
-  const myGuinnessCount      = safeJudge ? (guinnessCounts[safeJudge] || 0) : 0;
-  const groupGuinnessTotal   = Object.values(guinnessCounts).reduce((s,v)=>s+Number(v),0);
+  const myGuinnessCount    = safeJudge ? (guinnessCounts[safeJudge] || 0) : 0;
+  const groupGuinnessTotal = Object.values(guinnessCounts).reduce((s,v)=>s+Number(v),0);
 
   const updateGuinnessCount = async (val) => {
     if (!safeJudge) return;
@@ -482,7 +410,7 @@ export default function GuinnessCrusadeApp() {
 
               <div style={{display:"flex", flexDirection:"column", gap:"18px"}}>
 
-                {/* LOGO + HEADER */}
+                {/* HEADER */}
                 <div style={{textAlign:"center", padding:"8px 0 4px"}}>
                   <img src="/logo.png" alt="The Guinness Crusade" className="crusade-logo" />
                   <div className="cinzel" style={{fontSize:"8px",letterSpacing:"0.5em",color:"#6a3a10",textTransform:"uppercase",marginTop:"6px"}}>
@@ -518,42 +446,45 @@ export default function GuinnessCrusadeApp() {
 
                   {/* SACKED GUINNESS */}
                   <div style={{marginTop:"14px",padding:"14px 12px",border:"1.5px solid rgba(80,45,8,0.48)",background:"linear-gradient(180deg,rgba(248,228,168,0.55),rgba(230,195,120,0.5))",borderRadius:"2px"}}>
-                    <div style={{display:"flex",alignItems:"center",gap:"8px",marginBottom:"12px"}}>
+                    <div style={{display:"flex",alignItems:"center",gap:"8px",marginBottom:"14px"}}>
                       <div style={{padding:"5px",border:"1px solid rgba(90,48,10,0.38)",background:"rgba(248,228,168,0.75)",borderRadius:"2px",color:"#522808"}}>
                         <Beer size={13}/>
                       </div>
                       <span className="cinzel" style={{fontSize:"12px",fontWeight:700,letterSpacing:"0.12em",color:"#2a1006",textTransform:"uppercase"}}>Sacked Guinness</span>
                     </div>
 
-                    {!safeJudge ? (
-                      <div style={{padding:"11px 14px",border:"1px dashed rgba(90,48,10,0.4)",background:"rgba(248,228,168,0.45)",fontSize:"13px",color:"#4a2408",borderRadius:"2px",fontFamily:"'IM Fell English',serif",fontStyle:"italic"}}>
-                        Enter thy crusader name to log thy pints.
-                      </div>
-                    ) : (
-                      <div style={{display:"flex",alignItems:"center",gap:"10px",marginBottom:"12px"}}>
-                        <button className="stepper-btn" onClick={()=>updateGuinnessCount(myGuinnessCount - 1)}>−</button>
+                    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"12px",alignItems:"start"}}>
+
+                      {/* My stepper — vertical */}
+                      <div style={{display:"flex",flexDirection:"column",gap:"0"}}>
+                        <div className="cinzel" style={{fontSize:"8px",letterSpacing:"0.22em",textTransform:"uppercase",color:"#5a2e08",fontWeight:700,marginBottom:"6px",textAlign:"center"}}>
+                          Draughts Pillaged
+                        </div>
+                        <button className="stepper-btn" onClick={()=>updateGuinnessCount(myGuinnessCount + 1)} disabled={!safeJudge} style={{borderRadius:"2px 2px 0 0", opacity: safeJudge ? 1 : 0.45}}>＋</button>
                         <input
                           type="number"
                           min="0"
                           value={myGuinnessCount}
                           onChange={e=>updateGuinnessCount(e.target.value)}
                           className="parchment-number"
+                          disabled={!safeJudge}
+                          style={{borderRadius:"0", borderTop:"none", borderBottom:"none", opacity: safeJudge ? 1 : 0.45}}
                         />
-                        <button className="stepper-btn" onClick={()=>updateGuinnessCount(myGuinnessCount + 1)}>+</button>
+                        <button className="stepper-btn" onClick={()=>updateGuinnessCount(myGuinnessCount - 1)} disabled={!safeJudge} style={{borderRadius:"0 0 2px 2px", opacity: safeJudge ? 1 : 0.45}}>－</button>
                       </div>
-                    )}
 
-                    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"8px",marginTop:"4px"}}>
-                      <div style={{padding:"10px",background:"rgba(240,212,158,0.65)",borderRadius:"2px",textAlign:"center"}}>
-                        <div className="cinzel" style={{fontSize:"8px",letterSpacing:"0.22em",textTransform:"uppercase",color:"#5a2e08",fontWeight:700,marginBottom:"4px"}}>My Count</div>
-                        <div className="cinzel" style={{fontSize:"26px",fontWeight:900,color:"#1e0e04",lineHeight:1}}>{myGuinnessCount}</div>
-                      </div>
-                      <div style={{padding:"10px",background:"rgba(110,58,16,0.18)",border:"1.5px solid rgba(90,48,10,0.38)",borderRadius:"2px",textAlign:"center"}}>
-                        <div className="cinzel" style={{fontSize:"8px",letterSpacing:"0.22em",textTransform:"uppercase",color:"#5a2e08",fontWeight:700,marginBottom:"4px"}}>Group Total</div>
-                        <div className="cinzel" style={{fontSize:"26px",fontWeight:900,color:"#1e0e04",lineHeight:1}}>{groupGuinnessTotal}</div>
+                      {/* Group total */}
+                      <div style={{display:"flex",flexDirection:"column",gap:"0"}}>
+                        <div className="cinzel" style={{fontSize:"8px",letterSpacing:"0.22em",textTransform:"uppercase",color:"#5a2e08",fontWeight:700,marginBottom:"6px",textAlign:"center"}}>
+                          Total Slain Infidels
+                        </div>
+                        <div style={{padding:"10px",background:"rgba(110,58,16,0.18)",border:"1.5px solid rgba(90,48,10,0.38)",borderRadius:"2px",textAlign:"center",display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100px"}}>
+                          <div className="cinzel" style={{fontSize:"44px",fontWeight:900,color:"#1e0e04",lineHeight:1}}>{groupGuinnessTotal}</div>
+                        </div>
                       </div>
                     </div>
 
+                    {/* Per-crusader breakdown */}
                     {Object.keys(guinnessCounts).length > 0 && (
                       <div style={{marginTop:"10px",display:"flex",flexWrap:"wrap",gap:"6px"}}>
                         {Object.entries(guinnessCounts)
@@ -564,7 +495,7 @@ export default function GuinnessCrusadeApp() {
                               <span className="fell" style={{fontSize:"12px",color:"#3a1a06",fontStyle:"italic"}}>{judge}</span>
                               <span className="cinzel" style={{fontSize:"11px",fontWeight:700,color:"#1e0e04"}}>{count}</span>
                             </div>
-                        ))}
+                          ))}
                       </div>
                     )}
                   </div>
@@ -597,7 +528,6 @@ export default function GuinnessCrusadeApp() {
                       return (
                         <motion.div key={cat.key} initial={{opacity:0,y:6}} animate={{opacity:1,y:0}}
                           style={{border:"1px solid rgba(90,50,10,0.3)",background:"linear-gradient(180deg,rgba(255,242,200,0.82),rgba(238,210,152,0.76))",borderRadius:"3px",padding:"13px",boxShadow:"0 3px 10px rgba(40,18,2,0.1)"}}>
-
                           <div style={{display:"flex",alignItems:"flex-start",gap:"9px",marginBottom:"10px"}}>
                             <div style={{padding:"6px",border:"1px solid rgba(90,50,10,0.32)",background:"rgba(248,225,155,0.8)",borderRadius:"2px",color:"#5a2e08",flexShrink:0,marginTop:"2px"}}>
                               <Icon size={13}/>
@@ -607,12 +537,10 @@ export default function GuinnessCrusadeApp() {
                               <div className="fell" style={{fontSize:"12px",color:"#5a2e08",fontStyle:"italic",lineHeight:1.5,marginTop:"3px"}}>{cat.desc}</div>
                             </div>
                           </div>
-
                           <div style={{marginBottom:"8px",padding:"5px 10px",background:"rgba(200,160,80,0.2)",borderRadius:"2px",border:"1px solid rgba(90,50,10,0.2)"}}>
                             <span className="cinzel" style={{fontSize:"9px",letterSpacing:"0.2em",color:"#5a2e08",textTransform:"uppercase",fontWeight:700}}>Verdict: </span>
                             <span className="fell" style={{fontSize:"12px",color:"#3a1a06",fontStyle:"italic"}}>{sLabel(cat.key,cur)}</span>
                           </div>
-
                           <div style={{display:"flex",flexDirection:"column",gap:"5px"}}>
                             {QUALITATIVE[cat.key].map(opt=>(
                               <Pill key={opt.score} active={cur===opt.score} onClick={()=>updateScore(cat.key,opt.score)}>
@@ -646,7 +574,6 @@ export default function GuinnessCrusadeApp() {
                 {/* LEADERBOARD */}
                 <div className="section-card">
                   <SectionHead icon={Trophy}>The Order of Merit</SectionHead>
-
                   <div style={{display:"flex",flexDirection:"column",gap:"10px"}}>
                     {leaderboard.map((item,i)=>(
                       <div key={item.pub} className="lb-row">
