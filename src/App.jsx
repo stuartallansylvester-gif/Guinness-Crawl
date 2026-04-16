@@ -1649,7 +1649,6 @@ export default function GuinnessCrusadeApp() {
                     <div style={{display:"flex",alignItems:"center",gap:"5px"}}>
                       <div style={{width:"10px",height:"10px",background:"linear-gradient(180deg, rgba(90,90,90,0.55), rgba(180,180,180,0.10))",border:"1px solid rgba(50,22,4,0.25)",borderRadius:"50%"}}/>
                       <span className="cinzel" style={{fontSize:"7px",letterSpacing:"0.08em",color:"#5a2e08",textTransform:"uppercase",fontWeight:700}}>
-                        Departed Tavern Smoke
                       </span>
                     </div>
                   </div>
