@@ -3,18 +3,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@supabase/supabase-js";
 import { Shield, Trophy, Flame, ScrollText, Users, Swords, Castle, Crown, Coins, Beer } from "lucide-react";
 
-/* ── CSS ──────────────────────────────────────────────────────────────────── */
 const GlobalStyles = () => (
   <style>{`
     @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cinzel+Decorative:wght@400;700;900&family=IM+Fell+English:ital@0;1&display=swap');
-
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: radial-gradient(ellipse at center top, #1e0e05 0%, #0a0401 100%); min-height: 100vh; }
-
     .cinzel      { font-family: 'Cinzel', Georgia, serif; }
     .cinzel-deco { font-family: 'Cinzel Decorative', Georgia, serif; }
     .fell        { font-family: 'IM Fell English', Georgia, serif; }
-
     .scroll-rod {
       position: relative; height: 54px; width: calc(100% + 40px); margin-left: -20px; border-radius: 27px;
       background: linear-gradient(180deg, #0e0604 0%, #2e1408 6%, #6a3418 15%, #b06828 28%, #d89848 40%, #f0b858 48%, #ffd070 50%, #f0b858 52%, #d89848 60%, #b06828 72%, #6a3418 85%, #2e1408 94%, #0e0604 100%);
@@ -29,7 +25,6 @@ const GlobalStyles = () => (
     }
     .scroll-rod::before { left: -10px; }
     .scroll-rod::after  { right: -10px; box-shadow: -3px 0 12px rgba(0,0,0,0.7); }
-
     .parchment-body {
       position: relative; z-index: 2; margin-top: -18px; margin-bottom: -18px; padding: 34px 28px 34px;
       background:
@@ -42,43 +37,32 @@ const GlobalStyles = () => (
         linear-gradient(180deg, #c89838 0%, #ddb048 5%, #edcc78 12%, #f5dfa0 22%, #faf0cc 38%, #f8eac4 50%, #f5e0a8 62%, #edcc78 78%, #ddb048 90%, #c89838 100%);
       box-shadow: inset 14px 0 28px rgba(70,35,5,0.32), inset -14px 0 28px rgba(70,35,5,0.32), inset 0 8px 16px rgba(50,25,3,0.22), inset 0 -8px 16px rgba(50,25,3,0.22);
     }
-    .parchment-body::before, .parchment-body::after {
-      content: ''; position: absolute; top: 0; bottom: 0; width: 18px; pointer-events: none; z-index: 3;
-    }
+    .parchment-body::before, .parchment-body::after { content: ''; position: absolute; top: 0; bottom: 0; width: 18px; pointer-events: none; z-index: 3; }
     .parchment-body::before { left: 0; background: linear-gradient(90deg, rgba(60,28,4,0.35), transparent); }
     .parchment-body::after  { right: 0; background: linear-gradient(270deg, rgba(60,28,4,0.35), transparent); }
-
     .parchment-frame { border: 2px solid rgba(90,50,10,0.55); padding: 22px 16px 20px; position: relative; }
     .parchment-frame::before { content: ''; position: absolute; inset: 5px; border: 1px solid rgba(90,50,10,0.28); pointer-events: none; }
-
     .corner { position: absolute; width: 28px; height: 28px; }
     .corner svg { width: 100%; height: 100%; }
     .corner-tl { top: -1px; left: -1px; }
     .corner-tr { top: -1px; right: -1px; transform: scaleX(-1); }
     .corner-bl { bottom: -1px; left: -1px; transform: scaleY(-1); }
     .corner-br { bottom: -1px; right: -1px; transform: scale(-1); }
-
     .crusade-logo { display: block; width: 200px; max-width: 80%; margin: 0 auto 6px; mix-blend-mode: multiply; filter: drop-shadow(0 3px 8px rgba(60,28,4,0.3)); }
-
     .section-card {
       background: linear-gradient(180deg, rgba(255,243,205,0.72) 0%, rgba(238,214,158,0.68) 100%);
       border: 1.5px solid rgba(100,58,12,0.42); border-radius: 3px; padding: 14px; position: relative;
       box-shadow: 0 3px 10px rgba(50,24,3,0.14), inset 0 1px 2px rgba(255,235,175,0.5);
     }
-
     .parchment-input, .parchment-select {
       width: 100%; padding: 10px 14px; border: 1.5px solid rgba(80,40,8,0.55);
       background: rgba(255,243,210,0.92); color: #180a02; font-size: 14px;
       font-family: 'Cinzel', Georgia, serif; font-weight: 600; outline: none; border-radius: 2px;
       letter-spacing: 0.04em; box-shadow: inset 0 2px 4px rgba(60,28,4,0.12); transition: border-color 0.2s;
     }
-    .parchment-input:focus, .parchment-select:focus {
-      border-color: rgba(80,40,8,0.85);
-      box-shadow: inset 0 2px 4px rgba(60,28,4,0.18), 0 0 0 2px rgba(180,120,40,0.18);
-    }
+    .parchment-input:focus, .parchment-select:focus { border-color: rgba(80,40,8,0.85); box-shadow: inset 0 2px 4px rgba(60,28,4,0.18), 0 0 0 2px rgba(180,120,40,0.18); }
     .parchment-input::placeholder { color: rgba(80,38,8,0.4); font-weight: 400; }
     .parchment-select option { background: #f5dfa0; color: #180a02; }
-
     .parchment-number {
       width: 100%; padding: 10px 14px; border: 1.5px solid rgba(80,40,8,0.55);
       background: rgba(255,243,210,0.92); color: #180a02; font-size: 28px;
@@ -88,21 +72,16 @@ const GlobalStyles = () => (
     }
     .parchment-number::-webkit-outer-spin-button, .parchment-number::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
     .parchment-number:focus { border-color: rgba(80,40,8,0.85); box-shadow: inset 0 2px 4px rgba(60,28,4,0.18), 0 0 0 2px rgba(180,120,40,0.18); }
-
     .crusade-btn { font-family: 'Cinzel', Georgia, serif; font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; border-radius: 2px; padding: 9px 14px; cursor: pointer; transition: all 0.18s ease; }
     .crusade-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
     .crusade-btn-active { background: linear-gradient(180deg, #8a4e1c 0%, #5c3010 100%); border: 2px solid #3e1e08; color: #f8e8c0; box-shadow: 0 4px 14px rgba(30,12,2,0.45), inset 0 1px 0 rgba(255,210,130,0.2); }
     .crusade-btn-inactive { background: linear-gradient(180deg, rgba(255,240,195,0.85) 0%, rgba(230,200,140,0.8) 100%); border: 1.5px solid rgba(90,48,10,0.45); color: #3a1a06; box-shadow: 0 2px 6px rgba(30,12,2,0.15); }
-
     .option-pill { width: 100%; padding: 9px 12px; text-align: left; font-family: 'IM Fell English', Georgia, serif; font-size: 13px; border-radius: 2px; cursor: pointer; transition: all 0.15s ease; }
     .option-pill-active { background: linear-gradient(90deg, #6e3a10 0%, #9a5820 100%); border: 1.5px solid #4a2208; color: #f8e8c0; box-shadow: 0 3px 10px rgba(30,10,2,0.35); }
     .option-pill-inactive { background: rgba(255,240,195,0.55); border: 1px solid rgba(90,48,10,0.32); color: #1e0e04; }
     .option-pill-inactive:hover { background: rgba(245,225,165,0.75); }
-
     .lb-row { border: 1px solid rgba(100,58,12,0.38); background: rgba(248,230,180,0.6); border-radius: 3px; padding: 12px; }
-
     .ornament { text-align: center; font-family: 'Cinzel', serif; color: rgba(90,50,10,0.6); font-size: 13px; letter-spacing: 10px; padding: 2px 0; }
-
     .stepper-btn {
       width: 100%; padding: 8px 0; font-family: 'Cinzel', Georgia, serif; font-size: 20px; font-weight: 700;
       cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s ease;
@@ -111,21 +90,14 @@ const GlobalStyles = () => (
     }
     .stepper-btn:hover { filter: brightness(1.15); transform: translateY(-1px); }
     .stepper-btn:active { transform: translateY(0); filter: brightness(0.95); }
-
     .chronicle-entry { padding: 7px 10px; border-left: 3px solid rgba(90,48,10,0.5); background: rgba(248,228,168,0.4); border-radius: 0 2px 2px 0; }
-
     .battle-cry-overlay { position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center; pointer-events: none; background: rgba(15,5,1,0.3); }
-    .battle-cry-text {
-      padding: 18px 36px; background: linear-gradient(180deg, #8a4e1c 0%, #5c3010 100%);
-      border: 3px solid #3e1e08; color: #f8e8c0; font-family: 'Cinzel Decorative', Georgia, serif;
-      font-size: 22px; font-weight: 700; letter-spacing: 0.06em; border-radius: 3px;
-      box-shadow: 0 12px 40px rgba(0,0,0,0.85); text-align: center;
-    }
+    .battle-cry-text { padding: 18px 36px; background: linear-gradient(180deg, #8a4e1c 0%, #5c3010 100%); border: 3px solid #3e1e08; color: #f8e8c0; font-family: 'Cinzel Decorative', Georgia, serif; font-size: 22px; font-weight: 700; letter-spacing: 0.06em; border-radius: 3px; box-shadow: 0 12px 40px rgba(0,0,0,0.85); text-align: center; }
   `}</style>
 );
 
 const CornerOrnament = () => (
-  <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <svg viewBox="0 0 28 28" fill="none">
     <path d="M2 2 L14 2 L14 5 L5 5 L5 14 L2 14 Z" fill="rgba(85,45,8,0.55)" />
     <path d="M2 2 L8 2 L8 4 L4 4 L4 8 L2 8 Z" fill="rgba(85,45,8,0.4)" />
     <circle cx="14" cy="14" r="3.5" stroke="rgba(85,45,8,0.5)" strokeWidth="1.2" fill="none" />
@@ -141,7 +113,8 @@ const SUPABASE_ANON_KEY = "sb_publishable_0o1l0knnxpTOg7aHcSKqfQ_6gkb7bck";
 const hasSupabaseConfig = SUPABASE_URL && SUPABASE_ANON_KEY && !SUPABASE_URL.includes("YOUR_PROJECT");
 const supabase          = hasSupabaseConfig ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
-const STORAGE_KEY       = "guinness-crusade-v8";
+// Bumped to v9 — clears any old localStorage cache missing The Queen & Beaver
+const STORAGE_KEY       = "guinness-crusade-v9";
 const GUINNESS_PUB_KEY  = "__guinness__";
 const CHRONICLE_PUB_KEY = "__chronicle__";
 
@@ -170,17 +143,17 @@ const QUALITATIVE = {
 
 const CATEGORIES = {
   pint: [
-    {key:"pour",  title:"Pour",        icon:Flame,   desc:"The sacred two-stage ritual separates the worthy tavern from the wretched. A true pour demands patience — settle, then crown. Haste is heresy."},
-    {key:"head",  title:"Head",        icon:Crown,   desc:"The creamy crown atop thy pint is the mark of a righteous house. Too thin and the keep has failed thee. A cathedral dome of foam is the highest honour."},
-    {key:"temp",  title:"Temperature", icon:Castle,  desc:"A pint served warm is an affront to the Crusade. The noble cellar keeps its charge cool and true. Test the chill — thy palate shall know justice."},
-    {key:"taste", title:"Taste",       icon:Trophy,  desc:"The dark nectar must sing of roasted grain and Irish earth. A rich, smooth draught is the reward of the righteous. A foul sip is cause for immediate retreat."},
+    {key:"pour",  title:"Pour",        icon:Flame,      desc:"The sacred two-stage ritual separates the worthy tavern from the wretched. A true pour demands patience — settle, then crown. Haste is heresy."},
+    {key:"head",  title:"Head",        icon:Crown,      desc:"The creamy crown atop thy pint is the mark of a righteous house. Too thin and the keep has failed thee. A cathedral dome of foam is the highest honour."},
+    {key:"temp",  title:"Temperature", icon:Castle,     desc:"A pint served warm is an affront to the Crusade. The noble cellar keeps its charge cool and true. Test the chill — thy palate shall know justice."},
+    {key:"taste", title:"Taste",       icon:Trophy,     desc:"The dark nectar must sing of roasted grain and Irish earth. A rich, smooth draught is the reward of the righteous. A foul sip is cause for immediate retreat."},
   ],
   pub: [
-    {key:"vibe",              title:"Vibe",               icon:ScrollText, desc:"Does this hall stir the blood of a Crusader? The air, the noise, the fellowship — a great tavern feels like a campaign won. A bleak hall is a campaign lost."},
-    {key:"irishAuthenticity", title:"Irish Authenticity",  icon:Shield,     desc:"Beware the false banner. Many a pub drapes itself in green yet harbours no true Irish soul. Seek the worn wood, the craic, the weight of history in its walls."},
-    {key:"service",           title:"Service",             icon:Users,      desc:"A Crusader left waiting at the bar is a Crusader dishonoured. The steward's duty is swift, cheerful, and sure. Knightly service turns a good pint into a legendary one."},
-    {key:"price",             title:"Price",               icon:Coins,      desc:"Even the holiest nectar must be fairly priced. A king's ransom for a pint is a declaration of war. Judge the tribute asked against the quality rendered."},
-    {key:"pagansMoors",       title:"Pagans / Moors",      icon:Swords,     desc:"Survey the hall and count those who do not drink Guinness. A great Irish house shall be free of infidel influence. Many non-believers is cause for grave concern."},
+    {key:"vibe",              title:"Vibe",              icon:ScrollText, desc:"Does this hall stir the blood of a Crusader? The air, the noise, the fellowship — a great tavern feels like a campaign won. A bleak hall is a campaign lost."},
+    {key:"irishAuthenticity", title:"Irish Authenticity", icon:Shield,     desc:"Beware the false banner. Many a pub drapes itself in green yet harbours no true Irish soul. Seek the worn wood, the craic, the weight of history in its walls."},
+    {key:"service",           title:"Service",            icon:Users,      desc:"A Crusader left waiting at the bar is a Crusader dishonoured. The steward's duty is swift, cheerful, and sure. Knightly service turns a good pint into a legendary one."},
+    {key:"price",             title:"Price",              icon:Coins,      desc:"Even the holiest nectar must be fairly priced. A king's ransom for a pint is a declaration of war. Judge the tribute asked against the quality rendered."},
+    {key:"pagansMoors",       title:"Pagans / Moors",     icon:Swords,     desc:"Survey the hall and count those who do not drink Guinness. A great Irish house shall be free of infidel influence. Many non-believers is cause for grave concern."},
   ],
 };
 
@@ -195,13 +168,12 @@ const PUB_BRANDING = {
 const ALL_KEYS = [...CATEGORIES.pint, ...CATEGORIES.pub].map(i => i.key);
 
 const RANKS = [
-  {min:0, max:0,        label:"Civilian",     bg:"rgba(140,110,60,0.2)",  color:"#6a4a1a"},
-  {min:1, max:2,        label:"Squire",       bg:"rgba(130,90,20,0.28)",  color:"#7a4a10"},
-  {min:3, max:4,        label:"Knight",       bg:"rgba(50,75,120,0.28)",  color:"#2a4a7a"},
-  {min:5, max:6,        label:"Templar",      bg:"rgba(160,130,10,0.28)", color:"#8a7010"},
-  {min:7, max:Infinity, label:"Grand Marshal",bg:"rgba(140,20,10,0.28)",  color:"#8a1a0a"},
+  {min:0, max:0,        label:"Civilian",      bg:"rgba(140,110,60,0.2)",  color:"#6a4a1a"},
+  {min:1, max:2,        label:"Squire",        bg:"rgba(130,90,20,0.28)",  color:"#7a4a10"},
+  {min:3, max:4,        label:"Knight",        bg:"rgba(50,75,120,0.28)",  color:"#2a4a7a"},
+  {min:5, max:6,        label:"Templar",       bg:"rgba(160,130,10,0.28)", color:"#8a7010"},
+  {min:7, max:Infinity, label:"Grand Marshal", bg:"rgba(140,20,10,0.28)",  color:"#8a1a0a"},
 ];
-
 const getRank = count => RANKS.find(r => count >= r.min && count <= r.max) || RANKS[0];
 
 const BATTLE_CRIES = [
@@ -217,11 +189,11 @@ const eAvg   = (e,keys) => avg(keys.map(k=>Number(e?.[k])).filter(Boolean));
 const gAvg   = (e,gk)   => eAvg(e, CATEGORIES[gk].map(i=>i.key));
 const sLabel = (f,s)    => QUALITATIVE[f].find(i=>i.score===s)?.label || "Unrated";
 
-/* ── Campaign Map SVG ─────────────────────────────────────────────────────── */
+/* ── Campaign Map ─────────────────────────────────────────────────────────── */
 const CampaignMap = ({ pubs, selectedPub, scoreMap }) => {
-  const W = 400, H = 125, pad = 38;
-  const xOf = i => pad + (i * (W - pad * 2)) / (pubs.length - 1);
-  const cy = 60;
+  const W = 420, H = 128, pad = 44;
+  const xOf = i => pad + (i * (W - pad * 2)) / Math.max(pubs.length - 1, 1);
+  const cy = 68;
   const isConquered = pub => Object.keys(scoreMap).some(k => k.startsWith(`${pub}__`));
   const pathD = pubs.map((_, i) => `${i===0?'M':'L'}${xOf(i)},${cy}`).join(' ');
 
@@ -230,28 +202,107 @@ const CampaignMap = ({ pubs, selectedPub, scoreMap }) => {
       <rect width={W} height={H} fill="rgba(238,212,148,0.35)" rx="3"/>
       <path d={pathD} stroke="rgba(90,48,10,0.32)" strokeWidth="2.5" strokeDasharray="6,5" fill="none"/>
       {pubs.map((pub, i) => {
-        const cx = xOf(i);
-        const active    = pub === selectedPub;
-        const conquered = isConquered(pub);
-        const fc = active ? "#8a4e1c" : conquered ? "#5a3010" : "#b89050";
-        const sc = "rgba(45,18,3,0.7)";
-        const label = MAP_LABELS[pub] || pub;
+        const cx     = xOf(i);
+        const active = pub === selectedPub;
+        const conq   = isConquered(pub);
+        const fc     = active ? "#8a4e1c" : conq ? "#5a3010" : "#b89050";
+        const sc     = "rgba(45,18,3,0.72)";
+        const drk    = "rgba(18,6,1,0.78)";
+        const label  = MAP_LABELS[pub] || pub;
+        let castle;
+
+        if (i === 0) {
+          // Allen's — Round tower with conical spire
+          castle = <>
+            {active && <text x={cx} y={cy-40} textAnchor="middle" fontSize="13" fill="#9a1a08">⚔</text>}
+            <rect x={cx-6} y={cy-13} width={12} height={13} fill={fc} stroke={sc} strokeWidth="0.8"/>
+            <rect x={cx-9} y={cy-22} width={18} height={11} rx="9" fill={fc} stroke={sc} strokeWidth="0.8"/>
+            <polygon points={`${cx},${cy-34} ${cx-9},${cy-22} ${cx+9},${cy-22}`} fill={fc} stroke={sc} strokeWidth="0.8"/>
+            <path d={`M${cx-3},${cy} Q${cx},${cy-5} ${cx+3},${cy}`} fill={drk} stroke="none"/>
+            <ellipse cx={cx} cy={cy-25} rx="2" ry="3" fill={drk}/>
+            {conq && !active && <>
+              <line x1={cx+10} y1={cy-22} x2={cx+10} y2={cy-32} stroke={sc} strokeWidth="0.8"/>
+              <polygon points={`${cx+10},${cy-32} ${cx+17},${cy-28} ${cx+10},${cy-24}`} fill="#8a1a0a" opacity="0.85"/>
+            </>}
+          </>;
+        } else if (i === 1) {
+          // Noonan's — Twin-tower gatehouse
+          castle = <>
+            {active && <text x={cx} y={cy-37} textAnchor="middle" fontSize="13" fill="#9a1a08">⚔</text>}
+            <rect x={cx-13} y={cy-23} width={8} height={23} fill={fc} stroke={sc} strokeWidth="0.8"/>
+            <rect x={cx+5}  y={cy-23} width={8} height={23} fill={fc} stroke={sc} strokeWidth="0.8"/>
+            {[-12,-9,-6].map((dx,j)=><rect key={j} x={cx+dx} y={cy-28} width={2.5} height={6} fill={fc} stroke={sc} strokeWidth="0.5"/>)}
+            {[6,9,12].map((dx,j)=><rect key={j} x={cx+dx} y={cy-28} width={2.5} height={6} fill={fc} stroke={sc} strokeWidth="0.5"/>)}
+            <rect x={cx-5} y={cy-14} width={10} height={14} fill={fc} stroke={sc} strokeWidth="0.8"/>
+            <path d={`M${cx-3},${cy} Q${cx},${cy-7} ${cx+3},${cy}`} fill={drk} stroke="none"/>
+            <rect x={cx-11} y={cy-18} width={3} height={5} fill={drk}/>
+            <rect x={cx+8}  y={cy-18} width={3} height={5} fill={drk}/>
+            {conq && !active && <>
+              <line x1={cx+14} y1={cy-23} x2={cx+14} y2={cy-33} stroke={sc} strokeWidth="0.8"/>
+              <polygon points={`${cx+14},${cy-33} ${cx+21},${cy-29} ${cx+14},${cy-25}`} fill="#8a1a0a" opacity="0.85"/>
+            </>}
+          </>;
+        } else if (i === 2) {
+          // McVeigh's — Tall narrow keep with merlons
+          castle = <>
+            {active && <text x={cx} y={cy-44} textAnchor="middle" fontSize="13" fill="#9a1a08">⚔</text>}
+            <rect x={cx-5} y={cy-30} width={10} height={30} fill={fc} stroke={sc} strokeWidth="0.8"/>
+            {[-4,-1,2].map((dx,j)=><rect key={j} x={cx+dx} y={cy-36} width={2.5} height={7} fill={fc} stroke={sc} strokeWidth="0.5"/>)}
+            <rect x={cx-1.5} y={cy-24} width={3} height={7} fill={drk}/>
+            <rect x={cx-1.5} y={cy-12} width={3} height={6} fill={drk}/>
+            <path d={`M${cx-2.5},${cy} L${cx-2.5},${cy-6} Q${cx},${cy-9} ${cx+2.5},${cy-6} L${cx+2.5},${cy}`} fill={drk} stroke="none"/>
+            {conq && !active && <>
+              <line x1={cx+6} y1={cy-30} x2={cx+6} y2={cy-40} stroke={sc} strokeWidth="0.8"/>
+              <polygon points={`${cx+6},${cy-40} ${cx+13},${cy-36} ${cx+6},${cy-32}`} fill="#8a1a0a" opacity="0.85"/>
+            </>}
+          </>;
+        } else if (i === 3) {
+          // P.J. O'Brien — Wide squat fortress with three towers
+          castle = <>
+            {active && <text x={cx} y={cy-42} textAnchor="middle" fontSize="13" fill="#9a1a08">⚔</text>}
+            <rect x={cx-14} y={cy-10} width={28} height={10} fill={fc} stroke={sc} strokeWidth="0.8"/>
+            <rect x={cx-14} y={cy-20} width={7}  height={20} fill={fc} stroke={sc} strokeWidth="0.8"/>
+            <rect x={cx+7}  y={cy-20} width={7}  height={20} fill={fc} stroke={sc} strokeWidth="0.8"/>
+            <rect x={cx-4}  y={cy-28} width={8}  height={28} fill={fc} stroke={sc} strokeWidth="0.8"/>
+            {[-3,0,3].map((dx,j)=><rect key={j} x={cx+dx} y={cy-34} width={2.5} height={7} fill={fc} stroke={sc} strokeWidth="0.5"/>)}
+            {[-13,-10].map((dx,j)=><rect key={j} x={cx+dx} y={cy-26} width={2.5} height={7} fill={fc} stroke={sc} strokeWidth="0.5"/>)}
+            {[8,11].map((dx,j)=><rect key={j} x={cx+dx} y={cy-26} width={2.5} height={7} fill={fc} stroke={sc} strokeWidth="0.5"/>)}
+            <path d={`M${cx-3},${cy} Q${cx},${cy-6} ${cx+3},${cy}`} fill={drk} stroke="none"/>
+            <rect x={cx-12} y={cy-15} width={3} height={4} fill={drk}/>
+            <rect x={cx+9}  y={cy-15} width={3} height={4} fill={drk}/>
+            {conq && !active && <>
+              <line x1={cx+15} y1={cy-20} x2={cx+15} y2={cy-30} stroke={sc} strokeWidth="0.8"/>
+              <polygon points={`${cx+15},${cy-30} ${cx+22},${cy-26} ${cx+15},${cy-22}`} fill="#8a1a0a" opacity="0.85"/>
+            </>}
+          </>;
+        } else {
+          // The Queen & Beaver — Grand palace with three spires
+          castle = <>
+            {active && <text x={cx} y={cy-54} textAnchor="middle" fontSize="13" fill="#9a1a08">⚔</text>}
+            {/* base wall */}
+            <rect x={cx-15} y={cy-8} width={30} height={8} fill={fc} stroke={sc} strokeWidth="0.8"/>
+            {/* left tower + spire */}
+            <rect x={cx-15} y={cy-24} width={8} height={24} fill={fc} stroke={sc} strokeWidth="0.8"/>
+            <polygon points={`${cx-11},${cy-33} ${cx-15},${cy-24} ${cx-7},${cy-24}`} fill={fc} stroke={sc} strokeWidth="0.8"/>
+            {/* right tower + spire */}
+            <rect x={cx+7}  y={cy-24} width={8} height={24} fill={fc} stroke={sc} strokeWidth="0.8"/>
+            <polygon points={`${cx+11},${cy-33} ${cx+7},${cy-24} ${cx+15},${cy-24}`} fill={fc} stroke={sc} strokeWidth="0.8"/>
+            {/* central grand tower + spire */}
+            <rect x={cx-5}  y={cy-36} width={10} height={36} fill={fc} stroke={sc} strokeWidth="0.8"/>
+            <polygon points={`${cx},${cy-46} ${cx-5},${cy-36} ${cx+5},${cy-36}`} fill={fc} stroke={sc} strokeWidth="0.8"/>
+            {/* rose window */}
+            <circle cx={cx} cy={cy-22} r="2.5" stroke={drk} strokeWidth="0.8" fill={drk} fillOpacity="0.4"/>
+            {/* gate */}
+            <path d={`M${cx-3},${cy} Q${cx},${cy-7} ${cx+3},${cy}`} fill={drk} stroke="none"/>
+            {/* center flag — turns red when conquered */}
+            <line x1={cx} y1={cy-46} x2={cx} y2={cy-50} stroke={sc} strokeWidth="0.9"/>
+            <polygon points={`${cx},${cy-50} ${cx+7},${cy-47} ${cx},${cy-44}`} fill={conq ? "#8a1a0a" : fc} opacity="0.9"/>
+          </>;
+        }
+
         return (
           <g key={pub}>
-            {active && <text x={cx} y={cy-38} textAnchor="middle" fontSize="14" fill="#9a1a08">⚔</text>}
-            {[-7,-1,5].map((dx,j)=>(
-              <rect key={j} x={cx+dx} y={cy-27} width="5" height="8" fill={fc} stroke={sc} strokeWidth="0.8"/>
-            ))}
-            <rect x={cx-10} y={cy-20} width="20" height="18" fill={fc} stroke={sc} strokeWidth="0.8"/>
-            <rect x={cx-3}  y={cy-7}  width="6"  height="7"  fill="rgba(22,8,1,0.8)" rx="1"/>
-            <rect x={cx-7}  y={cy-15} width="4"  height="3"  fill="rgba(22,8,1,0.5)" rx="0.5"/>
-            <rect x={cx+3}  y={cy-15} width="4"  height="3"  fill="rgba(22,8,1,0.5)" rx="0.5"/>
-            {conquered && !active && (
-              <g>
-                <line x1={cx+10} y1={cy-20} x2={cx+10} y2={cy-34} stroke={sc} strokeWidth="0.9"/>
-                <polygon points={`${cx+10},${cy-34} ${cx+18},${cy-30} ${cx+10},${cy-26}`} fill="#8a1a0a" opacity="0.85"/>
-              </g>
-            )}
+            {castle}
             <text x={cx} y={cy+15} textAnchor="middle" fontSize="6.5"
               fontFamily="'Cinzel',Georgia,serif" fontWeight="700"
               fill={active ? "#8a1a0a" : "#4a2008"} letterSpacing="0.02em">
@@ -283,7 +334,6 @@ const SectionHead = ({icon:Icon, children, aside}) => (
     {aside}
   </div>
 );
-
 const RankBadge = ({count}) => {
   const rank = getRank(count);
   return (
@@ -306,7 +356,6 @@ export default function GuinnessCrusadeApp() {
   const [hydrated, setHydrated]             = useState(false);
   const [battleCry, setBattleCry]           = useState(null);
 
-  /* ── Hydrate local storage ── */
   useEffect(() => {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) { setHydrated(true); return; }
@@ -326,7 +375,6 @@ export default function GuinnessCrusadeApp() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({pubs, selectedPub, crusaderName, scores, guinnessCounts, chronicle}));
   }, [hydrated, pubs, selectedPub, crusaderName, scores, guinnessCounts, chronicle]);
 
-  /* ── Supabase sync ── */
   useEffect(() => {
     if (!supabase || !hydrated) return;
     let ch;
@@ -339,7 +387,7 @@ export default function GuinnessCrusadeApp() {
         if (r.pub === GUINNESS_PUB_KEY) {
           gc[r.judge] = Number(r.scores?.count || 0);
         } else if (r.pub === CHRONICLE_PUB_KEY) {
-          if (r.scores?.text && r.scores?.ts) cr.push({text: r.scores.text, ts: r.scores.ts});
+          if (r.scores?.text && r.scores?.ts) cr.push({text:r.scores.text, ts:r.scores.ts});
         } else {
           inc[`${r.pub}__${r.judge}`] = r.scores || {};
         }
@@ -350,7 +398,7 @@ export default function GuinnessCrusadeApp() {
       setSyncStatus("Live");
       ch = supabase.channel("gc-main")
         .on("postgres_changes",{event:"*",schema:"public",table:"bar_crawl_scores"},({new:r})=>{
-          if (!r?.pub || !r?.judge) return;
+          if (!r?.pub||!r?.judge) return;
           if (r.pub === GUINNESS_PUB_KEY) {
             setGuinnessCounts(prev=>({...prev,[r.judge]:Number(r.scores?.count||0)}));
           } else if (r.pub === CHRONICLE_PUB_KEY) {
@@ -364,7 +412,6 @@ export default function GuinnessCrusadeApp() {
     return () => { if (ch) supabase.removeChannel(ch); };
   }, [hydrated]);
 
-  /* ── Derived state ── */
   const safeJudge    = crusaderName.trim();
   const currentKey   = `${selectedPub}__${safeJudge}`;
   const currentEntry = scores[currentKey] || {};
@@ -376,7 +423,8 @@ export default function GuinnessCrusadeApp() {
   const allPlayerStats = useMemo(() => {
     const map = {};
     Object.entries(scores).forEach(([key, entry]) => {
-      const player = key.split('__').pop();
+      const parts = key.split('__');
+      const player = parts[parts.length - 1];
       if (!player) return;
       if (!map[player]) map[player] = [];
       map[player].push(entry);
@@ -389,8 +437,8 @@ export default function GuinnessCrusadeApp() {
     })).filter(p=>p.avgScore>0);
   }, [scores, guinnessCounts]);
 
-  const mostValiant   = [...allPlayerStats].sort((a,b)=>b.avgScore-a.avgScore)[0];
-  const bigotOfNight  = [...allPlayerStats].filter(p=>p.avgMoors>0).sort((a,b)=>a.avgMoors-b.avgMoors)[0];
+  const mostValiant  = [...allPlayerStats].sort((a,b)=>b.avgScore-a.avgScore)[0];
+  const bigotOfNight = [...allPlayerStats].filter(p=>p.avgMoors>0).sort((a,b)=>a.avgMoors-b.avgMoors)[0];
 
   const leaderboard = useMemo(() => pubs.map(pub => {
     const entries = Object.entries(scores).filter(([k])=>k.startsWith(`${pub}__`)).map(([,e])=>e).filter(Boolean);
@@ -403,22 +451,18 @@ export default function GuinnessCrusadeApp() {
     };
   }).sort((a,b)=>b.overall-a.overall), [pubs, scores]);
 
-  /* ── Chronicle ── */
   const addChronicleEvent = async (text) => {
     const ts = Date.now();
-    const newEvent = {text, ts};
-    setChronicle(prev=>[newEvent,...prev].slice(0,25));
+    setChronicle(prev=>[{text,ts},...prev].slice(0,25));
     if (supabase)
       await supabase.from("bar_crawl_scores").upsert({pub:CHRONICLE_PUB_KEY, judge:`${ts}`, scores:{text,ts}});
   };
 
   const triggerBattleCry = () => {
-    const cry = BATTLE_CRIES[Math.floor(Math.random()*BATTLE_CRIES.length)];
-    setBattleCry(cry);
+    setBattleCry(BATTLE_CRIES[Math.floor(Math.random()*BATTLE_CRIES.length)]);
     setTimeout(()=>setBattleCry(null), 2200);
   };
 
-  /* ── Score actions ── */
   const updateGuinnessCount = async (val) => {
     if (!safeJudge) return;
     const count    = Math.max(0, Number(val) || 0);
@@ -447,7 +491,6 @@ export default function GuinnessCrusadeApp() {
     <>
       <GlobalStyles/>
 
-      {/* Battle cry toast */}
       <AnimatePresence>
         {battleCry && (
           <motion.div className="battle-cry-overlay"
@@ -464,7 +507,6 @@ export default function GuinnessCrusadeApp() {
         <div style={{width:"100%",maxWidth:"460px"}}>
 
           <div className="scroll-rod"/>
-
           <div className="parchment-body">
             <div className="parchment-frame">
               <div className="corner corner-tl"><CornerOrnament/></div>
@@ -520,42 +562,29 @@ export default function GuinnessCrusadeApp() {
                       <div style={{padding:"5px",border:"1px solid rgba(90,48,10,0.38)",background:"rgba(248,228,168,0.75)",borderRadius:"2px",color:"#522808"}}><Beer size={13}/></div>
                       <span className="cinzel" style={{fontSize:"12px",fontWeight:700,letterSpacing:"0.12em",color:"#2a1006",textTransform:"uppercase"}}>Sacked Guinness</span>
                     </div>
-
                     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"12px",alignItems:"start"}}>
-                      {/* Vertical stepper */}
                       <div style={{display:"flex",flexDirection:"column"}}>
-                        <div className="cinzel" style={{fontSize:"8px",letterSpacing:"0.2em",textTransform:"uppercase",color:"#5a2e08",fontWeight:700,marginBottom:"6px",textAlign:"center"}}>
-                          Draughts Pillaged
-                        </div>
+                        <div className="cinzel" style={{fontSize:"8px",letterSpacing:"0.2em",textTransform:"uppercase",color:"#5a2e08",fontWeight:700,marginBottom:"6px",textAlign:"center"}}>Draughts Pillaged</div>
                         <button className="stepper-btn" onClick={()=>updateGuinnessCount(myGuinnessCount+1)} disabled={!safeJudge} style={{borderRadius:"2px 2px 0 0",opacity:safeJudge?1:0.45}}>＋</button>
                         <input type="number" min="0" value={myGuinnessCount} onChange={e=>updateGuinnessCount(e.target.value)} className="parchment-number" disabled={!safeJudge} style={{borderTop:"none",borderBottom:"none",opacity:safeJudge?1:0.45}}/>
                         <button className="stepper-btn" onClick={()=>updateGuinnessCount(myGuinnessCount-1)} disabled={!safeJudge} style={{borderRadius:"0 0 2px 2px",opacity:safeJudge?1:0.45}}>－</button>
                       </div>
-
-                      {/* Group total */}
                       <div style={{display:"flex",flexDirection:"column"}}>
-                        <div className="cinzel" style={{fontSize:"8px",letterSpacing:"0.2em",textTransform:"uppercase",color:"#5a2e08",fontWeight:700,marginBottom:"6px",textAlign:"center"}}>
-                          Total Slain Infidels
-                        </div>
+                        <div className="cinzel" style={{fontSize:"8px",letterSpacing:"0.2em",textTransform:"uppercase",color:"#5a2e08",fontWeight:700,marginBottom:"6px",textAlign:"center"}}>Total Slain Infidels</div>
                         <div style={{flex:1,padding:"10px",background:"rgba(110,58,16,0.18)",border:"1.5px solid rgba(90,48,10,0.38)",borderRadius:"2px",textAlign:"center",display:"flex",alignItems:"center",justifyContent:"center",minHeight:"101px"}}>
                           <div className="cinzel" style={{fontSize:"48px",fontWeight:900,color:"#1e0e04",lineHeight:1}}>{groupGuinnessTotal}</div>
                         </div>
                       </div>
                     </div>
-
-                    {/* Per-crusader pills with rank */}
                     {Object.keys(guinnessCounts).length > 0 && (
                       <div style={{marginTop:"10px",display:"flex",flexWrap:"wrap",gap:"6px"}}>
-                        {Object.entries(guinnessCounts)
-                          .filter(([,v])=>v>0)
-                          .sort((a,b)=>b[1]-a[1])
-                          .map(([judge,count])=>(
-                            <div key={judge} style={{padding:"4px 10px",background:"rgba(248,228,168,0.7)",border:"1px solid rgba(90,48,10,0.3)",borderRadius:"2px",display:"flex",alignItems:"center",gap:"6px",flexWrap:"wrap"}}>
-                              <span className="fell" style={{fontSize:"12px",color:"#3a1a06",fontStyle:"italic"}}>{judge}</span>
-                              <span className="cinzel" style={{fontSize:"11px",fontWeight:700,color:"#1e0e04"}}>{count}</span>
-                              <RankBadge count={Number(count)}/>
-                            </div>
-                          ))}
+                        {Object.entries(guinnessCounts).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).map(([judge,count])=>(
+                          <div key={judge} style={{padding:"4px 10px",background:"rgba(248,228,168,0.7)",border:"1px solid rgba(90,48,10,0.3)",borderRadius:"2px",display:"flex",alignItems:"center",gap:"6px",flexWrap:"wrap"}}>
+                            <span className="fell" style={{fontSize:"12px",color:"#3a1a06",fontStyle:"italic"}}>{judge}</span>
+                            <span className="cinzel" style={{fontSize:"11px",fontWeight:700,color:"#1e0e04"}}>{count}</span>
+                            <RankBadge count={Number(count)}/>
+                          </div>
+                        ))}
                       </div>
                     )}
                   </div>
@@ -723,7 +752,6 @@ export default function GuinnessCrusadeApp() {
               </div>
             </div>
           </div>
-
           <div className="scroll-rod"/>
 
         </div>
