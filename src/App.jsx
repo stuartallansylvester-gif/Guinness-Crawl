@@ -23,7 +23,6 @@ const GlobalStyles = () => (
       --paper-light: #f4e7bf;
       --paper-mid: #ead7a3;
       --paper-dark: #cfae71;
-      --paper-burn: #8d6630;
 
       --red-1: #7a1f1f;
       --red-2: #521414;
@@ -31,25 +30,18 @@ const GlobalStyles = () => (
 
       --gold-1: #ead08b;
       --gold-2: #c59a3d;
-      --gold-3: #76551a;
 
       --green-1: #233b2d;
       --green-2: #16261d;
-      --green-3: #36523f;
 
       --wood-1: #4b2e18;
       --wood-2: #2c1a0d;
       --wood-3: #6a4122;
-
-      --edge: rgba(66, 36, 10, 0.55);
-      --shadow: rgba(22, 10, 4, 0.45);
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    html, body, #root {
-      min-height: 100%;
-    }
+    html, body, #root { min-height: 100%; }
 
     body {
       min-height: 100vh;
@@ -183,9 +175,10 @@ const GlobalStyles = () => (
 
     .crusade-logo {
       display: block;
-      width: 200px;
-      max-width: 80%;
+      width: 240px;
+      max-width: 86%;
       margin: 0 auto 6px;
+      background: transparent;
       mix-blend-mode: multiply;
       filter: drop-shadow(0 2px 5px rgba(60,28,4,0.18));
     }
@@ -506,7 +499,7 @@ const SUPABASE_ANON_KEY = "sb_publishable_0o1l0knnxpTOg7aHcSKqfQ_6gkb7bck";
 const hasSupabaseConfig = SUPABASE_URL && SUPABASE_ANON_KEY && !SUPABASE_URL.includes("YOUR_PROJECT");
 const supabase          = hasSupabaseConfig ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
-const STORAGE_KEY       = "guinness-crusade-v11";
+const STORAGE_KEY       = "guinness-crusade-v12";
 const GUINNESS_PUB_KEY  = "__guinness__";
 const CHRONICLE_PUB_KEY = "__chronicle__";
 
@@ -595,31 +588,6 @@ const gAvg   = (e,gk)   => eAvg(e, CATEGORIES[gk].map(i=>i.key));
 const sLabel = (f,s)    => QUALITATIVE[f].find(i=>i.score===s)?.label || "Unrated";
 
 /* ── Campaign Map ─────────────────────────────────────────────────────────── */
-const Smoke = ({ x, y }) => (
-  <g opacity="0.75">
-    <ellipse cx={x} cy={y} rx="4" ry="3" fill="rgba(72,72,72,0.24)">
-      <animate attributeName="cy" values={`${y};${y-12};${y-24}`} dur="2.5s" repeatCount="indefinite" />
-      <animate attributeName="rx" values="4;5;6" dur="2.5s" repeatCount="indefinite" />
-      <animate attributeName="ry" values="3;4;5" dur="2.5s" repeatCount="indefinite" />
-      <animate attributeName="opacity" values="0.5;0.35;0" dur="2.5s" repeatCount="indefinite" />
-    </ellipse>
-    <ellipse cx={x+5} cy={y-3} rx="3.5" ry="2.7" fill="rgba(92,92,92,0.18)">
-      <animate attributeName="cy" values={`${y-3};${y-16};${y-27}`} dur="2.1s" repeatCount="indefinite" />
-      <animate attributeName="cx" values={`${x+5};${x+7};${x+4}`} dur="2.1s" repeatCount="indefinite" />
-      <animate attributeName="rx" values="3.5;4.6;5.4" dur="2.1s" repeatCount="indefinite" />
-      <animate attributeName="ry" values="2.7;3.5;4.3" dur="2.1s" repeatCount="indefinite" />
-      <animate attributeName="opacity" values="0.42;0.25;0" dur="2.1s" repeatCount="indefinite" />
-    </ellipse>
-    <ellipse cx={x-4} cy={y-1} rx="3" ry="2.4" fill="rgba(110,110,110,0.15)">
-      <animate attributeName="cy" values={`${y-1};${y-13};${y-22}`} dur="2.8s" repeatCount="indefinite" />
-      <animate attributeName="cx" values={`${x-4};${x-7};${x-5}`} dur="2.8s" repeatCount="indefinite" />
-      <animate attributeName="rx" values="3;4;5" dur="2.8s" repeatCount="indefinite" />
-      <animate attributeName="ry" values="2.4;3.3;4.2" dur="2.8s" repeatCount="indefinite" />
-      <animate attributeName="opacity" values="0.35;0.2;0" dur="2.8s" repeatCount="indefinite" />
-    </ellipse>
-  </g>
-);
-
 const CampaignMap = ({ pubs, selectedPub, scoreMap }) => {
   const W = 420;
   const H = 128;
@@ -638,7 +606,6 @@ const CampaignMap = ({ pubs, selectedPub, scoreMap }) => {
         const cx = xOf(i);
         const active = pub === selectedPub;
         const conq = isConquered(pub);
-        const showSmoke = false;
         const fc = active ? "#8a1f1f" : conq ? "#233b2d" : "#b89050";
         const sc = "rgba(45,18,3,0.72)";
         const drk = "rgba(18,6,1,0.78)";
@@ -648,7 +615,6 @@ const CampaignMap = ({ pubs, selectedPub, scoreMap }) => {
         if (i === 0) {
           castle = (
             <>
-              {showSmoke && <Smoke x={cx} y={cy-32} />}
               {active && <text x={cx} y={cy-40} textAnchor="middle" fontSize="13" fill="#9a1a08">⚔</text>}
               <rect x={cx-6} y={cy-13} width={12} height={13} fill={fc} stroke={sc} strokeWidth="0.8"/>
               <rect x={cx-9} y={cy-22} width={18} height={11} rx="9" fill={fc} stroke={sc} strokeWidth="0.8"/>
@@ -666,7 +632,6 @@ const CampaignMap = ({ pubs, selectedPub, scoreMap }) => {
         } else if (i === 1) {
           castle = (
             <>
-              {showSmoke && <Smoke x={cx} y={cy-34} />}
               {active && <text x={cx} y={cy-37} textAnchor="middle" fontSize="13" fill="#9a1a08">⚔</text>}
               <rect x={cx-13} y={cy-23} width={8} height={23} fill={fc} stroke={sc} strokeWidth="0.8"/>
               <rect x={cx+5}  y={cy-23} width={8} height={23} fill={fc} stroke={sc} strokeWidth="0.8"/>
@@ -687,7 +652,6 @@ const CampaignMap = ({ pubs, selectedPub, scoreMap }) => {
         } else if (i === 2) {
           castle = (
             <>
-              {showSmoke && <Smoke x={cx} y={cy-42} />}
               {active && <text x={cx} y={cy-44} textAnchor="middle" fontSize="13" fill="#9a1a08">⚔</text>}
               <rect x={cx-5} y={cy-30} width={10} height={30} fill={fc} stroke={sc} strokeWidth="0.8"/>
               {[-4,-1,2].map((dx,j)=><rect key={j} x={cx+dx} y={cy-36} width={2.5} height={7} fill={fc} stroke={sc} strokeWidth="0.5"/>)}
@@ -705,7 +669,6 @@ const CampaignMap = ({ pubs, selectedPub, scoreMap }) => {
         } else if (i === 3) {
           castle = (
             <>
-              {showSmoke && <Smoke x={cx} y={cy-40} />}
               {active && <text x={cx} y={cy-42} textAnchor="middle" fontSize="13" fill="#9a1a08">⚔</text>}
               <rect x={cx-14} y={cy-10} width={28} height={10} fill={fc} stroke={sc} strokeWidth="0.8"/>
               <rect x={cx-14} y={cy-20} width={7}  height={20} fill={fc} stroke={sc} strokeWidth="0.8"/>
@@ -728,7 +691,6 @@ const CampaignMap = ({ pubs, selectedPub, scoreMap }) => {
         } else {
           castle = (
             <>
-              {showSmoke && <Smoke x={cx} y={cy-50} />}
               {active && <text x={cx} y={cy-54} textAnchor="middle" fontSize="13" fill="#9a1a08">⚔</text>}
               <rect x={cx-15} y={cy-8} width={30} height={8} fill={fc} stroke={sc} strokeWidth="0.8"/>
               <rect x={cx-15} y={cy-24} width={8} height={24} fill={fc} stroke={sc} strokeWidth="0.8"/>
@@ -988,7 +950,6 @@ export default function GuinnessCrusadeApp() {
       if (ctx.state === "suspended") ctx.resume();
 
       const now = ctx.currentTime;
-
       const osc1 = ctx.createOscillator();
       const osc2 = ctx.createOscillator();
       const gain = ctx.createGain();
@@ -996,10 +957,8 @@ export default function GuinnessCrusadeApp() {
 
       osc1.type = "triangle";
       osc2.type = "sine";
-
       osc1.frequency.setValueAtTime(1100, now);
       osc1.frequency.exponentialRampToValueAtTime(560, now + 0.08);
-
       osc2.frequency.setValueAtTime(1800, now);
       osc2.frequency.exponentialRampToValueAtTime(700, now + 0.06);
 
@@ -1019,9 +978,7 @@ export default function GuinnessCrusadeApp() {
       osc2.start(now);
       osc1.stop(now + 0.16);
       osc2.stop(now + 0.16);
-    } catch (e) {
-      // ignore sound failures
-    }
+    } catch (e) {}
   };
 
   const addChronicleEvent = async (text) => {
@@ -1412,9 +1369,60 @@ export default function GuinnessCrusadeApp() {
                             </div>
 
                             <div>
-                              <div className="cinzel" style={{fontSize:"11px",fontWeight:700,color:"#1e0e04",letterSpacing:"0.08em"}}>
-                                {cat.title}
+                              <div
+                                style={{
+                                  display: "inline-block",
+                                  position: "relative",
+                                  marginBottom: "6px"
+                                }}
+                              >
+                                <div
+                                  className="cinzel"
+                                  style={{
+                                    fontSize: "14px",
+                                    fontWeight: 800,
+                                    letterSpacing: "0.14em",
+                                    textTransform: "uppercase",
+                                    color: "#f8e8c0",
+                                    textShadow: "0 1px 0 #000",
+                                    padding: "4px 14px",
+                                    background: "linear-gradient(180deg, #8a1f1f 0%, #5d1716 100%)",
+                                    border: "2px solid #3a0f0f",
+                                    boxShadow:
+                                      "0 4px 10px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,220,160,0.2)",
+                                    clipPath: "polygon(0 0, 100% 0, 96% 100%, 4% 100%)"
+                                  }}
+                                >
+                                  {cat.title}
+                                </div>
+
+                                <div
+                                  style={{
+                                    position: "absolute",
+                                    left: "-8px",
+                                    top: "6px",
+                                    width: "0",
+                                    height: "0",
+                                    borderTop: "6px solid transparent",
+                                    borderBottom: "6px solid transparent",
+                                    borderRight: "8px solid #5d1716"
+                                  }}
+                                />
+
+                                <div
+                                  style={{
+                                    position: "absolute",
+                                    right: "-8px",
+                                    top: "6px",
+                                    width: "0",
+                                    height: "0",
+                                    borderTop: "6px solid transparent",
+                                    borderBottom: "6px solid transparent",
+                                    borderLeft: "8px solid #5d1716"
+                                  }}
+                                />
                               </div>
+
                               <div className="fell" style={{fontSize:"12px",color:"#5a2e08",fontStyle:"italic",lineHeight:1.5,marginTop:"3px"}}>
                                 {cat.desc}
                               </div>
@@ -1646,11 +1654,6 @@ export default function GuinnessCrusadeApp() {
                         </span>
                       </div>
                     ))}
-                    <div style={{display:"flex",alignItems:"center",gap:"5px"}}>
-                      <div style={{width:"10px",height:"10px",background:"linear-gradient(180deg, rgba(90,90,90,0.55), rgba(180,180,180,0.10))",border:"1px solid rgba(50,22,4,0.25)",borderRadius:"50%"}}/>
-                      <span className="cinzel" style={{fontSize:"7px",letterSpacing:"0.08em",color:"#5a2e08",textTransform:"uppercase",fontWeight:700}}>
-                      </span>
-                    </div>
                   </div>
                 </div>
 
