@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@supabase/supabase-js";
 import { Shield, Trophy, Flame, ScrollText, Users, Swords, Castle, Crown, Coins, Beer } from "lucide-react";
@@ -6,93 +6,445 @@ import { Shield, Trophy, Flame, ScrollText, Users, Swords, Castle, Crown, Coins,
 const GlobalStyles = () => (
   <style>{`
     @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cinzel+Decorative:wght@400;700;900&family=IM+Fell+English:ital@0;1&display=swap');
+
+    :root {
+      --ink: #23140c;
+      --parchment-1: #f6e8bf;
+      --parchment-2: #ead39b;
+      --parchment-3: #d8ba77;
+      --parchment-burn: #8a6429;
+
+      --red-1: #7a1f1f;
+      --red-2: #521414;
+      --red-3: #a2312d;
+
+      --gold-1: #f2d28b;
+      --gold-2: #c89f44;
+      --gold-3: #7b5a1c;
+
+      --green-1: #233b2d;
+      --green-2: #16261d;
+      --green-3: #36523f;
+
+      --edge: rgba(66, 36, 10, 0.55);
+      --shadow: rgba(22, 10, 4, 0.45);
+    }
+
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: radial-gradient(ellipse at center top, #1e0e05 0%, #0a0401 100%); min-height: 100vh; }
+
+    body {
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 20% 10%, rgba(255,236,190,0.08), transparent 18%),
+        radial-gradient(circle at 80% 18%, rgba(120,40,25,0.12), transparent 16%),
+        radial-gradient(circle at 30% 75%, rgba(25,55,35,0.10), transparent 20%),
+        linear-gradient(180deg, #2f1a0f 0%, #1b0f08 100%);
+      color: var(--ink);
+    }
+
     .cinzel      { font-family: 'Cinzel', Georgia, serif; }
     .cinzel-deco { font-family: 'Cinzel Decorative', Georgia, serif; }
     .fell        { font-family: 'IM Fell English', Georgia, serif; }
+
     .scroll-rod {
-      position: relative; height: 54px; width: calc(100% + 40px); margin-left: -20px; border-radius: 27px;
-      background: linear-gradient(180deg, #0e0604 0%, #2e1408 6%, #6a3418 15%, #b06828 28%, #d89848 40%, #f0b858 48%, #ffd070 50%, #f0b858 52%, #d89848 60%, #b06828 72%, #6a3418 85%, #2e1408 94%, #0e0604 100%);
-      box-shadow: 0 10px 32px rgba(0,0,0,0.85), 0 3px 8px rgba(0,0,0,0.6), inset 0 1px 3px rgba(255,220,140,0.25), inset 0 -1px 2px rgba(0,0,0,0.4);
+      position: relative;
+      height: 54px;
+      width: calc(100% + 40px);
+      margin-left: -20px;
+      border-radius: 27px;
+      background:
+        linear-gradient(180deg, #2d2008 0%, #6e531c 10%, #d4ab59 28%, #f3d997 48%, #fff0bf 50%, #f3d997 52%, #d4ab59 72%, #6e531c 90%, #2d2008 100%);
+      box-shadow:
+        0 10px 32px rgba(0,0,0,0.75),
+        0 3px 8px rgba(0,0,0,0.5),
+        inset 0 1px 3px rgba(255,245,200,0.28),
+        inset 0 -2px 4px rgba(70,40,8,0.35);
       z-index: 4;
     }
+
     .scroll-rod::before, .scroll-rod::after {
-      content: ''; position: absolute; top: 50%; transform: translateY(-50%);
-      width: 26px; height: 46px; border-radius: 50%;
-      background: radial-gradient(ellipse 55% 50% at 38% 45%, #e8b050, #7a3808 80%);
+      content: '';
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 26px;
+      height: 46px;
+      border-radius: 50%;
+      background: radial-gradient(ellipse 55% 50% at 38% 45%, #f0cd82, #7a4512 80%);
       box-shadow: 3px 0 12px rgba(0,0,0,0.7);
     }
+
     .scroll-rod::before { left: -10px; }
     .scroll-rod::after  { right: -10px; box-shadow: -3px 0 12px rgba(0,0,0,0.7); }
+
     .parchment-body {
-      position: relative; z-index: 2; margin-top: -18px; margin-bottom: -18px; padding: 34px 28px 34px;
+      position: relative;
+      z-index: 2;
+      margin-top: -18px;
+      margin-bottom: -18px;
+      padding: 34px 28px 34px;
       background:
-        radial-gradient(ellipse at 8% 12%, rgba(155,95,18,0.38) 0%, transparent 42%),
-        radial-gradient(ellipse at 92% 10%, rgba(140,82,12,0.28) 0%, transparent 36%),
-        radial-gradient(ellipse at 15% 55%, rgba(120,72,10,0.18) 0%, transparent 30%),
-        radial-gradient(ellipse at 88% 60%, rgba(130,78,12,0.22) 0%, transparent 34%),
-        radial-gradient(ellipse at 50% 92%, rgba(145,88,15,0.32) 0%, transparent 40%),
-        radial-gradient(ellipse at 50% 50%, rgba(255,240,195,0.12) 0%, transparent 60%),
-        linear-gradient(180deg, #c89838 0%, #ddb048 5%, #edcc78 12%, #f5dfa0 22%, #faf0cc 38%, #f8eac4 50%, #f5e0a8 62%, #edcc78 78%, #ddb048 90%, #c89838 100%);
-      box-shadow: inset 14px 0 28px rgba(70,35,5,0.32), inset -14px 0 28px rgba(70,35,5,0.32), inset 0 8px 16px rgba(50,25,3,0.22), inset 0 -8px 16px rgba(50,25,3,0.22);
+        radial-gradient(circle at 12% 18%, rgba(122,31,31,0.14), transparent 18%),
+        radial-gradient(circle at 86% 16%, rgba(35,59,45,0.16), transparent 18%),
+        radial-gradient(circle at 18% 82%, rgba(125,88,30,0.18), transparent 20%),
+        radial-gradient(circle at 80% 75%, rgba(35,59,45,0.12), transparent 20%),
+        repeating-linear-gradient(
+          0deg,
+          rgba(120,88,26,0.03) 0px,
+          rgba(120,88,26,0.03) 2px,
+          rgba(255,255,255,0.01) 2px,
+          rgba(255,255,255,0.01) 4px
+        ),
+        linear-gradient(180deg, #d2b06a 0%, #ead39b 8%, #f5e7bd 24%, #f9efd0 50%, #f2e1b2 76%, #d4b06a 100%);
+      box-shadow:
+        inset 16px 0 30px rgba(76,46,16,0.28),
+        inset -16px 0 30px rgba(76,46,16,0.28),
+        inset 0 12px 18px rgba(70,44,16,0.18),
+        inset 0 -12px 18px rgba(70,44,16,0.18),
+        0 20px 45px rgba(0,0,0,0.28);
     }
-    .parchment-body::before, .parchment-body::after { content: ''; position: absolute; top: 0; bottom: 0; width: 18px; pointer-events: none; z-index: 3; }
-    .parchment-body::before { left: 0; background: linear-gradient(90deg, rgba(60,28,4,0.35), transparent); }
-    .parchment-body::after  { right: 0; background: linear-gradient(270deg, rgba(60,28,4,0.35), transparent); }
-    .parchment-frame { border: 2px solid rgba(90,50,10,0.55); padding: 22px 16px 20px; position: relative; }
-    .parchment-frame::before { content: ''; position: absolute; inset: 5px; border: 1px solid rgba(90,50,10,0.28); pointer-events: none; }
+
+    .parchment-body::before,
+    .parchment-body::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 18px;
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    .parchment-body::before { left: 0; background: linear-gradient(90deg, rgba(70,34,10,0.30), transparent); }
+    .parchment-body::after  { right: 0; background: linear-gradient(270deg, rgba(70,34,10,0.30), transparent); }
+
+    .parchment-frame {
+      border: 2px solid rgba(84,50,18,0.55);
+      padding: 22px 16px 20px;
+      position: relative;
+      background: rgba(255,247,222,0.08);
+    }
+
+    .parchment-frame::before {
+      content: '';
+      position: absolute;
+      inset: 5px;
+      border: 1px solid rgba(84,50,18,0.22);
+      pointer-events: none;
+    }
+
     .corner { position: absolute; width: 28px; height: 28px; }
     .corner svg { width: 100%; height: 100%; }
     .corner-tl { top: -1px; left: -1px; }
     .corner-tr { top: -1px; right: -1px; transform: scaleX(-1); }
     .corner-bl { bottom: -1px; left: -1px; transform: scaleY(-1); }
     .corner-br { bottom: -1px; right: -1px; transform: scale(-1); }
-    .crusade-logo { display: block; width: 200px; max-width: 80%; margin: 0 auto 6px; mix-blend-mode: multiply; filter: drop-shadow(0 3px 8px rgba(60,28,4,0.3)); }
+
+    .crusade-logo {
+      display: block;
+      width: 200px;
+      max-width: 80%;
+      margin: 0 auto 6px;
+      mix-blend-mode: multiply;
+      filter: drop-shadow(0 3px 8px rgba(60,28,4,0.25));
+    }
+
     .section-card {
-      background: linear-gradient(180deg, rgba(255,243,205,0.72) 0%, rgba(238,214,158,0.68) 100%);
-      border: 1.5px solid rgba(100,58,12,0.42); border-radius: 3px; padding: 14px; position: relative;
-      box-shadow: 0 3px 10px rgba(50,24,3,0.14), inset 0 1px 2px rgba(255,235,175,0.5);
+      background:
+        linear-gradient(180deg, rgba(255,247,225,0.78) 0%, rgba(238,218,170,0.76) 100%);
+      border: 1.5px solid rgba(88,54,20,0.38);
+      border-radius: 8px;
+      padding: 14px;
+      position: relative;
+      box-shadow:
+        0 6px 16px rgba(50,24,3,0.14),
+        inset 0 1px 2px rgba(255,244,210,0.65);
+      overflow: hidden;
     }
+
+    .section-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(135deg, rgba(122,31,31,0.035), transparent 30%),
+        linear-gradient(315deg, rgba(35,59,45,0.04), transparent 34%);
+    }
+
     .parchment-input, .parchment-select {
-      width: 100%; padding: 10px 14px; border: 1.5px solid rgba(80,40,8,0.55);
-      background: rgba(255,243,210,0.92); color: #180a02; font-size: 14px;
-      font-family: 'Cinzel', Georgia, serif; font-weight: 600; outline: none; border-radius: 2px;
-      letter-spacing: 0.04em; box-shadow: inset 0 2px 4px rgba(60,28,4,0.12); transition: border-color 0.2s;
+      width: 100%;
+      padding: 10px 14px;
+      border: 1.5px solid rgba(70,40,14,0.55);
+      background: rgba(255,248,228,0.94);
+      color: #180a02;
+      font-size: 14px;
+      font-family: 'Cinzel', Georgia, serif;
+      font-weight: 600;
+      outline: none;
+      border-radius: 6px;
+      letter-spacing: 0.04em;
+      box-shadow: inset 0 2px 4px rgba(60,28,4,0.10);
+      transition: border-color 0.2s, box-shadow 0.2s;
     }
-    .parchment-input:focus, .parchment-select:focus { border-color: rgba(80,40,8,0.85); box-shadow: inset 0 2px 4px rgba(60,28,4,0.18), 0 0 0 2px rgba(180,120,40,0.18); }
+
+    .parchment-input:focus, .parchment-select:focus, .parchment-number:focus {
+      border-color: rgba(122,31,31,0.72);
+      box-shadow:
+        inset 0 2px 4px rgba(60,28,4,0.12),
+        0 0 0 2px rgba(200,159,68,0.20);
+    }
+
     .parchment-input::placeholder { color: rgba(80,38,8,0.4); font-weight: 400; }
     .parchment-select option { background: #f5dfa0; color: #180a02; }
+
     .parchment-number {
-      width: 100%; padding: 10px 14px; border: 1.5px solid rgba(80,40,8,0.55);
-      background: rgba(255,243,210,0.92); color: #180a02; font-size: 28px;
-      font-family: 'Cinzel', Georgia, serif; font-weight: 900; outline: none; border-radius: 0;
-      letter-spacing: 0.04em; box-shadow: inset 0 2px 4px rgba(60,28,4,0.12); transition: border-color 0.2s;
-      text-align: center; -moz-appearance: textfield;
+      width: 100%;
+      padding: 10px 14px;
+      border: 1.5px solid rgba(70,40,14,0.55);
+      background: rgba(255,248,228,0.94);
+      color: #180a02;
+      font-size: 28px;
+      font-family: 'Cinzel', Georgia, serif;
+      font-weight: 900;
+      outline: none;
+      border-radius: 0;
+      letter-spacing: 0.04em;
+      box-shadow: inset 0 2px 4px rgba(60,28,4,0.10);
+      text-align: center;
+      -moz-appearance: textfield;
     }
-    .parchment-number::-webkit-outer-spin-button, .parchment-number::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-    .parchment-number:focus { border-color: rgba(80,40,8,0.85); box-shadow: inset 0 2px 4px rgba(60,28,4,0.18), 0 0 0 2px rgba(180,120,40,0.18); }
-    .crusade-btn { font-family: 'Cinzel', Georgia, serif; font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; border-radius: 2px; padding: 9px 14px; cursor: pointer; transition: all 0.18s ease; }
-    .crusade-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
-    .crusade-btn-active { background: linear-gradient(180deg, #8a4e1c 0%, #5c3010 100%); border: 2px solid #3e1e08; color: #f8e8c0; box-shadow: 0 4px 14px rgba(30,12,2,0.45), inset 0 1px 0 rgba(255,210,130,0.2); }
-    .crusade-btn-inactive { background: linear-gradient(180deg, rgba(255,240,195,0.85) 0%, rgba(230,200,140,0.8) 100%); border: 1.5px solid rgba(90,48,10,0.45); color: #3a1a06; box-shadow: 0 2px 6px rgba(30,12,2,0.15); }
-    .option-pill { width: 100%; padding: 9px 12px; text-align: left; font-family: 'IM Fell English', Georgia, serif; font-size: 13px; border-radius: 2px; cursor: pointer; transition: all 0.15s ease; }
-    .option-pill-active { background: linear-gradient(90deg, #6e3a10 0%, #9a5820 100%); border: 1.5px solid #4a2208; color: #f8e8c0; box-shadow: 0 3px 10px rgba(30,10,2,0.35); }
-    .option-pill-inactive { background: rgba(255,240,195,0.55); border: 1px solid rgba(90,48,10,0.32); color: #1e0e04; }
-    .option-pill-inactive:hover { background: rgba(245,225,165,0.75); }
-    .lb-row { border: 1px solid rgba(100,58,12,0.38); background: rgba(248,230,180,0.6); border-radius: 3px; padding: 12px; }
-    .ornament { text-align: center; font-family: 'Cinzel', serif; color: rgba(90,50,10,0.6); font-size: 13px; letter-spacing: 10px; padding: 2px 0; }
+
+    .parchment-number::-webkit-outer-spin-button,
+    .parchment-number::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    .crusade-btn,
+    .stepper-btn,
+    .option-pill {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .crusade-btn {
+      font-family: 'Cinzel', Georgia, serif;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      border-radius: 999px;
+      padding: 11px 16px;
+      cursor: pointer;
+      transition: transform 0.16s ease, filter 0.16s ease, box-shadow 0.16s ease;
+    }
+
+    .crusade-btn::before,
+    .stepper-btn::before {
+      content: '';
+      position: absolute;
+      inset: 1px;
+      border-radius: inherit;
+      pointer-events: none;
+      box-shadow:
+        inset 0 1px 0 rgba(255,244,210,0.45),
+        inset 0 -2px 3px rgba(20,8,2,0.18);
+    }
+
+    .crusade-btn::after {
+      content: '✦';
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      opacity: 0.55;
+      font-size: 10px;
+    }
+
+    .crusade-btn:hover,
+    .stepper-btn:hover,
+    .option-pill:hover {
+      filter: brightness(1.05);
+      transform: translateY(-1px);
+    }
+
+    .crusade-btn:active,
+    .stepper-btn:active,
+    .option-pill:active {
+      transform: translateY(1px) scale(0.995);
+      filter: brightness(0.96);
+    }
+
+    .crusade-btn-active {
+      background:
+        linear-gradient(180deg, #9b2f2d 0%, #6f1d1d 54%, #4f1414 100%);
+      border: 2px solid #35100f;
+      color: #f7e7be;
+      box-shadow:
+        0 7px 16px rgba(40,10,10,0.30),
+        inset 0 1px 0 rgba(255,219,170,0.28);
+    }
+
+    .crusade-btn-inactive {
+      background:
+        linear-gradient(180deg, #314c3a 0%, #213628 52%, #17251c 100%);
+      border: 2px solid #0f1a13;
+      color: #f2ddb1;
+      box-shadow:
+        0 6px 12px rgba(20,30,22,0.22),
+        inset 0 1px 0 rgba(255,244,210,0.12);
+    }
+
+    .option-pill {
+      width: 100%;
+      padding: 10px 12px;
+      text-align: left;
+      font-family: 'IM Fell English', Georgia, serif;
+      font-size: 13px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .option-pill-active {
+      background:
+        linear-gradient(90deg, rgba(122,31,31,0.96) 0%, rgba(162,49,45,0.96) 100%);
+      border: 1.5px solid #4a1716;
+      color: #f8e8c0;
+      box-shadow: 0 4px 12px rgba(40,10,10,0.22);
+    }
+
+    .option-pill-inactive {
+      background: rgba(247,236,202,0.82);
+      border: 1px solid rgba(80,54,20,0.26);
+      color: #1e0e04;
+    }
+
+    .option-pill-inactive:hover {
+      background: rgba(238,224,184,0.95);
+    }
+
+    .lb-row {
+      border: 1px solid rgba(88,54,20,0.28);
+      background: rgba(248,236,205,0.68);
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    .ornament {
+      text-align: center;
+      font-family: 'Cinzel', serif;
+      color: rgba(90,50,10,0.6);
+      font-size: 13px;
+      letter-spacing: 10px;
+      padding: 2px 0;
+    }
+
     .stepper-btn {
-      width: 100%; padding: 8px 0; font-family: 'Cinzel', Georgia, serif; font-size: 20px; font-weight: 700;
-      cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s ease;
-      background: linear-gradient(180deg, #8a4e1c 0%, #5c3010 100%); border: 2px solid #3e1e08; color: #f8e8c0;
-      box-shadow: 0 3px 10px rgba(30,12,2,0.35);
+      width: 100%;
+      padding: 8px 0;
+      font-family: 'Cinzel', Georgia, serif;
+      font-size: 20px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+      background:
+        linear-gradient(180deg, #d3ab55 0%, #b6852d 52%, #7a571e 100%);
+      border: 2px solid #4a3311;
+      color: #2a1607;
+      box-shadow: 0 4px 12px rgba(45,22,6,0.25);
     }
-    .stepper-btn:hover { filter: brightness(1.15); transform: translateY(-1px); }
-    .stepper-btn:active { transform: translateY(0); filter: brightness(0.95); }
-    .chronicle-entry { padding: 7px 10px; border-left: 3px solid rgba(90,48,10,0.5); background: rgba(248,228,168,0.4); border-radius: 0 2px 2px 0; }
-    .battle-cry-overlay { position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center; pointer-events: none; background: rgba(15,5,1,0.3); }
-    .battle-cry-text { padding: 18px 36px; background: linear-gradient(180deg, #8a4e1c 0%, #5c3010 100%); border: 3px solid #3e1e08; color: #f8e8c0; font-family: 'Cinzel Decorative', Georgia, serif; font-size: 22px; font-weight: 700; letter-spacing: 0.06em; border-radius: 3px; box-shadow: 0 12px 40px rgba(0,0,0,0.85); text-align: center; }
+
+    .chronicle-entry {
+      padding: 8px 10px;
+      border-left: 3px solid rgba(122,31,31,0.62);
+      background: rgba(248,236,205,0.48);
+      border-radius: 0 6px 6px 0;
+    }
+
+    .battle-cry-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      background: rgba(15,5,1,0.28);
+    }
+
+    .battle-cry-text {
+      padding: 18px 36px;
+      background: linear-gradient(180deg, #8b2a27 0%, #5d1716 100%);
+      border: 3px solid #33100f;
+      color: #f8e8c0;
+      font-family: 'Cinzel Decorative', Georgia, serif;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      border-radius: 8px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.75);
+      text-align: center;
+    }
+
+    .victory-banner-shell {
+      position: fixed;
+      top: 26px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10000;
+      pointer-events: none;
+      width: min(92vw, 520px);
+    }
+
+    .victory-banner {
+      position: relative;
+      padding: 18px 24px;
+      text-align: center;
+      color: #f9ebc8;
+      background:
+        linear-gradient(180deg, #8a1f1f 0%, #671919 55%, #4d1212 100%);
+      border: 3px solid #f0cf84;
+      box-shadow:
+        0 16px 36px rgba(0,0,0,0.32),
+        inset 0 1px 0 rgba(255,230,180,0.20);
+      clip-path: polygon(0 0, 100% 0, 96% 100%, 4% 100%);
+    }
+
+    .victory-banner::before,
+    .victory-banner::after {
+      content: '';
+      position: absolute;
+      top: 12px;
+      width: 22px;
+      height: calc(100% - 24px);
+      background: linear-gradient(180deg, #d6b162 0%, #a67a28 100%);
+      border: 2px solid #5e4315;
+      z-index: -1;
+    }
+
+    .victory-banner::before { left: -10px; }
+    .victory-banner::after  { right: -10px; }
+
+    .victory-banner-title {
+      font-family: 'Cinzel Decorative', Georgia, serif;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      margin-bottom: 4px;
+    }
+
+    .victory-banner-sub {
+      font-family: 'Cinzel', Georgia, serif;
+      font-size: 10px;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      opacity: 0.9;
+    }
   `}</style>
 );
 
@@ -113,8 +465,8 @@ const SUPABASE_ANON_KEY = "sb_publishable_0o1l0knnxpTOg7aHcSKqfQ_6gkb7bck";
 const hasSupabaseConfig = SUPABASE_URL && SUPABASE_ANON_KEY && !SUPABASE_URL.includes("YOUR_PROJECT");
 const supabase          = hasSupabaseConfig ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
-// Bumped to v9 — clears any old localStorage cache missing The Queen & Beaver
-const STORAGE_KEY       = "guinness-crusade-v9";
+// Bumped version to refresh local cache after theme changes
+const STORAGE_KEY       = "guinness-crusade-v10";
 const GUINNESS_PUB_KEY  = "__guinness__";
 const CHRONICLE_PUB_KEY = "__chronicle__";
 
@@ -149,7 +501,7 @@ const CATEGORIES = {
     {key:"taste", title:"Taste",       icon:Trophy,     desc:"The dark nectar must sing of roasted grain and Irish earth. A rich, smooth draught is the reward of the righteous. A foul sip is cause for immediate retreat."},
   ],
   pub: [
-    {key:"vibe",              title:"Vibe",              icon:ScrollText, desc:"Does this hall stir the blood of a Crusader? The air, the noise, the fellowship — a great tavern feels like a campaign won. A bleak hall is a campaign lost."},
+    {key:"vibe",              title:"Vibe",               icon:ScrollText, desc:"Does this hall stir the blood of a Crusader? The air, the noise, the fellowship — a great tavern feels like a campaign won. A bleak hall is a campaign lost."},
     {key:"irishAuthenticity", title:"Irish Authenticity", icon:Shield,     desc:"Beware the false banner. Many a pub drapes itself in green yet harbours no true Irish soul. Seek the worn wood, the craic, the weight of history in its walls."},
     {key:"service",           title:"Service",            icon:Users,      desc:"A Crusader left waiting at the bar is a Crusader dishonoured. The steward's duty is swift, cheerful, and sure. Knightly service turns a good pint into a legendary one."},
     {key:"price",             title:"Price",              icon:Coins,      desc:"Even the holiest nectar must be fairly priced. A king's ransom for a pint is a declaration of war. Judge the tribute asked against the quality rendered."},
@@ -169,10 +521,10 @@ const ALL_KEYS = [...CATEGORIES.pint, ...CATEGORIES.pub].map(i => i.key);
 
 const RANKS = [
   {min:0, max:0,        label:"Peasant",      bg:"rgba(140,110,60,0.2)",  color:"#6a4a1a"},
-  {min:1, max:2,        label:"Squire",        bg:"rgba(130,90,20,0.28)",  color:"#7a4a10"},
-  {min:3, max:4,        label:"Knight",        bg:"rgba(50,75,120,0.28)",  color:"#2a4a7a"},
-  {min:5, max:6,        label:"Templar",       bg:"rgba(160,130,10,0.28)", color:"#8a7010"},
-  {min:7, max:Infinity, label:"Grand Marshal", bg:"rgba(140,20,10,0.28)",  color:"#8a1a0a"},
+  {min:1, max:2,        label:"Squire",       bg:"rgba(130,90,20,0.28)",  color:"#7a4a10"},
+  {min:3, max:4,        label:"Knight",       bg:"rgba(50,75,120,0.28)",  color:"#2a4a7a"},
+  {min:5, max:6,        label:"Templar",      bg:"rgba(160,130,10,0.28)", color:"#8a7010"},
+  {min:7, max:Infinity, label:"Grand Marshal",bg:"rgba(140,20,10,0.28)",  color:"#8a1a0a"},
 ];
 const getRank = count => RANKS.find(r => count >= r.min && count <= r.max) || RANKS[0];
 
@@ -198,21 +550,20 @@ const CampaignMap = ({ pubs, selectedPub, scoreMap }) => {
   const pathD = pubs.map((_, i) => `${i===0?'M':'L'}${xOf(i)},${cy}`).join(' ');
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} style={{width:"100%",borderRadius:"2px",display:"block"}}>
-      <rect width={W} height={H} fill="rgba(238,212,148,0.35)" rx="3"/>
+    <svg viewBox={`0 0 ${W} ${H}`} style={{width:"100%",borderRadius:"6px",display:"block"}}>
+      <rect width={W} height={H} fill="rgba(238,212,148,0.35)" rx="6"/>
       <path d={pathD} stroke="rgba(90,48,10,0.32)" strokeWidth="2.5" strokeDasharray="6,5" fill="none"/>
       {pubs.map((pub, i) => {
         const cx     = xOf(i);
         const active = pub === selectedPub;
         const conq   = isConquered(pub);
-        const fc     = active ? "#8a4e1c" : conq ? "#5a3010" : "#b89050";
+        const fc     = active ? "#8a1f1f" : conq ? "#233b2d" : "#b89050";
         const sc     = "rgba(45,18,3,0.72)";
         const drk    = "rgba(18,6,1,0.78)";
         const label  = MAP_LABELS[pub] || pub;
         let castle;
 
         if (i === 0) {
-          // Allen's — Round tower with conical spire
           castle = <>
             {active && <text x={cx} y={cy-40} textAnchor="middle" fontSize="13" fill="#9a1a08">⚔</text>}
             <rect x={cx-6} y={cy-13} width={12} height={13} fill={fc} stroke={sc} strokeWidth="0.8"/>
@@ -226,7 +577,6 @@ const CampaignMap = ({ pubs, selectedPub, scoreMap }) => {
             </>}
           </>;
         } else if (i === 1) {
-          // Noonan's — Twin-tower gatehouse
           castle = <>
             {active && <text x={cx} y={cy-37} textAnchor="middle" fontSize="13" fill="#9a1a08">⚔</text>}
             <rect x={cx-13} y={cy-23} width={8} height={23} fill={fc} stroke={sc} strokeWidth="0.8"/>
@@ -243,7 +593,6 @@ const CampaignMap = ({ pubs, selectedPub, scoreMap }) => {
             </>}
           </>;
         } else if (i === 2) {
-          // McVeigh's — Tall narrow keep with merlons
           castle = <>
             {active && <text x={cx} y={cy-44} textAnchor="middle" fontSize="13" fill="#9a1a08">⚔</text>}
             <rect x={cx-5} y={cy-30} width={10} height={30} fill={fc} stroke={sc} strokeWidth="0.8"/>
@@ -257,7 +606,6 @@ const CampaignMap = ({ pubs, selectedPub, scoreMap }) => {
             </>}
           </>;
         } else if (i === 3) {
-          // P.J. O'Brien — Wide squat fortress with three towers
           castle = <>
             {active && <text x={cx} y={cy-42} textAnchor="middle" fontSize="13" fill="#9a1a08">⚔</text>}
             <rect x={cx-14} y={cy-10} width={28} height={10} fill={fc} stroke={sc} strokeWidth="0.8"/>
@@ -276,25 +624,17 @@ const CampaignMap = ({ pubs, selectedPub, scoreMap }) => {
             </>}
           </>;
         } else {
-          // The Queen & Beaver — Grand palace with three spires
           castle = <>
             {active && <text x={cx} y={cy-54} textAnchor="middle" fontSize="13" fill="#9a1a08">⚔</text>}
-            {/* base wall */}
             <rect x={cx-15} y={cy-8} width={30} height={8} fill={fc} stroke={sc} strokeWidth="0.8"/>
-            {/* left tower + spire */}
             <rect x={cx-15} y={cy-24} width={8} height={24} fill={fc} stroke={sc} strokeWidth="0.8"/>
             <polygon points={`${cx-11},${cy-33} ${cx-15},${cy-24} ${cx-7},${cy-24}`} fill={fc} stroke={sc} strokeWidth="0.8"/>
-            {/* right tower + spire */}
             <rect x={cx+7}  y={cy-24} width={8} height={24} fill={fc} stroke={sc} strokeWidth="0.8"/>
             <polygon points={`${cx+11},${cy-33} ${cx+7},${cy-24} ${cx+15},${cy-24}`} fill={fc} stroke={sc} strokeWidth="0.8"/>
-            {/* central grand tower + spire */}
             <rect x={cx-5}  y={cy-36} width={10} height={36} fill={fc} stroke={sc} strokeWidth="0.8"/>
             <polygon points={`${cx},${cy-46} ${cx-5},${cy-36} ${cx+5},${cy-36}`} fill={fc} stroke={sc} strokeWidth="0.8"/>
-            {/* rose window */}
             <circle cx={cx} cy={cy-22} r="2.5" stroke={drk} strokeWidth="0.8" fill={drk} fillOpacity="0.4"/>
-            {/* gate */}
             <path d={`M${cx-3},${cy} Q${cx},${cy-7} ${cx+3},${cy}`} fill={drk} stroke="none"/>
-            {/* center flag — turns red when conquered */}
             <line x1={cx} y1={cy-46} x2={cx} y2={cy-50} stroke={sc} strokeWidth="0.9"/>
             <polygon points={`${cx},${cy-50} ${cx+7},${cy-47} ${cx},${cy-44}`} fill={conq ? "#8a1a0a" : fc} opacity="0.9"/>
           </>;
@@ -303,9 +643,16 @@ const CampaignMap = ({ pubs, selectedPub, scoreMap }) => {
         return (
           <g key={pub}>
             {castle}
-            <text x={cx} y={cy+15} textAnchor="middle" fontSize="6.5"
-              fontFamily="'Cinzel',Georgia,serif" fontWeight="700"
-              fill={active ? "#8a1a0a" : "#4a2008"} letterSpacing="0.02em">
+            <text
+              x={cx}
+              y={cy+15}
+              textAnchor="middle"
+              fontSize="6.5"
+              fontFamily="'Cinzel',Georgia,serif"
+              fontWeight="700"
+              fill={active ? "#8a1a0a" : "#4a2008"}
+              letterSpacing="0.02em"
+            >
               {label.length > 12 ? label.slice(0,11)+'…' : label}
             </text>
           </g>
@@ -317,27 +664,70 @@ const CampaignMap = ({ pubs, selectedPub, scoreMap }) => {
 
 /* ── Small components ─────────────────────────────────────────────────────── */
 const Btn = ({active, onClick, children}) => (
-  <button onClick={onClick} className={`crusade-btn ${active?"crusade-btn-active":"crusade-btn-inactive"}`}>{children}</button>
+  <button
+    onClick={() => onClick?.()}
+    className={`crusade-btn ${active ? "crusade-btn-active" : "crusade-btn-inactive"}`}
+  >
+    {children}
+  </button>
 );
+
 const Pill = ({active, onClick, children}) => (
-  <button onClick={onClick} className={`option-pill ${active?"option-pill-active":"option-pill-inactive"}`}>{children}</button>
+  <button
+    onClick={() => onClick?.()}
+    className={`option-pill ${active ? "option-pill-active" : "option-pill-inactive"}`}
+  >
+    {children}
+  </button>
 );
+
 const FieldLabel = ({children}) => (
-  <div className="cinzel" style={{fontSize:"9px",letterSpacing:"0.32em",color:"#4e2408",textTransform:"uppercase",fontWeight:700,marginBottom:"7px"}}>{children}</div>
+  <div className="cinzel" style={{fontSize:"9px",letterSpacing:"0.32em",color:"#4e2408",textTransform:"uppercase",fontWeight:700,marginBottom:"7px"}}>
+    {children}
+  </div>
 );
+
 const SectionHead = ({icon:Icon, children, aside}) => (
   <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"14px"}}>
     <div style={{display:"flex",alignItems:"center",gap:"8px"}}>
-      {Icon && <div style={{padding:"5px",border:"1px solid rgba(90,48,10,0.38)",background:"rgba(248,228,168,0.75)",borderRadius:"2px",color:"#522808"}}><Icon size={13}/></div>}
-      <span className="cinzel" style={{fontSize:"12px",fontWeight:700,letterSpacing:"0.12em",color:"#2a1006",textTransform:"uppercase"}}>{children}</span>
+      {Icon && (
+        <div
+          style={{
+            padding:"5px",
+            border:"1px solid rgba(90,48,10,0.38)",
+            background:"rgba(248,228,168,0.75)",
+            borderRadius:"6px",
+            color:"#522808"
+          }}
+        >
+          <Icon size={13}/>
+        </div>
+      )}
+      <span className="cinzel" style={{fontSize:"12px",fontWeight:700,letterSpacing:"0.12em",color:"#2a1006",textTransform:"uppercase"}}>
+        {children}
+      </span>
     </div>
     {aside}
   </div>
 );
+
 const RankBadge = ({count}) => {
   const rank = getRank(count);
   return (
-    <span className="cinzel" style={{fontSize:"8px",letterSpacing:"0.1em",textTransform:"uppercase",fontWeight:700,padding:"2px 7px",borderRadius:"2px",background:rank.bg,color:rank.color,border:`1px solid ${rank.color}44`}}>
+    <span
+      className="cinzel"
+      style={{
+        fontSize:"8px",
+        letterSpacing:"0.1em",
+        textTransform:"uppercase",
+        fontWeight:700,
+        padding:"2px 7px",
+        borderRadius:"999px",
+        background:rank.bg,
+        color:rank.color,
+        border:`1px solid ${rank.color}44`
+      }}
+    >
       {rank.label}
     </span>
   );
@@ -355,6 +745,8 @@ export default function GuinnessCrusadeApp() {
   const [syncStatus, setSyncStatus]         = useState(hasSupabaseConfig ? "Connecting…" : "Local only");
   const [hydrated, setHydrated]             = useState(false);
   const [battleCry, setBattleCry]           = useState(null);
+  const [victoryBanner, setVictoryBanner]   = useState(null);
+  const audioCtxRef                         = useRef(null);
 
   useEffect(() => {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -367,49 +759,71 @@ export default function GuinnessCrusadeApp() {
       if (p.scores)         setScores(p.scores);
       if (p.guinnessCounts) setGuinnessCounts(p.guinnessCounts);
       if (p.chronicle)      setChronicle(p.chronicle);
-    } finally { setHydrated(true); }
+    } finally {
+      setHydrated(true);
+    }
   }, []);
 
   useEffect(() => {
     if (!hydrated) return;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({pubs, selectedPub, crusaderName, scores, guinnessCounts, chronicle}));
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ pubs, selectedPub, crusaderName, scores, guinnessCounts, chronicle })
+    );
   }, [hydrated, pubs, selectedPub, crusaderName, scores, guinnessCounts, chronicle]);
 
   useEffect(() => {
     if (!supabase || !hydrated) return;
     let ch;
+
     (async () => {
       setSyncStatus("Loading campaign…");
       const {data, error} = await supabase.from("bar_crawl_scores").select("pub,judge,scores");
-      if (error) { setSyncStatus("Run setup SQL first"); return; }
-      const inc = {}, gc = {}, cr = [];
-      (data||[]).forEach(r => {
+
+      if (error) {
+        setSyncStatus("Run setup SQL first");
+        return;
+      }
+
+      const inc = {};
+      const gc = {};
+      const cr = [];
+
+      (data || []).forEach(r => {
         if (r.pub === GUINNESS_PUB_KEY) {
           gc[r.judge] = Number(r.scores?.count || 0);
         } else if (r.pub === CHRONICLE_PUB_KEY) {
-          if (r.scores?.text && r.scores?.ts) cr.push({text:r.scores.text, ts:r.scores.ts});
+          if (r.scores?.text && r.scores?.ts) cr.push({ text: r.scores.text, ts: r.scores.ts });
         } else {
           inc[`${r.pub}__${r.judge}`] = r.scores || {};
         }
       });
+
       setScores(inc);
       setGuinnessCounts(gc);
       setChronicle(cr.sort((a,b)=>b.ts-a.ts).slice(0,25));
       setSyncStatus("Live");
-      ch = supabase.channel("gc-main")
-        .on("postgres_changes",{event:"*",schema:"public",table:"bar_crawl_scores"},({new:r})=>{
-          if (!r?.pub||!r?.judge) return;
+
+      ch = supabase
+        .channel("gc-main")
+        .on("postgres_changes", {event:"*",schema:"public",table:"bar_crawl_scores"}, ({new:r}) => {
+          if (!r?.pub || !r?.judge) return;
           if (r.pub === GUINNESS_PUB_KEY) {
-            setGuinnessCounts(prev=>({...prev,[r.judge]:Number(r.scores?.count||0)}));
+            setGuinnessCounts(prev => ({ ...prev, [r.judge]: Number(r.scores?.count || 0) }));
           } else if (r.pub === CHRONICLE_PUB_KEY) {
-            if (r.scores?.text && r.scores?.ts)
-              setChronicle(prev=>[{text:r.scores.text,ts:r.scores.ts},...prev].slice(0,25));
+            if (r.scores?.text && r.scores?.ts) {
+              setChronicle(prev => [{ text:r.scores.text, ts:r.scores.ts }, ...prev].slice(0,25));
+            }
           } else {
-            setScores(prev=>({...prev,[`${r.pub}__${r.judge}`]:r.scores||{}}));
+            setScores(prev => ({ ...prev, [`${r.pub}__${r.judge}`]: r.scores || {} }));
           }
-        }).subscribe();
+        })
+        .subscribe();
     })();
-    return () => { if (ch) supabase.removeChannel(ch); };
+
+    return () => {
+      if (ch) supabase.removeChannel(ch);
+    };
   }, [hydrated]);
 
   const safeJudge    = crusaderName.trim();
@@ -423,96 +837,226 @@ export default function GuinnessCrusadeApp() {
   const allPlayerStats = useMemo(() => {
     const map = {};
     Object.entries(scores).forEach(([key, entry]) => {
-      const parts = key.split('__');
+      const parts = key.split("__");
       const player = parts[parts.length - 1];
       if (!player) return;
       if (!map[player]) map[player] = [];
       map[player].push(entry);
     });
-    return Object.entries(map).map(([player, entries]) => ({
-      player,
-      avgScore: avg(entries.map(e=>eAvg(e,ALL_KEYS)).filter(Boolean)),
-      avgMoors: avg(entries.map(e=>Number(e?.pagansMoors)).filter(Boolean)),
-      guinness: guinnessCounts[player] || 0,
-    })).filter(p=>p.avgScore>0);
+
+    return Object.entries(map)
+      .map(([player, entries]) => ({
+        player,
+        avgScore: avg(entries.map(e => eAvg(e,ALL_KEYS)).filter(Boolean)),
+        avgMoors: avg(entries.map(e => Number(e?.pagansMoors)).filter(Boolean)),
+        guinness: guinnessCounts[player] || 0,
+      }))
+      .filter(p => p.avgScore > 0);
   }, [scores, guinnessCounts]);
 
   const mostValiant  = [...allPlayerStats].sort((a,b)=>b.avgScore-a.avgScore)[0];
   const bigotOfNight = [...allPlayerStats].filter(p=>p.avgMoors>0).sort((a,b)=>a.avgMoors-b.avgMoors)[0];
 
   const leaderboard = useMemo(() => pubs.map(pub => {
-    const entries = Object.entries(scores).filter(([k])=>k.startsWith(`${pub}__`)).map(([,e])=>e).filter(Boolean);
+    const entries = Object.entries(scores)
+      .filter(([k]) => k.startsWith(`${pub}__`))
+      .map(([,e]) => e)
+      .filter(Boolean);
+
     return {
       pub,
       entries: entries.length,
-      pint:    avg(entries.map(e=>gAvg(e,"pint")).filter(Boolean)),
-      pubScore:avg(entries.map(e=>gAvg(e,"pub")).filter(Boolean)),
-      overall: avg(entries.map(e=>eAvg(e,ALL_KEYS)).filter(Boolean)),
+      pint: avg(entries.map(e => gAvg(e,"pint")).filter(Boolean)),
+      pubScore: avg(entries.map(e => gAvg(e,"pub")).filter(Boolean)),
+      overall: avg(entries.map(e => eAvg(e,ALL_KEYS)).filter(Boolean)),
     };
   }).sort((a,b)=>b.overall-a.overall), [pubs, scores]);
 
+  const playMetalClink = () => {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+
+      if (!audioCtxRef.current) audioCtxRef.current = new AudioCtx();
+      const ctx = audioCtxRef.current;
+
+      if (ctx.state === "suspended") ctx.resume();
+
+      const now = ctx.currentTime;
+
+      const osc1 = ctx.createOscillator();
+      const osc2 = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const highpass = ctx.createBiquadFilter();
+
+      osc1.type = "triangle";
+      osc2.type = "sine";
+
+      osc1.frequency.setValueAtTime(1100, now);
+      osc1.frequency.exponentialRampToValueAtTime(560, now + 0.08);
+
+      osc2.frequency.setValueAtTime(1800, now);
+      osc2.frequency.exponentialRampToValueAtTime(700, now + 0.06);
+
+      highpass.type = "highpass";
+      highpass.frequency.value = 500;
+
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.06, now + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.14);
+
+      osc1.connect(highpass);
+      osc2.connect(highpass);
+      highpass.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc1.start(now);
+      osc2.start(now);
+      osc1.stop(now + 0.16);
+      osc2.stop(now + 0.16);
+    } catch (e) {
+      // ignore sound failures
+    }
+  };
+
   const addChronicleEvent = async (text) => {
     const ts = Date.now();
-    setChronicle(prev=>[{text,ts},...prev].slice(0,25));
-    if (supabase)
-      await supabase.from("bar_crawl_scores").upsert({pub:CHRONICLE_PUB_KEY, judge:`${ts}`, scores:{text,ts}});
+    setChronicle(prev => [{text, ts}, ...prev].slice(0,25));
+    if (supabase) {
+      await supabase.from("bar_crawl_scores").upsert({
+        pub: CHRONICLE_PUB_KEY,
+        judge: `${ts}`,
+        scores: { text, ts }
+      });
+    }
   };
 
   const triggerBattleCry = () => {
-    setBattleCry(BATTLE_CRIES[Math.floor(Math.random()*BATTLE_CRIES.length)]);
-    setTimeout(()=>setBattleCry(null), 2200);
+    setBattleCry(BATTLE_CRIES[Math.floor(Math.random() * BATTLE_CRIES.length)]);
+    setTimeout(() => setBattleCry(null), 2200);
+  };
+
+  const triggerVictoryBanner = (pub) => {
+    setVictoryBanner(pub);
+    setTimeout(() => setVictoryBanner(null), 2200);
   };
 
   const updateGuinnessCount = async (val) => {
     if (!safeJudge) return;
-    const count    = Math.max(0, Number(val) || 0);
+    playMetalClink();
+    const count = Math.max(0, Number(val) || 0);
     const prevCount = guinnessCounts[safeJudge] || 0;
-    setGuinnessCounts(prev=>({...prev,[safeJudge]:count}));
+    setGuinnessCounts(prev => ({ ...prev, [safeJudge]: count }));
     if (count > prevCount) addChronicleEvent(`${safeJudge} sacked pint #${count} at ${selectedPub}`);
-    if (supabase) await supabase.from("bar_crawl_scores").upsert({pub:GUINNESS_PUB_KEY,judge:safeJudge,scores:{count}});
+    if (supabase) {
+      await supabase.from("bar_crawl_scores").upsert({
+        pub: GUINNESS_PUB_KEY,
+        judge: safeJudge,
+        scores: { count }
+      });
+    }
   };
 
   const updateScore = async (field, score) => {
     if (!safeJudge) return;
-    const next = {...currentEntry,[field]:score};
-    setScores(prev=>({...prev,[currentKey]:next}));
+
+    playMetalClink();
+
+    const next = { ...currentEntry, [field]: score };
+    setScores(prev => ({ ...prev, [currentKey]: next }));
     triggerBattleCry();
-    if (Object.keys(currentEntry).length === 0)
+
+    if (Object.keys(currentEntry).length === 0) {
       addChronicleEvent(`${selectedPub} falls under siege by ${safeJudge}!`);
-    const wasComplete = ALL_KEYS.every(k=>currentEntry[k]);
-    const isComplete  = ALL_KEYS.every(k=>next[k]);
-    if (!wasComplete && isComplete) addChronicleEvent(`${safeJudge} has conquered ${selectedPub}!`);
-    if (supabase) await supabase.from("bar_crawl_scores").upsert({pub:selectedPub,judge:safeJudge,scores:next});
+    }
+
+    const wasComplete = ALL_KEYS.every(k => currentEntry[k]);
+    const isComplete  = ALL_KEYS.every(k => next[k]);
+
+    if (!wasComplete && isComplete) {
+      addChronicleEvent(`${safeJudge} has conquered ${selectedPub}!`);
+      triggerVictoryBanner(selectedPub);
+    }
+
+    if (supabase) {
+      await supabase.from("bar_crawl_scores").upsert({
+        pub: selectedPub,
+        judge: safeJudge,
+        scores: next
+      });
+    }
   };
 
   const brand = PUB_BRANDING[selectedPub] || {wordmark: selectedPub.toUpperCase()};
 
   return (
     <>
-      <GlobalStyles/>
+      <GlobalStyles />
 
       <AnimatePresence>
         {battleCry && (
-          <motion.div className="battle-cry-overlay"
-            initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} transition={{duration:0.25}}>
-            <motion.div className="battle-cry-text"
-              initial={{scale:0.7,y:20}} animate={{scale:1,y:0}} exit={{scale:0.8,opacity:0}} transition={{type:"spring",stiffness:280,damping:18}}>
+          <motion.div
+            className="battle-cry-overlay"
+            initial={{opacity:0}}
+            animate={{opacity:1}}
+            exit={{opacity:0}}
+            transition={{duration:0.25}}
+          >
+            <motion.div
+              className="battle-cry-text"
+              initial={{scale:0.7,y:20}}
+              animate={{scale:1,y:0}}
+              exit={{scale:0.8,opacity:0}}
+              transition={{type:"spring",stiffness:280,damping:18}}
+            >
               {battleCry}
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      <div style={{minHeight:"100vh",background:"radial-gradient(ellipse at center,#1e0e05 0%,#080301 100%)",padding:"32px 16px 64px",display:"flex",flexDirection:"column",alignItems:"center"}}>
-        <div style={{width:"100%",maxWidth:"460px"}}>
+      <AnimatePresence>
+        {victoryBanner && (
+          <motion.div
+            className="victory-banner-shell"
+            initial={{ opacity: 0, y: -24 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -16 }}
+            transition={{ duration: 0.22 }}
+          >
+            <motion.div
+              className="victory-banner"
+              initial={{ scaleX: 0.2, scaleY: 0.8 }}
+              animate={{ scaleX: 1, scaleY: 1 }}
+              exit={{ scaleX: 0.92, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 260, damping: 20 }}
+            >
+              <div className="victory-banner-title">Banner Unfurled</div>
+              <div className="victory-banner-sub">{victoryBanner} Conquered</div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-          <div className="scroll-rod"/>
+      <div
+        style={{
+          minHeight: "100vh",
+          background:
+            "radial-gradient(circle at 20% 10%, rgba(255,220,150,0.08), transparent 18%), radial-gradient(circle at 78% 20%, rgba(122,31,31,0.10), transparent 15%), radial-gradient(circle at 25% 80%, rgba(35,59,45,0.12), transparent 18%), linear-gradient(180deg, #2f1a0f 0%, #160c07 100%)",
+          padding: "32px 16px 64px",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center"
+        }}
+      >
+        <div style={{width:"100%",maxWidth:"460px"}}>
+          <div className="scroll-rod" />
           <div className="parchment-body">
             <div className="parchment-frame">
-              <div className="corner corner-tl"><CornerOrnament/></div>
-              <div className="corner corner-tr"><CornerOrnament/></div>
-              <div className="corner corner-bl"><CornerOrnament/></div>
-              <div className="corner corner-br"><CornerOrnament/></div>
+              <div className="corner corner-tl"><CornerOrnament /></div>
+              <div className="corner corner-tr"><CornerOrnament /></div>
+              <div className="corner corner-bl"><CornerOrnament /></div>
+              <div className="corner corner-br"><CornerOrnament /></div>
 
               <div style={{display:"flex",flexDirection:"column",gap:"18px"}}>
 
@@ -522,7 +1066,22 @@ export default function GuinnessCrusadeApp() {
                   <div className="cinzel" style={{fontSize:"8px",letterSpacing:"0.5em",color:"#6a3a10",textTransform:"uppercase",marginTop:"6px"}}>
                     Toronto · Anno Domini 2026
                   </div>
-                  <div style={{display:"inline-block",marginTop:"10px",padding:"4px 16px",border:"1px solid rgba(80,40,8,0.45)",background:"rgba(248,228,168,0.65)",borderRadius:"1px",fontFamily:"'Cinzel',serif",fontSize:"9px",letterSpacing:"0.22em",color:"#4a2008",textTransform:"uppercase",fontWeight:700}}>
+                  <div
+                    style={{
+                      display:"inline-block",
+                      marginTop:"10px",
+                      padding:"4px 16px",
+                      border:"1px solid rgba(80,40,8,0.45)",
+                      background:"rgba(248,228,168,0.65)",
+                      borderRadius:"999px",
+                      fontFamily:"'Cinzel',serif",
+                      fontSize:"9px",
+                      letterSpacing:"0.22em",
+                      color:"#4a2008",
+                      textTransform:"uppercase",
+                      fontWeight:700
+                    }}
+                  >
                     {syncStatus}
                   </div>
                 </div>
@@ -535,7 +1094,12 @@ export default function GuinnessCrusadeApp() {
                   <div style={{display:"grid",gap:"12px"}}>
                     <div>
                       <FieldLabel>Crusader Name</FieldLabel>
-                      <input value={crusaderName} onChange={e=>setCrusaderName(e.target.value)} placeholder="Enter your name" className="parchment-input"/>
+                      <input
+                        value={crusaderName}
+                        onChange={e=>setCrusaderName(e.target.value)}
+                        placeholder="Enter your name"
+                        className="parchment-input"
+                      />
                       {safeJudge && (
                         <div style={{marginTop:"6px",display:"flex",alignItems:"center",gap:"8px"}}>
                           <RankBadge count={myGuinnessCount}/>
@@ -543,48 +1107,142 @@ export default function GuinnessCrusadeApp() {
                         </div>
                       )}
                     </div>
+
                     <div>
                       <FieldLabel>Tavern</FieldLabel>
                       <select value={selectedPub} onChange={e=>setSelectedPub(e.target.value)} className="parchment-select">
-                        {pubs.map(p=><option key={p} value={p}>{p}</option>)}
+                        {pubs.map(p => <option key={p} value={p}>{p}</option>)}
                       </select>
                     </div>
                   </div>
 
-                  <div style={{marginTop:"14px",padding:"14px 12px",border:"1.5px solid rgba(80,45,8,0.48)",background:"linear-gradient(180deg,rgba(255,238,188,0.65),rgba(235,200,130,0.6))",borderRadius:"2px",textAlign:"center",boxShadow:"inset 0 1px 4px rgba(255,230,160,0.4)"}}>
-                    <div className="cinzel" style={{fontSize:"8px",letterSpacing:"0.4em",color:"#6a3a10",textTransform:"uppercase",fontWeight:700}}>Current Pillaging</div>
-                    <div className="cinzel-deco" style={{marginTop:"7px",fontSize:"22px",fontWeight:900,color:"#1e0e04",letterSpacing:"0.04em"}}>{brand.wordmark}</div>
+                  <div
+                    style={{
+                      marginTop:"14px",
+                      padding:"14px 12px",
+                      border:"1.5px solid rgba(80,45,8,0.48)",
+                      background:"linear-gradient(180deg,rgba(255,238,188,0.65),rgba(235,200,130,0.6))",
+                      borderRadius:"8px",
+                      textAlign:"center",
+                      boxShadow:"inset 0 1px 4px rgba(255,230,160,0.4)"
+                    }}
+                  >
+                    <div className="cinzel" style={{fontSize:"8px",letterSpacing:"0.4em",color:"#6a3a10",textTransform:"uppercase",fontWeight:700}}>
+                      Current Pillaging
+                    </div>
+                    <div className="cinzel-deco" style={{marginTop:"7px",fontSize:"22px",fontWeight:900,color:"#1e0e04",letterSpacing:"0.04em"}}>
+                      {brand.wordmark}
+                    </div>
                   </div>
 
                   {/* SACKED GUINNESS */}
-                  <div style={{marginTop:"14px",padding:"14px 12px",border:"1.5px solid rgba(80,45,8,0.48)",background:"linear-gradient(180deg,rgba(248,228,168,0.55),rgba(230,195,120,0.5))",borderRadius:"2px"}}>
+                  <div
+                    style={{
+                      marginTop:"14px",
+                      padding:"14px 12px",
+                      border:"1.5px solid rgba(80,45,8,0.48)",
+                      background:"linear-gradient(180deg,rgba(248,228,168,0.55),rgba(230,195,120,0.5))",
+                      borderRadius:"8px"
+                    }}
+                  >
                     <div style={{display:"flex",alignItems:"center",gap:"8px",marginBottom:"14px"}}>
-                      <div style={{padding:"5px",border:"1px solid rgba(90,48,10,0.38)",background:"rgba(248,228,168,0.75)",borderRadius:"2px",color:"#522808"}}><Beer size={13}/></div>
-                      <span className="cinzel" style={{fontSize:"12px",fontWeight:700,letterSpacing:"0.12em",color:"#2a1006",textTransform:"uppercase"}}>Sacked Guinness</span>
+                      <div
+                        style={{
+                          padding:"5px",
+                          border:"1px solid rgba(90,48,10,0.38)",
+                          background:"rgba(248,228,168,0.75)",
+                          borderRadius:"6px",
+                          color:"#522808"
+                        }}
+                      >
+                        <Beer size={13}/>
+                      </div>
+                      <span className="cinzel" style={{fontSize:"12px",fontWeight:700,letterSpacing:"0.12em",color:"#2a1006",textTransform:"uppercase"}}>
+                        Sacked Guinness
+                      </span>
                     </div>
+
                     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"12px",alignItems:"start"}}>
                       <div style={{display:"flex",flexDirection:"column"}}>
-                        <div className="cinzel" style={{fontSize:"8px",letterSpacing:"0.2em",textTransform:"uppercase",color:"#5a2e08",fontWeight:700,marginBottom:"6px",textAlign:"center"}}>Draughts Pillaged</div>
-                        <button className="stepper-btn" onClick={()=>updateGuinnessCount(myGuinnessCount+1)} disabled={!safeJudge} style={{borderRadius:"2px 2px 0 0",opacity:safeJudge?1:0.45}}>＋</button>
-                        <input type="number" min="0" value={myGuinnessCount} onChange={e=>updateGuinnessCount(e.target.value)} className="parchment-number" disabled={!safeJudge} style={{borderTop:"none",borderBottom:"none",opacity:safeJudge?1:0.45}}/>
-                        <button className="stepper-btn" onClick={()=>updateGuinnessCount(myGuinnessCount-1)} disabled={!safeJudge} style={{borderRadius:"0 0 2px 2px",opacity:safeJudge?1:0.45}}>－</button>
+                        <div className="cinzel" style={{fontSize:"8px",letterSpacing:"0.2em",textTransform:"uppercase",color:"#5a2e08",fontWeight:700,marginBottom:"6px",textAlign:"center"}}>
+                          Draughts Pillaged
+                        </div>
+                        <button
+                          className="stepper-btn"
+                          onClick={() => updateGuinnessCount(myGuinnessCount + 1)}
+                          disabled={!safeJudge}
+                          style={{borderRadius:"8px 8px 0 0",opacity:safeJudge?1:0.45}}
+                        >
+                          ＋
+                        </button>
+                        <input
+                          type="number"
+                          min="0"
+                          value={myGuinnessCount}
+                          onChange={e=>updateGuinnessCount(e.target.value)}
+                          className="parchment-number"
+                          disabled={!safeJudge}
+                          style={{borderTop:"none",borderBottom:"none",opacity:safeJudge?1:0.45}}
+                        />
+                        <button
+                          className="stepper-btn"
+                          onClick={() => updateGuinnessCount(myGuinnessCount - 1)}
+                          disabled={!safeJudge}
+                          style={{borderRadius:"0 0 8px 8px",opacity:safeJudge?1:0.45}}
+                        >
+                          －
+                        </button>
                       </div>
+
                       <div style={{display:"flex",flexDirection:"column"}}>
-                        <div className="cinzel" style={{fontSize:"8px",letterSpacing:"0.2em",textTransform:"uppercase",color:"#5a2e08",fontWeight:700,marginBottom:"6px",textAlign:"center"}}>Total Slain Infidels</div>
-                        <div style={{flex:1,padding:"10px",background:"rgba(110,58,16,0.18)",border:"1.5px solid rgba(90,48,10,0.38)",borderRadius:"2px",textAlign:"center",display:"flex",alignItems:"center",justifyContent:"center",minHeight:"101px"}}>
-                          <div className="cinzel" style={{fontSize:"48px",fontWeight:900,color:"#1e0e04",lineHeight:1}}>{groupGuinnessTotal}</div>
+                        <div className="cinzel" style={{fontSize:"8px",letterSpacing:"0.2em",textTransform:"uppercase",color:"#5a2e08",fontWeight:700,marginBottom:"6px",textAlign:"center"}}>
+                          Total Slain Infidels
+                        </div>
+                        <div
+                          style={{
+                            flex:1,
+                            padding:"10px",
+                            background:"rgba(110,58,16,0.18)",
+                            border:"1.5px solid rgba(90,48,10,0.38)",
+                            borderRadius:"8px",
+                            textAlign:"center",
+                            display:"flex",
+                            alignItems:"center",
+                            justifyContent:"center",
+                            minHeight:"101px"
+                          }}
+                        >
+                          <div className="cinzel" style={{fontSize:"48px",fontWeight:900,color:"#1e0e04",lineHeight:1}}>
+                            {groupGuinnessTotal}
+                          </div>
                         </div>
                       </div>
                     </div>
+
                     {Object.keys(guinnessCounts).length > 0 && (
                       <div style={{marginTop:"10px",display:"flex",flexWrap:"wrap",gap:"6px"}}>
-                        {Object.entries(guinnessCounts).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).map(([judge,count])=>(
-                          <div key={judge} style={{padding:"4px 10px",background:"rgba(248,228,168,0.7)",border:"1px solid rgba(90,48,10,0.3)",borderRadius:"2px",display:"flex",alignItems:"center",gap:"6px",flexWrap:"wrap"}}>
-                            <span className="fell" style={{fontSize:"12px",color:"#3a1a06",fontStyle:"italic"}}>{judge}</span>
-                            <span className="cinzel" style={{fontSize:"11px",fontWeight:700,color:"#1e0e04"}}>{count}</span>
-                            <RankBadge count={Number(count)}/>
-                          </div>
-                        ))}
+                        {Object.entries(guinnessCounts)
+                          .filter(([,v])=>v>0)
+                          .sort((a,b)=>b[1]-a[1])
+                          .map(([judge,count]) => (
+                            <div
+                              key={judge}
+                              style={{
+                                padding:"4px 10px",
+                                background:"rgba(248,228,168,0.7)",
+                                border:"1px solid rgba(90,48,10,0.3)",
+                                borderRadius:"999px",
+                                display:"flex",
+                                alignItems:"center",
+                                gap:"6px",
+                                flexWrap:"wrap"
+                              }}
+                            >
+                              <span className="fell" style={{fontSize:"12px",color:"#3a1a06",fontStyle:"italic"}}>{judge}</span>
+                              <span className="cinzel" style={{fontSize:"11px",fontWeight:700,color:"#1e0e04"}}>{count}</span>
+                              <RankBadge count={Number(count)}/>
+                            </div>
+                          ))}
                       </div>
                     )}
                   </div>
@@ -597,30 +1255,85 @@ export default function GuinnessCrusadeApp() {
                     <Btn active={selectedGroup==="pint"} onClick={()=>setSelectedGroup("pint")}>The Pint</Btn>
                     <Btn active={selectedGroup==="pub"}  onClick={()=>setSelectedGroup("pub")}>The Pub</Btn>
                   </div>
+
                   <div style={{display:"flex",flexDirection:"column",gap:"14px"}}>
                     {activeCats.map(cat => {
                       const Icon = cat.icon;
-                      const cur  = Number(currentEntry?.[cat.key]||0);
+                      const cur  = Number(currentEntry?.[cat.key] || 0);
+
                       return (
-                        <motion.div key={cat.key} initial={{opacity:0,y:6}} animate={{opacity:1,y:0}}
-                          style={{border:"1px solid rgba(90,50,10,0.3)",background:"linear-gradient(180deg,rgba(255,242,200,0.82),rgba(238,210,152,0.76))",borderRadius:"3px",padding:"13px",boxShadow:"0 3px 10px rgba(40,18,2,0.1)"}}>
+                        <motion.div
+                          key={cat.key}
+                          initial={{opacity:0,y:6}}
+                          animate={{opacity:1,y:0}}
+                          style={{
+                            border:"1px solid rgba(90,50,10,0.3)",
+                            background:"linear-gradient(180deg,rgba(255,242,200,0.82),rgba(238,210,152,0.76))",
+                            borderRadius:"8px",
+                            padding:"13px",
+                            boxShadow:"0 3px 10px rgba(40,18,2,0.1)"
+                          }}
+                        >
                           <div style={{display:"flex",alignItems:"flex-start",gap:"9px",marginBottom:"10px"}}>
-                            <div style={{padding:"6px",border:"1px solid rgba(90,50,10,0.32)",background:"rgba(248,225,155,0.8)",borderRadius:"2px",color:"#5a2e08",flexShrink:0,marginTop:"2px"}}><Icon size={13}/></div>
+                            <div
+                              style={{
+                                padding:"6px",
+                                border:"1px solid rgba(90,50,10,0.32)",
+                                background:"rgba(248,225,155,0.8)",
+                                borderRadius:"6px",
+                                color:"#5a2e08",
+                                flexShrink:0,
+                                marginTop:"2px"
+                              }}
+                            >
+                              <Icon size={13}/>
+                            </div>
+
                             <div>
-                              <div className="cinzel" style={{fontSize:"11px",fontWeight:700,color:"#1e0e04",letterSpacing:"0.08em"}}>{cat.title}</div>
-                              <div className="fell" style={{fontSize:"12px",color:"#5a2e08",fontStyle:"italic",lineHeight:1.5,marginTop:"3px"}}>{cat.desc}</div>
+                              <div className="cinzel" style={{fontSize:"11px",fontWeight:700,color:"#1e0e04",letterSpacing:"0.08em"}}>
+                                {cat.title}
+                              </div>
+                              <div className="fell" style={{fontSize:"12px",color:"#5a2e08",fontStyle:"italic",lineHeight:1.5,marginTop:"3px"}}>
+                                {cat.desc}
+                              </div>
                             </div>
                           </div>
-                          <div style={{marginBottom:"8px",padding:"5px 10px",background:"rgba(200,160,80,0.2)",borderRadius:"2px",border:"1px solid rgba(90,50,10,0.2)"}}>
-                            <span className="cinzel" style={{fontSize:"9px",letterSpacing:"0.2em",color:"#5a2e08",textTransform:"uppercase",fontWeight:700}}>Verdict: </span>
-                            <span className="fell" style={{fontSize:"12px",color:"#3a1a06",fontStyle:"italic"}}>{sLabel(cat.key,cur)}</span>
+
+                          <div
+                            style={{
+                              marginBottom:"8px",
+                              padding:"5px 10px",
+                              background:"rgba(200,160,80,0.2)",
+                              borderRadius:"6px",
+                              border:"1px solid rgba(90,50,10,0.2)"
+                            }}
+                          >
+                            <span className="cinzel" style={{fontSize:"9px",letterSpacing:"0.2em",color:"#5a2e08",textTransform:"uppercase",fontWeight:700}}>
+                              Verdict:
+                            </span>{" "}
+                            <span className="fell" style={{fontSize:"12px",color:"#3a1a06",fontStyle:"italic"}}>
+                              {sLabel(cat.key,cur)}
+                            </span>
                           </div>
+
                           <div style={{display:"flex",flexDirection:"column",gap:"5px"}}>
-                            {QUALITATIVE[cat.key].map(opt=>(
+                            {QUALITATIVE[cat.key].map(opt => (
                               <Pill key={opt.score} active={cur===opt.score} onClick={()=>updateScore(cat.key,opt.score)}>
                                 <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
                                   <span>{opt.label}</span>
-                                  <span className="cinzel" style={{fontSize:"10px",padding:"1px 6px",border:"1px solid currentColor",borderRadius:"1px",opacity:0.7,letterSpacing:"0.04em"}}>{opt.score}/5</span>
+                                  <span
+                                    className="cinzel"
+                                    style={{
+                                      fontSize:"10px",
+                                      padding:"1px 6px",
+                                      border:"1px solid currentColor",
+                                      borderRadius:"999px",
+                                      opacity:0.7,
+                                      letterSpacing:"0.04em"
+                                    }}
+                                  >
+                                    {opt.score}/5
+                                  </span>
                                 </div>
                               </Pill>
                             ))}
@@ -637,10 +1350,14 @@ export default function GuinnessCrusadeApp() {
                     {label:"Pint",    value:fmt(gAvg(currentEntry,"pint"))},
                     {label:"Pub",     value:fmt(gAvg(currentEntry,"pub"))},
                     {label:"Overall", value:fmt(eAvg(currentEntry,ALL_KEYS))},
-                  ].map(item=>(
+                  ].map(item => (
                     <div key={item.label} className="section-card" style={{padding:"12px 6px",textAlign:"center"}}>
-                      <div className="cinzel" style={{fontSize:"8px",letterSpacing:"0.3em",color:"#5a2e08",textTransform:"uppercase",fontWeight:700}}>{item.label}</div>
-                      <div className="cinzel" style={{marginTop:"6px",fontSize:"24px",fontWeight:900,color:"#1e0e04"}}>{item.value}</div>
+                      <div className="cinzel" style={{fontSize:"8px",letterSpacing:"0.3em",color:"#5a2e08",textTransform:"uppercase",fontWeight:700}}>
+                        {item.label}
+                      </div>
+                      <div className="cinzel" style={{marginTop:"6px",fontSize:"24px",fontWeight:900,color:"#1e0e04"}}>
+                        {item.value}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -654,23 +1371,48 @@ export default function GuinnessCrusadeApp() {
                         <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:"10px"}}>
                           <div>
                             <div style={{display:"flex",alignItems:"center",gap:"8px"}}>
-                              <span className="cinzel" style={{padding:"2px 8px",background:"#6a3810",color:"#f5e0b0",fontSize:"10px",fontWeight:700,borderRadius:"2px",letterSpacing:"0.05em"}}>#{i+1}</span>
-                              <span className="cinzel" style={{fontWeight:700,fontSize:"13px",color:"#1e0e04"}}>{item.pub}</span>
+                              <span
+                                className="cinzel"
+                                style={{
+                                  padding:"2px 8px",
+                                  background:"#6a3810",
+                                  color:"#f5e0b0",
+                                  fontSize:"10px",
+                                  fontWeight:700,
+                                  borderRadius:"999px",
+                                  letterSpacing:"0.05em"
+                                }}
+                              >
+                                #{i+1}
+                              </span>
+                              <span className="cinzel" style={{fontWeight:700,fontSize:"13px",color:"#1e0e04"}}>
+                                {item.pub}
+                              </span>
                             </div>
                             <div className="fell" style={{marginTop:"4px",fontSize:"12px",color:"#5a2e08",fontStyle:"italic"}}>
                               {item.entries} {item.entries===1?"conquest":"conquests"}
                             </div>
                           </div>
+
                           <div style={{textAlign:"right"}}>
-                            <div className="cinzel" style={{fontSize:"26px",fontWeight:900,color:"#1e0e04",lineHeight:1}}>{fmt(item.overall)}</div>
-                            <div className="cinzel" style={{fontSize:"8px",letterSpacing:"0.22em",color:"#5a2e08",textTransform:"uppercase",fontWeight:700}}>overall</div>
+                            <div className="cinzel" style={{fontSize:"26px",fontWeight:900,color:"#1e0e04",lineHeight:1}}>
+                              {fmt(item.overall)}
+                            </div>
+                            <div className="cinzel" style={{fontSize:"8px",letterSpacing:"0.22em",color:"#5a2e08",textTransform:"uppercase",fontWeight:700}}>
+                              overall
+                            </div>
                           </div>
                         </div>
+
                         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"8px",marginTop:"10px"}}>
                           {[{label:"Pint",v:fmt(item.pint)},{label:"Pub",v:fmt(item.pubScore)}].map(s=>(
-                            <div key={s.label} style={{padding:"7px 10px",background:"rgba(240,212,158,0.65)",borderRadius:"2px"}}>
-                              <span className="cinzel" style={{fontSize:"9px",letterSpacing:"0.1em",textTransform:"uppercase",color:"#5a2e08",fontWeight:700}}>{s.label}: </span>
-                              <span className="cinzel" style={{fontWeight:700,color:"#1e0e04",fontSize:"13px"}}>{s.v}</span>
+                            <div key={s.label} style={{padding:"7px 10px",background:"rgba(240,212,158,0.65)",borderRadius:"8px"}}>
+                              <span className="cinzel" style={{fontSize:"9px",letterSpacing:"0.1em",textTransform:"uppercase",color:"#5a2e08",fontWeight:700}}>
+                                {s.label}:
+                              </span>{" "}
+                              <span className="cinzel" style={{fontWeight:700,color:"#1e0e04",fontSize:"13px"}}>
+                                {s.v}
+                              </span>
                             </div>
                           ))}
                         </div>
@@ -685,20 +1427,49 @@ export default function GuinnessCrusadeApp() {
                     <SectionHead icon={Crown}>Honours of the Campaign</SectionHead>
                     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"10px"}}>
                       {mostValiant && (
-                        <div style={{padding:"12px 10px",border:"1.5px solid rgba(160,130,10,0.4)",background:"rgba(248,228,120,0.25)",borderRadius:"2px",textAlign:"center"}}>
+                        <div
+                          style={{
+                            padding:"12px 10px",
+                            border:"1.5px solid rgba(160,130,10,0.4)",
+                            background:"rgba(248,228,120,0.25)",
+                            borderRadius:"8px",
+                            textAlign:"center"
+                          }}
+                        >
                           <Crown size={16} style={{color:"#8a7010",marginBottom:"6px"}}/>
-                          <div className="cinzel" style={{fontSize:"8px",letterSpacing:"0.18em",textTransform:"uppercase",color:"#7a6010",fontWeight:700,marginBottom:"6px"}}>Most Valiant</div>
-                          <div className="cinzel" style={{fontSize:"13px",fontWeight:700,color:"#1e0e04",marginBottom:"4px"}}>{mostValiant.player}</div>
-                          <div className="fell" style={{fontSize:"11px",color:"#5a2e08",fontStyle:"italic"}}>avg {mostValiant.avgScore.toFixed(2)}</div>
+                          <div className="cinzel" style={{fontSize:"8px",letterSpacing:"0.18em",textTransform:"uppercase",color:"#7a6010",fontWeight:700,marginBottom:"6px"}}>
+                            Most Valiant
+                          </div>
+                          <div className="cinzel" style={{fontSize:"13px",fontWeight:700,color:"#1e0e04",marginBottom:"4px"}}>
+                            {mostValiant.player}
+                          </div>
+                          <div className="fell" style={{fontSize:"11px",color:"#5a2e08",fontStyle:"italic"}}>
+                            avg {mostValiant.avgScore.toFixed(2)}
+                          </div>
                           <div style={{marginTop:"6px"}}><RankBadge count={mostValiant.guinness}/></div>
                         </div>
                       )}
+
                       {bigotOfNight && (
-                        <div style={{padding:"12px 10px",border:"1.5px solid rgba(140,20,10,0.35)",background:"rgba(200,50,20,0.1)",borderRadius:"2px",textAlign:"center"}}>
+                        <div
+                          style={{
+                            padding:"12px 10px",
+                            border:"1.5px solid rgba(140,20,10,0.35)",
+                            background:"rgba(200,50,20,0.1)",
+                            borderRadius:"8px",
+                            textAlign:"center"
+                          }}
+                        >
                           <Swords size={16} style={{color:"#8a1a0a",marginBottom:"6px"}}/>
-                          <div className="cinzel" style={{fontSize:"8px",letterSpacing:"0.18em",textTransform:"uppercase",color:"#8a1a0a",fontWeight:700,marginBottom:"6px"}}>Bigot of the Night</div>
-                          <div className="cinzel" style={{fontSize:"13px",fontWeight:700,color:"#1e0e04",marginBottom:"4px"}}>{bigotOfNight.player}</div>
-                          <div className="fell" style={{fontSize:"11px",color:"#5a2e08",fontStyle:"italic"}}>most infidels spotted</div>
+                          <div className="cinzel" style={{fontSize:"8px",letterSpacing:"0.18em",textTransform:"uppercase",color:"#8a1a0a",fontWeight:700,marginBottom:"6px"}}>
+                            Bigot of the Night
+                          </div>
+                          <div className="cinzel" style={{fontSize:"13px",fontWeight:700,color:"#1e0e04",marginBottom:"4px"}}>
+                            {bigotOfNight.player}
+                          </div>
+                          <div className="fell" style={{fontSize:"11px",color:"#5a2e08",fontStyle:"italic"}}>
+                            most infidels spotted
+                          </div>
                           <div style={{marginTop:"6px"}}><RankBadge count={bigotOfNight.guinness}/></div>
                         </div>
                       )}
@@ -716,12 +1487,20 @@ export default function GuinnessCrusadeApp() {
                   ) : (
                     <div style={{display:"flex",flexDirection:"column",gap:"5px"}}>
                       <AnimatePresence initial={false}>
-                        {chronicle.map(event=>(
-                          <motion.div key={event.ts} initial={{opacity:0,x:-8}} animate={{opacity:1,x:0}} exit={{opacity:0}} className="chronicle-entry">
+                        {chronicle.map(event => (
+                          <motion.div
+                            key={event.ts}
+                            initial={{opacity:0,x:-8}}
+                            animate={{opacity:1,x:0}}
+                            exit={{opacity:0}}
+                            className="chronicle-entry"
+                          >
                             <span className="cinzel" style={{fontSize:"9px",color:"rgba(90,48,10,0.6)",marginRight:"8px",letterSpacing:"0.05em"}}>
                               {new Date(event.ts).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}
                             </span>
-                            <span className="fell" style={{fontSize:"12px",color:"#3a1a06",fontStyle:"italic"}}>{event.text}</span>
+                            <span className="fell" style={{fontSize:"12px",color:"#3a1a06",fontStyle:"italic"}}>
+                              {event.text}
+                            </span>
                           </motion.div>
                         ))}
                       </AnimatePresence>
@@ -738,10 +1517,12 @@ export default function GuinnessCrusadeApp() {
                   </div>
                   <CampaignMap pubs={pubs} selectedPub={selectedPub} scoreMap={scores}/>
                   <div style={{marginTop:"8px",display:"flex",justifyContent:"center",gap:"16px"}}>
-                    {[{fc:"#b89050",label:"Unconquered"},{fc:"#5a3010",label:"Conquered"},{fc:"#8a4e1c",label:"Current Siege"}].map(({fc,label})=>(
+                    {[{fc:"#b89050",label:"Unconquered"},{fc:"#233b2d",label:"Conquered"},{fc:"#8a1f1f",label:"Current Siege"}].map(({fc,label})=>(
                       <div key={label} style={{display:"flex",alignItems:"center",gap:"5px"}}>
-                        <div style={{width:"10px",height:"10px",background:fc,border:"1px solid rgba(50,22,4,0.5)",borderRadius:"1px"}}/>
-                        <span className="cinzel" style={{fontSize:"7px",letterSpacing:"0.08em",color:"#5a2e08",textTransform:"uppercase",fontWeight:700}}>{label}</span>
+                        <div style={{width:"10px",height:"10px",background:fc,border:"1px solid rgba(50,22,4,0.5)",borderRadius:"2px"}}/>
+                        <span className="cinzel" style={{fontSize:"7px",letterSpacing:"0.08em",color:"#5a2e08",textTransform:"uppercase",fontWeight:700}}>
+                          {label}
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -752,8 +1533,7 @@ export default function GuinnessCrusadeApp() {
               </div>
             </div>
           </div>
-          <div className="scroll-rod"/>
-
+          <div className="scroll-rod" />
         </div>
       </div>
     </>
