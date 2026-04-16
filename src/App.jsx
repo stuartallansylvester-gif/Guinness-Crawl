@@ -638,7 +638,7 @@ const CampaignMap = ({ pubs, selectedPub, scoreMap }) => {
         const cx = xOf(i);
         const active = pub === selectedPub;
         const conq = isConquered(pub);
-        const showSmoke = conq && !active;
+        const showSmoke = false;
         const fc = active ? "#8a1f1f" : conq ? "#233b2d" : "#b89050";
         const sc = "rgba(45,18,3,0.72)";
         const drk = "rgba(18,6,1,0.78)";
