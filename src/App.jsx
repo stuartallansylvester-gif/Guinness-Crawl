@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { createClient } from "@supabase/supabase-js";
-import { Shield, Trophy, Flame, ScrollText, Users, Swords, Castle, Copy, Crown, Coins } from "lucide-react";
+import { Shield, Trophy, Flame, ScrollText, Users, Swords, Castle, Copy, Crown, Coins, Beer } from "lucide-react";
 
 /* ── Fonts & Global CSS ───────────────────────────────────────────────────── */
 const GlobalStyles = () => (
@@ -151,6 +151,30 @@ const GlobalStyles = () => (
     .parchment-input::placeholder { color: rgba(80,38,8,0.4); font-weight: 400; }
     .parchment-select option { background: #f5dfa0; color: #180a02; }
 
+    .parchment-number {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1.5px solid rgba(80,40,8,0.55);
+      background: rgba(255,243,210,0.92);
+      color: #180a02;
+      font-size: 22px;
+      font-family: 'Cinzel', Georgia, serif;
+      font-weight: 900;
+      outline: none;
+      border-radius: 2px;
+      letter-spacing: 0.04em;
+      box-shadow: inset 0 2px 4px rgba(60,28,4,0.12);
+      transition: border-color 0.2s;
+      text-align: center;
+      -moz-appearance: textfield;
+    }
+    .parchment-number::-webkit-outer-spin-button,
+    .parchment-number::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .parchment-number:focus {
+      border-color: rgba(80,40,8,0.85);
+      box-shadow: inset 0 2px 4px rgba(60,28,4,0.18), 0 0 0 2px rgba(180,120,40,0.18);
+    }
+
     .crusade-btn {
       font-family: 'Cinzel', Georgia, serif;
       font-size: 11px;
@@ -214,6 +238,27 @@ const GlobalStyles = () => (
       letter-spacing: 10px;
       padding: 2px 0;
     }
+
+    .stepper-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 2px;
+      font-family: 'Cinzel', Georgia, serif;
+      font-size: 22px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+      background: linear-gradient(180deg, #8a4e1c 0%, #5c3010 100%);
+      border: 2px solid #3e1e08;
+      color: #f8e8c0;
+      box-shadow: 0 3px 10px rgba(30,12,2,0.35);
+      flex-shrink: 0;
+    }
+    .stepper-btn:hover { filter: brightness(1.15); transform: translateY(-1px); }
+    .stepper-btn:active { transform: translateY(0); filter: brightness(0.95); }
   `}</style>
 );
 
@@ -237,20 +282,8 @@ const hasSupabaseConfig =
 const supabase = hasSupabaseConfig ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
 const STORAGE_KEY = "guinness-crusade-v7";
-const DEFAULT_PUBS = ["Allen's", "Noonan's", "McVeigh's", "P.J. O'Brien"];
-
-const setupSql = `create table if not exists public.bar_crawl_settings (
-  id int primary key, pubs jsonb not null, players jsonb not null,
-  updated_at timestamptz not null default now()
-);
-create table if not exists public.bar_crawl_scores (
-  pub text not null, judge text not null,
-  scores jsonb not null default '{}'::jsonb,
-  updated_at timestamptz not null default now(),
-  primary key (pub, judge)
-);
-alter publication supabase_realtime add table public.bar_crawl_settings;
-alter publication supabase_realtime add table public.bar_crawl_scores;`;
+const GUINNESS_PUB_KEY = "__guinness__";
+const DEFAULT_PUBS = ["Allen's", "Noonan's", "McVeigh's", "P.J. O'Brien", "The Queen & Beaver"];
 
 /* ── Scoring data ─────────────────────────────────────────────────────────── */
 const QUALITATIVE = {
@@ -267,52 +300,26 @@ const QUALITATIVE = {
 
 const CATEGORIES = {
   pint: [
-    {
-      key:"pour", title:"Pour", icon:Flame,
-      desc:"The sacred two-stage ritual separates the worthy tavern from the wretched. A true pour demands patience — settle, then crown. Haste is heresy.",
-    },
-    {
-      key:"head", title:"Head", icon:Crown,
-      desc:"The creamy crown atop thy pint is the mark of a righteous house. Too thin and the keep has failed thee. A cathedral dome of foam is the highest honour.",
-    },
-    {
-      key:"temp", title:"Temperature", icon:Castle,
-      desc:"A pint served warm is an affront to the Crusade. The noble cellar keeps its charge cool and true. Test the chill — thy palate shall know justice.",
-    },
-    {
-      key:"taste", title:"Taste", icon:Trophy,
-      desc:"The dark nectar must sing of roasted grain and Irish earth. A rich, smooth draught is the reward of the righteous. A foul sip is cause for immediate retreat.",
-    },
+    { key:"pour",  title:"Pour",        icon:Flame,    desc:"The sacred two-stage ritual separates the worthy tavern from the wretched. A true pour demands patience — settle, then crown. Haste is heresy." },
+    { key:"head",  title:"Head",        icon:Crown,    desc:"The creamy crown atop thy pint is the mark of a righteous house. Too thin and the keep has failed thee. A cathedral dome of foam is the highest honour." },
+    { key:"temp",  title:"Temperature", icon:Castle,   desc:"A pint served warm is an affront to the Crusade. The noble cellar keeps its charge cool and true. Test the chill — thy palate shall know justice." },
+    { key:"taste", title:"Taste",       icon:Trophy,   desc:"The dark nectar must sing of roasted grain and Irish earth. A rich, smooth draught is the reward of the righteous. A foul sip is cause for immediate retreat." },
   ],
   pub: [
-    {
-      key:"vibe", title:"Vibe", icon:ScrollText,
-      desc:"Does this hall stir the blood of a Crusader? The air, the noise, the fellowship — a great tavern feels like a campaign won. A bleak hall is a campaign lost.",
-    },
-    {
-      key:"irishAuthenticity", title:"Irish Authenticity", icon:Shield,
-      desc:"Beware the false banner. Many a pub drapes itself in green yet harbours no true Irish soul. Seek the worn wood, the craic, the weight of history in its walls.",
-    },
-    {
-      key:"service", title:"Service", icon:Users,
-      desc:"A Crusader left waiting at the bar is a Crusader dishonoured. The steward's duty is swift, cheerful, and sure. Knightly service turns a good pint into a legendary one.",
-    },
-    {
-      key:"price", title:"Price", icon:Coins,
-      desc:"Even the holiest nectar must be fairly priced. A king's ransom for a pint is a declaration of war. Judge the tribute asked against the quality rendered.",
-    },
-    {
-      key:"pagansMoors", title:"Pagans / Moors", icon:Swords,
-      desc:"Survey the hall and count those who do not drink Guinness. A great Irish house shall be free of infidel influence. Many non-believers is cause for grave concern.",
-    },
+    { key:"vibe",              title:"Vibe",               icon:ScrollText, desc:"Does this hall stir the blood of a Crusader? The air, the noise, the fellowship — a great tavern feels like a campaign won. A bleak hall is a campaign lost." },
+    { key:"irishAuthenticity", title:"Irish Authenticity",  icon:Shield,     desc:"Beware the false banner. Many a pub drapes itself in green yet harbours no true Irish soul. Seek the worn wood, the craic, the weight of history in its walls." },
+    { key:"service",           title:"Service",             icon:Users,      desc:"A Crusader left waiting at the bar is a Crusader dishonoured. The steward's duty is swift, cheerful, and sure. Knightly service turns a good pint into a legendary one." },
+    { key:"price",             title:"Price",               icon:Coins,      desc:"Even the holiest nectar must be fairly priced. A king's ransom for a pint is a declaration of war. Judge the tribute asked against the quality rendered." },
+    { key:"pagansMoors",       title:"Pagans / Moors",      icon:Swords,     desc:"Survey the hall and count those who do not drink Guinness. A great Irish house shall be free of infidel influence. Many non-believers is cause for grave concern." },
   ],
 };
 
 const PUB_BRANDING = {
-  "Allen's":     {wordmark:"ALLEN'S"},
-  "Noonan's":    {wordmark:"NOONAN'S"},
-  "McVeigh's":   {wordmark:"McVEIGH'S"},
-  "P.J. O'Brien":{wordmark:"P.J. O'BRIEN"},
+  "Allen's":            {wordmark:"ALLEN'S"},
+  "Noonan's":           {wordmark:"NOONAN'S"},
+  "McVeigh's":          {wordmark:"McVEIGH'S"},
+  "P.J. O'Brien":       {wordmark:"P.J. O'BRIEN"},
+  "The Queen & Beaver": {wordmark:"THE QUEEN & BEAVER"},
 };
 
 /* ── Helpers ──────────────────────────────────────────────────────────────── */
@@ -359,57 +366,81 @@ const SectionHead = ({icon:Icon, children, aside}) => (
 
 /* ── Main App ─────────────────────────────────────────────────────────────── */
 export default function GuinnessCrusadeApp() {
-  const [pubs, setPubs]                   = useState(DEFAULT_PUBS);
-  const [selectedPub, setSelectedPub]     = useState(DEFAULT_PUBS[0]);
-  const [crusaderName, setCrusaderName]   = useState("");
-  const [selectedGroup, setSelectedGroup] = useState("pint");
-  const [scores, setScores]               = useState({});
-  const [backendMode, setBackendMode]     = useState(hasSupabaseConfig ? "supabase" : "local");
-  const [syncStatus, setSyncStatus]       = useState(hasSupabaseConfig ? "Connecting…" : "Local only");
-  const [hydrated, setHydrated]           = useState(false);
+  const [pubs, setPubs]                     = useState(DEFAULT_PUBS);
+  const [selectedPub, setSelectedPub]       = useState(DEFAULT_PUBS[0]);
+  const [crusaderName, setCrusaderName]     = useState("");
+  const [selectedGroup, setSelectedGroup]   = useState("pint");
+  const [scores, setScores]                 = useState({});
+  const [guinnessCounts, setGuinnessCounts] = useState({});
+  const [syncStatus, setSyncStatus]         = useState(hasSupabaseConfig ? "Connecting…" : "Local only");
+  const [hydrated, setHydrated]             = useState(false);
 
   useEffect(() => {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) { setHydrated(true); return; }
     try {
       const p = JSON.parse(raw);
-      if (p.pubs?.length)  setPubs(p.pubs);
-      if (p.selectedPub)   setSelectedPub(p.selectedPub);
-      if (p.crusaderName)  setCrusaderName(p.crusaderName);
-      if (p.scores)        setScores(p.scores);
+      if (p.pubs?.length)    setPubs(p.pubs);
+      if (p.selectedPub)     setSelectedPub(p.selectedPub);
+      if (p.crusaderName)    setCrusaderName(p.crusaderName);
+      if (p.scores)          setScores(p.scores);
+      if (p.guinnessCounts)  setGuinnessCounts(p.guinnessCounts);
     } finally { setHydrated(true); }
   }, []);
 
   useEffect(() => {
     if (!hydrated) return;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({pubs, selectedPub, crusaderName, scores}));
-  }, [hydrated, pubs, selectedPub, crusaderName, scores]);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({pubs, selectedPub, crusaderName, scores, guinnessCounts}));
+  }, [hydrated, pubs, selectedPub, crusaderName, scores, guinnessCounts]);
 
   useEffect(() => {
-    if (!supabase || !hydrated || backendMode !== "supabase") return;
+    if (!supabase || !hydrated) return;
     let ch;
     (async () => {
       setSyncStatus("Loading campaign…");
       const {data, error} = await supabase.from("bar_crawl_scores").select("pub,judge,scores");
       if (error) { setSyncStatus("Run setup SQL first"); return; }
       const inc = {};
-      (data||[]).forEach(r => { inc[`${r.pub}__${r.judge}`] = r.scores||{}; });
+      const gc  = {};
+      (data||[]).forEach(r => {
+        if (r.pub === GUINNESS_PUB_KEY) {
+          gc[r.judge] = Number(r.scores?.count || 0);
+        } else {
+          inc[`${r.pub}__${r.judge}`] = r.scores||{};
+        }
+      });
       setScores(inc);
+      setGuinnessCounts(gc);
       setSyncStatus("Live");
       ch = supabase.channel("gc-scores")
         .on("postgres_changes",{event:"*",schema:"public",table:"bar_crawl_scores"},({new:r})=>{
           if (!r?.pub||!r?.judge) return;
-          setScores(prev=>({...prev,[`${r.pub}__${r.judge}`]:r.scores||{}}));
+          if (r.pub === GUINNESS_PUB_KEY) {
+            setGuinnessCounts(prev=>({...prev,[r.judge]:Number(r.scores?.count||0)}));
+          } else {
+            setScores(prev=>({...prev,[`${r.pub}__${r.judge}`]:r.scores||{}}));
+          }
         }).subscribe();
     })();
     return () => { if (ch) supabase.removeChannel(ch); };
-  }, [backendMode, hydrated]);
+  }, [hydrated]);
 
   const safeJudge    = crusaderName.trim();
   const currentKey   = `${selectedPub}__${safeJudge}`;
   const currentEntry = scores[currentKey] || {};
   const activeCats   = CATEGORIES[selectedGroup];
   const allKeys      = [...CATEGORIES.pint,...CATEGORIES.pub].map(i=>i.key);
+
+  const myGuinnessCount      = safeJudge ? (guinnessCounts[safeJudge] || 0) : 0;
+  const groupGuinnessTotal   = Object.values(guinnessCounts).reduce((s,v)=>s+Number(v),0);
+
+  const updateGuinnessCount = async (val) => {
+    if (!safeJudge) return;
+    const count = Math.max(0, Number(val) || 0);
+    setGuinnessCounts(prev => ({...prev, [safeJudge]: count}));
+    if (supabase)
+      await supabase.from("bar_crawl_scores").upsert({pub: GUINNESS_PUB_KEY, judge: safeJudge, scores: {count}});
+  };
 
   const leaderboard = useMemo(() => pubs.map(pub => {
     const entries = Object.entries(scores)
@@ -427,7 +458,7 @@ export default function GuinnessCrusadeApp() {
     if (!safeJudge) return;
     const next = {...currentEntry, [field]:score};
     setScores(prev=>({...prev,[currentKey]:next}));
-    if (supabase && backendMode==="supabase")
+    if (supabase)
       await supabase.from("bar_crawl_scores").upsert({pub:selectedPub,judge:safeJudge,scores:next});
   };
 
@@ -439,10 +470,8 @@ export default function GuinnessCrusadeApp() {
       <div style={{minHeight:"100vh", background:"radial-gradient(ellipse at center, #1e0e05 0%, #080301 100%)", padding:"32px 16px 64px", display:"flex", flexDirection:"column", alignItems:"center"}}>
         <div style={{width:"100%", maxWidth:"460px"}}>
 
-          {/* TOP ROD */}
           <div className="scroll-rod" />
 
-          {/* PARCHMENT */}
           <div className="parchment-body">
             <div className="parchment-frame">
 
@@ -457,10 +486,10 @@ export default function GuinnessCrusadeApp() {
                 <div style={{textAlign:"center", padding:"8px 0 4px"}}>
                   <img src="/logo.png" alt="The Guinness Crusade" className="crusade-logo" />
                   <div className="cinzel" style={{fontSize:"8px",letterSpacing:"0.5em",color:"#6a3a10",textTransform:"uppercase",marginTop:"6px"}}>
-                    Toronto · Anno Domini 2025
+                    Toronto · Anno Domini 2026
                   </div>
                   <div style={{display:"inline-block",marginTop:"10px",padding:"4px 16px",border:"1px solid rgba(80,40,8,0.45)",background:"rgba(248,228,168,0.65)",borderRadius:"1px",fontFamily:"'Cinzel',serif",fontSize:"9px",letterSpacing:"0.22em",color:"#4a2008",textTransform:"uppercase",fontWeight:700}}>
-                    {backendMode==="supabase" ? syncStatus : "Local Keep"}
+                    {syncStatus}
                   </div>
                 </div>
 
@@ -487,9 +516,57 @@ export default function GuinnessCrusadeApp() {
                     <div className="cinzel-deco" style={{marginTop:"7px",fontSize:"22px",fontWeight:900,color:"#1e0e04",letterSpacing:"0.04em"}}>{brand.wordmark}</div>
                   </div>
 
-                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"10px",marginTop:"14px"}}>
-                    <Btn active={backendMode==="local"}    onClick={()=>setBackendMode("local")}>Local Keep</Btn>
-                    <Btn active={backendMode==="supabase"} onClick={()=>setBackendMode("supabase")}>Live Crusade</Btn>
+                  {/* SACKED GUINNESS */}
+                  <div style={{marginTop:"14px",padding:"14px 12px",border:"1.5px solid rgba(80,45,8,0.48)",background:"linear-gradient(180deg,rgba(248,228,168,0.55),rgba(230,195,120,0.5))",borderRadius:"2px"}}>
+                    <div style={{display:"flex",alignItems:"center",gap:"8px",marginBottom:"12px"}}>
+                      <div style={{padding:"5px",border:"1px solid rgba(90,48,10,0.38)",background:"rgba(248,228,168,0.75)",borderRadius:"2px",color:"#522808"}}>
+                        <Beer size={13}/>
+                      </div>
+                      <span className="cinzel" style={{fontSize:"12px",fontWeight:700,letterSpacing:"0.12em",color:"#2a1006",textTransform:"uppercase"}}>Sacked Guinness</span>
+                    </div>
+
+                    {!safeJudge ? (
+                      <div style={{padding:"11px 14px",border:"1px dashed rgba(90,48,10,0.4)",background:"rgba(248,228,168,0.45)",fontSize:"13px",color:"#4a2408",borderRadius:"2px",fontFamily:"'IM Fell English',serif",fontStyle:"italic"}}>
+                        Enter thy crusader name to log thy pints.
+                      </div>
+                    ) : (
+                      <div style={{display:"flex",alignItems:"center",gap:"10px",marginBottom:"12px"}}>
+                        <button className="stepper-btn" onClick={()=>updateGuinnessCount(myGuinnessCount - 1)}>−</button>
+                        <input
+                          type="number"
+                          min="0"
+                          value={myGuinnessCount}
+                          onChange={e=>updateGuinnessCount(e.target.value)}
+                          className="parchment-number"
+                        />
+                        <button className="stepper-btn" onClick={()=>updateGuinnessCount(myGuinnessCount + 1)}>+</button>
+                      </div>
+                    )}
+
+                    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"8px",marginTop:"4px"}}>
+                      <div style={{padding:"10px",background:"rgba(240,212,158,0.65)",borderRadius:"2px",textAlign:"center"}}>
+                        <div className="cinzel" style={{fontSize:"8px",letterSpacing:"0.22em",textTransform:"uppercase",color:"#5a2e08",fontWeight:700,marginBottom:"4px"}}>My Count</div>
+                        <div className="cinzel" style={{fontSize:"26px",fontWeight:900,color:"#1e0e04",lineHeight:1}}>{myGuinnessCount}</div>
+                      </div>
+                      <div style={{padding:"10px",background:"rgba(110,58,16,0.18)",border:"1.5px solid rgba(90,48,10,0.38)",borderRadius:"2px",textAlign:"center"}}>
+                        <div className="cinzel" style={{fontSize:"8px",letterSpacing:"0.22em",textTransform:"uppercase",color:"#5a2e08",fontWeight:700,marginBottom:"4px"}}>Group Total</div>
+                        <div className="cinzel" style={{fontSize:"26px",fontWeight:900,color:"#1e0e04",lineHeight:1}}>{groupGuinnessTotal}</div>
+                      </div>
+                    </div>
+
+                    {Object.keys(guinnessCounts).length > 0 && (
+                      <div style={{marginTop:"10px",display:"flex",flexWrap:"wrap",gap:"6px"}}>
+                        {Object.entries(guinnessCounts)
+                          .filter(([,v])=>v>0)
+                          .sort((a,b)=>b[1]-a[1])
+                          .map(([judge,count])=>(
+                            <div key={judge} style={{padding:"4px 10px",background:"rgba(248,228,168,0.7)",border:"1px solid rgba(90,48,10,0.3)",borderRadius:"2px",display:"flex",alignItems:"center",gap:"6px"}}>
+                              <span className="fell" style={{fontSize:"12px",color:"#3a1a06",fontStyle:"italic"}}>{judge}</span>
+                              <span className="cinzel" style={{fontSize:"11px",fontWeight:700,color:"#1e0e04"}}>{count}</span>
+                            </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -521,7 +598,6 @@ export default function GuinnessCrusadeApp() {
                         <motion.div key={cat.key} initial={{opacity:0,y:6}} animate={{opacity:1,y:0}}
                           style={{border:"1px solid rgba(90,50,10,0.3)",background:"linear-gradient(180deg,rgba(255,242,200,0.82),rgba(238,210,152,0.76))",borderRadius:"3px",padding:"13px",boxShadow:"0 3px 10px rgba(40,18,2,0.1)"}}>
 
-                          {/* Category header */}
                           <div style={{display:"flex",alignItems:"flex-start",gap:"9px",marginBottom:"10px"}}>
                             <div style={{padding:"6px",border:"1px solid rgba(90,50,10,0.32)",background:"rgba(248,225,155,0.8)",borderRadius:"2px",color:"#5a2e08",flexShrink:0,marginTop:"2px"}}>
                               <Icon size={13}/>
@@ -532,13 +608,11 @@ export default function GuinnessCrusadeApp() {
                             </div>
                           </div>
 
-                          {/* Current rating label */}
                           <div style={{marginBottom:"8px",padding:"5px 10px",background:"rgba(200,160,80,0.2)",borderRadius:"2px",border:"1px solid rgba(90,50,10,0.2)"}}>
                             <span className="cinzel" style={{fontSize:"9px",letterSpacing:"0.2em",color:"#5a2e08",textTransform:"uppercase",fontWeight:700}}>Verdict: </span>
                             <span className="fell" style={{fontSize:"12px",color:"#3a1a06",fontStyle:"italic"}}>{sLabel(cat.key,cur)}</span>
                           </div>
 
-                          {/* Options */}
                           <div style={{display:"flex",flexDirection:"column",gap:"5px"}}>
                             {QUALITATIVE[cat.key].map(opt=>(
                               <Pill key={opt.score} active={cur===opt.score} onClick={()=>updateScore(cat.key,opt.score)}>
@@ -610,7 +684,6 @@ export default function GuinnessCrusadeApp() {
             </div>
           </div>
 
-          {/* BOTTOM ROD */}
           <div className="scroll-rod" />
 
         </div>
