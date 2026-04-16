@@ -1,30 +1,45 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@supabase/supabase-js";
-import { Shield, Trophy, Flame, ScrollText, Users, Swords, Castle, Crown, Coins, Beer } from "lucide-react";
+import {
+  Shield,
+  Trophy,
+  Flame,
+  ScrollText,
+  Users,
+  Swords,
+  Castle,
+  Crown,
+  Coins,
+  Beer,
+} from "lucide-react";
 
 const GlobalStyles = () => (
   <style>{`
     @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cinzel+Decorative:wght@400;700;900&family=IM+Fell+English:ital@0;1&display=swap');
 
     :root {
-      --ink: #23140c;
-      --parchment-1: #f6e8bf;
-      --parchment-2: #ead39b;
-      --parchment-3: #d8ba77;
-      --parchment-burn: #8a6429;
+      --ink: #26170d;
+      --paper-light: #f4e7bf;
+      --paper-mid: #ead7a3;
+      --paper-dark: #cfae71;
+      --paper-burn: #8d6630;
 
       --red-1: #7a1f1f;
       --red-2: #521414;
       --red-3: #a2312d;
 
-      --gold-1: #f2d28b;
-      --gold-2: #c89f44;
-      --gold-3: #7b5a1c;
+      --gold-1: #ead08b;
+      --gold-2: #c59a3d;
+      --gold-3: #76551a;
 
       --green-1: #233b2d;
       --green-2: #16261d;
       --green-3: #36523f;
+
+      --wood-1: #4b2e18;
+      --wood-2: #2c1a0d;
+      --wood-3: #6a4122;
 
       --edge: rgba(66, 36, 10, 0.55);
       --shadow: rgba(22, 10, 4, 0.45);
@@ -32,13 +47,17 @@ const GlobalStyles = () => (
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    html, body, #root {
+      min-height: 100%;
+    }
+
     body {
       min-height: 100vh;
       background:
-        radial-gradient(circle at 20% 10%, rgba(255,236,190,0.08), transparent 18%),
-        radial-gradient(circle at 80% 18%, rgba(120,40,25,0.12), transparent 16%),
-        radial-gradient(circle at 30% 75%, rgba(25,55,35,0.10), transparent 20%),
-        linear-gradient(180deg, #2f1a0f 0%, #1b0f08 100%);
+        radial-gradient(circle at 18% 10%, rgba(255,231,180,0.06), transparent 16%),
+        radial-gradient(circle at 82% 14%, rgba(110,32,24,0.10), transparent 16%),
+        radial-gradient(circle at 22% 76%, rgba(29,55,39,0.10), transparent 20%),
+        linear-gradient(180deg, #2b180d 0%, #160d08 100%);
       color: var(--ink);
     }
 
@@ -48,88 +67,110 @@ const GlobalStyles = () => (
 
     .scroll-rod {
       position: relative;
-      height: 54px;
-      width: calc(100% + 40px);
-      margin-left: -20px;
-      border-radius: 27px;
+      height: 34px;
+      width: calc(100% + 24px);
+      margin-left: -12px;
+      border-radius: 999px;
       background:
-        linear-gradient(180deg, #2d2008 0%, #6e531c 10%, #d4ab59 28%, #f3d997 48%, #fff0bf 50%, #f3d997 52%, #d4ab59 72%, #6e531c 90%, #2d2008 100%);
+        linear-gradient(180deg, #6d4526 0%, #4e301a 16%, #3a220f 48%, #2a180c 52%, #4a2d17 84%, #6a4122 100%);
       box-shadow:
-        0 10px 32px rgba(0,0,0,0.75),
-        0 3px 8px rgba(0,0,0,0.5),
-        inset 0 1px 3px rgba(255,245,200,0.28),
-        inset 0 -2px 4px rgba(70,40,8,0.35);
+        0 10px 18px rgba(0,0,0,0.42),
+        inset 0 1px 0 rgba(255,219,170,0.12),
+        inset 0 -2px 4px rgba(0,0,0,0.28);
       z-index: 4;
     }
 
-    .scroll-rod::before, .scroll-rod::after {
+    .scroll-rod::before,
+    .scroll-rod::after {
       content: '';
       position: absolute;
       top: 50%;
       transform: translateY(-50%);
-      width: 26px;
-      height: 46px;
+      width: 18px;
+      height: 18px;
       border-radius: 50%;
-      background: radial-gradient(ellipse 55% 50% at 38% 45%, #f0cd82, #7a4512 80%);
-      box-shadow: 3px 0 12px rgba(0,0,0,0.7);
+      background:
+        radial-gradient(circle at 35% 35%, #7a4a24 0%, #4f2f17 38%, #24140a 75%, #120905 100%);
+      border: 1px solid rgba(20,8,2,0.55);
+      box-shadow: 0 0 0 2px rgba(255,220,170,0.04);
     }
 
-    .scroll-rod::before { left: -10px; }
-    .scroll-rod::after  { right: -10px; box-shadow: -3px 0 12px rgba(0,0,0,0.7); }
+    .scroll-rod::before { left: 8px; }
+    .scroll-rod::after  { right: 8px; }
 
     .parchment-body {
       position: relative;
       z-index: 2;
-      margin-top: -18px;
-      margin-bottom: -18px;
+      margin-top: -10px;
+      margin-bottom: -10px;
       padding: 34px 28px 34px;
       background:
-        radial-gradient(circle at 12% 18%, rgba(122,31,31,0.14), transparent 18%),
-        radial-gradient(circle at 86% 16%, rgba(35,59,45,0.16), transparent 18%),
-        radial-gradient(circle at 18% 82%, rgba(125,88,30,0.18), transparent 20%),
-        radial-gradient(circle at 80% 75%, rgba(35,59,45,0.12), transparent 20%),
+        radial-gradient(circle at 12% 18%, rgba(125,64,22,0.10), transparent 18%),
+        radial-gradient(circle at 84% 16%, rgba(99,26,19,0.08), transparent 16%),
+        radial-gradient(circle at 18% 82%, rgba(98,72,20,0.10), transparent 18%),
+        radial-gradient(circle at 78% 74%, rgba(25,52,34,0.08), transparent 18%),
         repeating-linear-gradient(
           0deg,
-          rgba(120,88,26,0.03) 0px,
-          rgba(120,88,26,0.03) 2px,
-          rgba(255,255,255,0.01) 2px,
-          rgba(255,255,255,0.01) 4px
+          rgba(110,86,34,0.030) 0px,
+          rgba(110,86,34,0.030) 1px,
+          rgba(255,255,255,0.012) 1px,
+          rgba(255,255,255,0.012) 3px
         ),
-        linear-gradient(180deg, #d2b06a 0%, #ead39b 8%, #f5e7bd 24%, #f9efd0 50%, #f2e1b2 76%, #d4b06a 100%);
+        repeating-linear-gradient(
+          90deg,
+          rgba(110,86,34,0.018) 0px,
+          rgba(110,86,34,0.018) 2px,
+          rgba(255,255,255,0.008) 2px,
+          rgba(255,255,255,0.008) 5px
+        ),
+        linear-gradient(180deg, #d4b474 0%, #ead7a3 10%, #f3e7be 24%, #f5ebc9 50%, #efe0b0 76%, #d0ab68 100%);
       box-shadow:
-        inset 16px 0 30px rgba(76,46,16,0.28),
-        inset -16px 0 30px rgba(76,46,16,0.28),
-        inset 0 12px 18px rgba(70,44,16,0.18),
-        inset 0 -12px 18px rgba(70,44,16,0.18),
-        0 20px 45px rgba(0,0,0,0.28);
+        inset 22px 0 24px rgba(96,60,20,0.16),
+        inset -22px 0 24px rgba(96,60,20,0.16),
+        inset 0 12px 16px rgba(75,45,16,0.14),
+        inset 0 -12px 16px rgba(75,45,16,0.14),
+        0 20px 40px rgba(0,0,0,0.25);
+      overflow: hidden;
     }
 
     .parchment-body::before,
     .parchment-body::after {
       content: '';
       position: absolute;
-      top: 0;
-      bottom: 0;
-      width: 18px;
+      inset: 0;
       pointer-events: none;
-      z-index: 3;
+      z-index: 1;
     }
 
-    .parchment-body::before { left: 0; background: linear-gradient(90deg, rgba(70,34,10,0.30), transparent); }
-    .parchment-body::after  { right: 0; background: linear-gradient(270deg, rgba(70,34,10,0.30), transparent); }
+    .parchment-body::before {
+      background:
+        linear-gradient(90deg, rgba(102,60,20,0.22), transparent 3%, transparent 97%, rgba(102,60,20,0.18)),
+        linear-gradient(180deg, rgba(102,60,20,0.16), transparent 3%, transparent 97%, rgba(102,60,20,0.14));
+      mix-blend-mode: multiply;
+    }
+
+    .parchment-body::after {
+      background:
+        radial-gradient(circle at 2% 20%, rgba(112,70,24,0.22), transparent 10%),
+        radial-gradient(circle at 98% 22%, rgba(112,70,24,0.18), transparent 10%),
+        radial-gradient(circle at 3% 76%, rgba(112,70,24,0.20), transparent 12%),
+        radial-gradient(circle at 97% 80%, rgba(112,70,24,0.16), transparent 12%);
+      opacity: 0.8;
+    }
 
     .parchment-frame {
-      border: 2px solid rgba(84,50,18,0.55);
+      border: 1px solid rgba(92,56,20,0.45);
       padding: 22px 16px 20px;
       position: relative;
-      background: rgba(255,247,222,0.08);
+      background: rgba(255,250,236,0.06);
+      z-index: 2;
     }
 
     .parchment-frame::before {
       content: '';
       position: absolute;
       inset: 5px;
-      border: 1px solid rgba(84,50,18,0.22);
+      border: 1px solid rgba(92,56,20,0.18);
       pointer-events: none;
     }
 
@@ -146,19 +187,19 @@ const GlobalStyles = () => (
       max-width: 80%;
       margin: 0 auto 6px;
       mix-blend-mode: multiply;
-      filter: drop-shadow(0 3px 8px rgba(60,28,4,0.25));
+      filter: drop-shadow(0 2px 5px rgba(60,28,4,0.18));
     }
 
     .section-card {
       background:
-        linear-gradient(180deg, rgba(255,247,225,0.78) 0%, rgba(238,218,170,0.76) 100%);
-      border: 1.5px solid rgba(88,54,20,0.38);
+        linear-gradient(180deg, rgba(255,247,226,0.72) 0%, rgba(239,220,176,0.74) 100%);
+      border: 1px solid rgba(88,54,20,0.30);
       border-radius: 8px;
       padding: 14px;
       position: relative;
       box-shadow:
-        0 6px 16px rgba(50,24,3,0.14),
-        inset 0 1px 2px rgba(255,244,210,0.65);
+        0 5px 14px rgba(50,24,3,0.10),
+        inset 0 1px 1px rgba(255,244,210,0.45);
       overflow: hidden;
     }
 
@@ -168,15 +209,15 @@ const GlobalStyles = () => (
       inset: 0;
       pointer-events: none;
       background:
-        linear-gradient(135deg, rgba(122,31,31,0.035), transparent 30%),
-        linear-gradient(315deg, rgba(35,59,45,0.04), transparent 34%);
+        linear-gradient(135deg, rgba(122,31,31,0.03), transparent 30%),
+        linear-gradient(315deg, rgba(35,59,45,0.03), transparent 34%);
     }
 
     .parchment-input, .parchment-select {
       width: 100%;
       padding: 10px 14px;
-      border: 1.5px solid rgba(70,40,14,0.55);
-      background: rgba(255,248,228,0.94);
+      border: 1px solid rgba(70,40,14,0.46);
+      background: rgba(255,249,233,0.95);
       color: #180a02;
       font-size: 14px;
       font-family: 'Cinzel', Georgia, serif;
@@ -184,15 +225,15 @@ const GlobalStyles = () => (
       outline: none;
       border-radius: 6px;
       letter-spacing: 0.04em;
-      box-shadow: inset 0 2px 4px rgba(60,28,4,0.10);
+      box-shadow: inset 0 2px 3px rgba(60,28,4,0.06);
       transition: border-color 0.2s, box-shadow 0.2s;
     }
 
     .parchment-input:focus, .parchment-select:focus, .parchment-number:focus {
-      border-color: rgba(122,31,31,0.72);
+      border-color: rgba(122,31,31,0.62);
       box-shadow:
-        inset 0 2px 4px rgba(60,28,4,0.12),
-        0 0 0 2px rgba(200,159,68,0.20);
+        inset 0 2px 3px rgba(60,28,4,0.08),
+        0 0 0 2px rgba(200,159,68,0.16);
     }
 
     .parchment-input::placeholder { color: rgba(80,38,8,0.4); font-weight: 400; }
@@ -201,8 +242,8 @@ const GlobalStyles = () => (
     .parchment-number {
       width: 100%;
       padding: 10px 14px;
-      border: 1.5px solid rgba(70,40,14,0.55);
-      background: rgba(255,248,228,0.94);
+      border: 1px solid rgba(70,40,14,0.46);
+      background: rgba(255,249,233,0.95);
       color: #180a02;
       font-size: 28px;
       font-family: 'Cinzel', Georgia, serif;
@@ -210,7 +251,7 @@ const GlobalStyles = () => (
       outline: none;
       border-radius: 0;
       letter-spacing: 0.04em;
-      box-shadow: inset 0 2px 4px rgba(60,28,4,0.10);
+      box-shadow: inset 0 2px 3px rgba(60,28,4,0.06);
       text-align: center;
       -moz-appearance: textfield;
     }
@@ -248,8 +289,8 @@ const GlobalStyles = () => (
       border-radius: inherit;
       pointer-events: none;
       box-shadow:
-        inset 0 1px 0 rgba(255,244,210,0.45),
-        inset 0 -2px 3px rgba(20,8,2,0.18);
+        inset 0 1px 0 rgba(255,244,210,0.30),
+        inset 0 -2px 3px rgba(20,8,2,0.16);
     }
 
     .crusade-btn::after {
@@ -258,14 +299,14 @@ const GlobalStyles = () => (
       right: 14px;
       top: 50%;
       transform: translateY(-50%);
-      opacity: 0.55;
+      opacity: 0.5;
       font-size: 10px;
     }
 
     .crusade-btn:hover,
     .stepper-btn:hover,
     .option-pill:hover {
-      filter: brightness(1.05);
+      filter: brightness(1.04);
       transform: translateY(-1px);
     }
 
@@ -282,8 +323,8 @@ const GlobalStyles = () => (
       border: 2px solid #35100f;
       color: #f7e7be;
       box-shadow:
-        0 7px 16px rgba(40,10,10,0.30),
-        inset 0 1px 0 rgba(255,219,170,0.28);
+        0 7px 16px rgba(40,10,10,0.26),
+        inset 0 1px 0 rgba(255,219,170,0.24);
     }
 
     .crusade-btn-inactive {
@@ -292,8 +333,8 @@ const GlobalStyles = () => (
       border: 2px solid #0f1a13;
       color: #f2ddb1;
       box-shadow:
-        0 6px 12px rgba(20,30,22,0.22),
-        inset 0 1px 0 rgba(255,244,210,0.12);
+        0 6px 12px rgba(20,30,22,0.18),
+        inset 0 1px 0 rgba(255,244,210,0.10);
     }
 
     .option-pill {
@@ -312,12 +353,12 @@ const GlobalStyles = () => (
         linear-gradient(90deg, rgba(122,31,31,0.96) 0%, rgba(162,49,45,0.96) 100%);
       border: 1.5px solid #4a1716;
       color: #f8e8c0;
-      box-shadow: 0 4px 12px rgba(40,10,10,0.22);
+      box-shadow: 0 4px 12px rgba(40,10,10,0.18);
     }
 
     .option-pill-inactive {
       background: rgba(247,236,202,0.82);
-      border: 1px solid rgba(80,54,20,0.26);
+      border: 1px solid rgba(80,54,20,0.24);
       color: #1e0e04;
     }
 
@@ -326,7 +367,7 @@ const GlobalStyles = () => (
     }
 
     .lb-row {
-      border: 1px solid rgba(88,54,20,0.28);
+      border: 1px solid rgba(88,54,20,0.24);
       background: rgba(248,236,205,0.68);
       border-radius: 8px;
       padding: 12px;
@@ -356,7 +397,7 @@ const GlobalStyles = () => (
         linear-gradient(180deg, #d3ab55 0%, #b6852d 52%, #7a571e 100%);
       border: 2px solid #4a3311;
       color: #2a1607;
-      box-shadow: 0 4px 12px rgba(45,22,6,0.25);
+      box-shadow: 0 4px 12px rgba(45,22,6,0.18);
     }
 
     .chronicle-entry {
@@ -387,7 +428,7 @@ const GlobalStyles = () => (
       font-weight: 700;
       letter-spacing: 0.06em;
       border-radius: 8px;
-      box-shadow: 0 12px 40px rgba(0,0,0,0.75);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.72);
       text-align: center;
     }
 
@@ -410,8 +451,8 @@ const GlobalStyles = () => (
         linear-gradient(180deg, #8a1f1f 0%, #671919 55%, #4d1212 100%);
       border: 3px solid #f0cf84;
       box-shadow:
-        0 16px 36px rgba(0,0,0,0.32),
-        inset 0 1px 0 rgba(255,230,180,0.20);
+        0 16px 36px rgba(0,0,0,0.30),
+        inset 0 1px 0 rgba(255,230,180,0.18);
       clip-path: polygon(0 0, 100% 0, 96% 100%, 4% 100%);
     }
 
@@ -465,8 +506,7 @@ const SUPABASE_ANON_KEY = "sb_publishable_0o1l0knnxpTOg7aHcSKqfQ_6gkb7bck";
 const hasSupabaseConfig = SUPABASE_URL && SUPABASE_ANON_KEY && !SUPABASE_URL.includes("YOUR_PROJECT");
 const supabase          = hasSupabaseConfig ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
-// Bumped version to refresh local cache after theme changes
-const STORAGE_KEY       = "guinness-crusade-v10";
+const STORAGE_KEY       = "guinness-crusade-v11";
 const GUINNESS_PUB_KEY  = "__guinness__";
 const CHRONICLE_PUB_KEY = "__chronicle__";
 
@@ -520,18 +560,31 @@ const PUB_BRANDING = {
 const ALL_KEYS = [...CATEGORIES.pint, ...CATEGORIES.pub].map(i => i.key);
 
 const RANKS = [
-  {min:0, max:0,        label:"Peasant",      bg:"rgba(140,110,60,0.2)",  color:"#6a4a1a"},
-  {min:1, max:2,        label:"Squire",       bg:"rgba(130,90,20,0.28)",  color:"#7a4a10"},
-  {min:3, max:4,        label:"Knight",       bg:"rgba(50,75,120,0.28)",  color:"#2a4a7a"},
-  {min:5, max:6,        label:"Templar",      bg:"rgba(160,130,10,0.28)", color:"#8a7010"},
-  {min:7, max:Infinity, label:"Grand Marshal",bg:"rgba(140,20,10,0.28)",  color:"#8a1a0a"},
+  {min:0, max:0,        label:"Peasant",       bg:"rgba(140,110,60,0.2)",  color:"#6a4a1a"},
+  {min:1, max:2,        label:"Squire",        bg:"rgba(130,90,20,0.28)",  color:"#7a4a10"},
+  {min:3, max:4,        label:"Knight",        bg:"rgba(50,75,120,0.28)",  color:"#2a4a7a"},
+  {min:5, max:6,        label:"Templar",       bg:"rgba(160,130,10,0.28)", color:"#8a7010"},
+  {min:7, max:Infinity, label:"Grand Marshal", bg:"rgba(140,20,10,0.28)",  color:"#8a1a0a"},
 ];
+
 const getRank = count => RANKS.find(r => count >= r.min && count <= r.max) || RANKS[0];
 
+const rankIndex = count => {
+  const label = getRank(count).label;
+  return RANKS.findIndex(r => r.label === label);
+};
+
 const BATTLE_CRIES = [
-  "Deus Vult!", "For Jerusalem!", "The pint is secured!", "God wills it!",
-  "Onward, Crusader!", "The infidels are vanquished!", "Hail the dark nectar!",
-  "Victory for the Order!", "The siege is won!", "Advance the banner!",
+  "Deus Vult!",
+  "For Jerusalem!",
+  "The pint is secured!",
+  "God wills it!",
+  "Onward, Crusader!",
+  "The infidels are vanquished!",
+  "Hail the dark nectar!",
+  "Victory for the Order!",
+  "The siege is won!",
+  "Advance the banner!",
 ];
 
 /* ── Helpers ──────────────────────────────────────────────────────────────── */
@@ -542,102 +595,154 @@ const gAvg   = (e,gk)   => eAvg(e, CATEGORIES[gk].map(i=>i.key));
 const sLabel = (f,s)    => QUALITATIVE[f].find(i=>i.score===s)?.label || "Unrated";
 
 /* ── Campaign Map ─────────────────────────────────────────────────────────── */
+const Smoke = ({ x, y }) => (
+  <g opacity="0.75">
+    <ellipse cx={x} cy={y} rx="4" ry="3" fill="rgba(72,72,72,0.24)">
+      <animate attributeName="cy" values={`${y};${y-12};${y-24}`} dur="2.5s" repeatCount="indefinite" />
+      <animate attributeName="rx" values="4;5;6" dur="2.5s" repeatCount="indefinite" />
+      <animate attributeName="ry" values="3;4;5" dur="2.5s" repeatCount="indefinite" />
+      <animate attributeName="opacity" values="0.5;0.35;0" dur="2.5s" repeatCount="indefinite" />
+    </ellipse>
+    <ellipse cx={x+5} cy={y-3} rx="3.5" ry="2.7" fill="rgba(92,92,92,0.18)">
+      <animate attributeName="cy" values={`${y-3};${y-16};${y-27}`} dur="2.1s" repeatCount="indefinite" />
+      <animate attributeName="cx" values={`${x+5};${x+7};${x+4}`} dur="2.1s" repeatCount="indefinite" />
+      <animate attributeName="rx" values="3.5;4.6;5.4" dur="2.1s" repeatCount="indefinite" />
+      <animate attributeName="ry" values="2.7;3.5;4.3" dur="2.1s" repeatCount="indefinite" />
+      <animate attributeName="opacity" values="0.42;0.25;0" dur="2.1s" repeatCount="indefinite" />
+    </ellipse>
+    <ellipse cx={x-4} cy={y-1} rx="3" ry="2.4" fill="rgba(110,110,110,0.15)">
+      <animate attributeName="cy" values={`${y-1};${y-13};${y-22}`} dur="2.8s" repeatCount="indefinite" />
+      <animate attributeName="cx" values={`${x-4};${x-7};${x-5}`} dur="2.8s" repeatCount="indefinite" />
+      <animate attributeName="rx" values="3;4;5" dur="2.8s" repeatCount="indefinite" />
+      <animate attributeName="ry" values="2.4;3.3;4.2" dur="2.8s" repeatCount="indefinite" />
+      <animate attributeName="opacity" values="0.35;0.2;0" dur="2.8s" repeatCount="indefinite" />
+    </ellipse>
+  </g>
+);
+
 const CampaignMap = ({ pubs, selectedPub, scoreMap }) => {
-  const W = 420, H = 128, pad = 44;
+  const W = 420;
+  const H = 128;
+  const pad = 44;
   const xOf = i => pad + (i * (W - pad * 2)) / Math.max(pubs.length - 1, 1);
   const cy = 68;
   const isConquered = pub => Object.keys(scoreMap).some(k => k.startsWith(`${pub}__`));
-  const pathD = pubs.map((_, i) => `${i===0?'M':'L'}${xOf(i)},${cy}`).join(' ');
+  const pathD = pubs.map((_, i) => `${i===0?'M':'L'}${xOf(i)},${cy}`).join(" ");
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} style={{width:"100%",borderRadius:"6px",display:"block"}}>
       <rect width={W} height={H} fill="rgba(238,212,148,0.35)" rx="6"/>
       <path d={pathD} stroke="rgba(90,48,10,0.32)" strokeWidth="2.5" strokeDasharray="6,5" fill="none"/>
+
       {pubs.map((pub, i) => {
-        const cx     = xOf(i);
+        const cx = xOf(i);
         const active = pub === selectedPub;
-        const conq   = isConquered(pub);
-        const fc     = active ? "#8a1f1f" : conq ? "#233b2d" : "#b89050";
-        const sc     = "rgba(45,18,3,0.72)";
-        const drk    = "rgba(18,6,1,0.78)";
-        const label  = MAP_LABELS[pub] || pub;
+        const conq = isConquered(pub);
+        const showSmoke = conq && !active;
+        const fc = active ? "#8a1f1f" : conq ? "#233b2d" : "#b89050";
+        const sc = "rgba(45,18,3,0.72)";
+        const drk = "rgba(18,6,1,0.78)";
+        const label = MAP_LABELS[pub] || pub;
         let castle;
 
         if (i === 0) {
-          castle = <>
-            {active && <text x={cx} y={cy-40} textAnchor="middle" fontSize="13" fill="#9a1a08">⚔</text>}
-            <rect x={cx-6} y={cy-13} width={12} height={13} fill={fc} stroke={sc} strokeWidth="0.8"/>
-            <rect x={cx-9} y={cy-22} width={18} height={11} rx="9" fill={fc} stroke={sc} strokeWidth="0.8"/>
-            <polygon points={`${cx},${cy-34} ${cx-9},${cy-22} ${cx+9},${cy-22}`} fill={fc} stroke={sc} strokeWidth="0.8"/>
-            <path d={`M${cx-3},${cy} Q${cx},${cy-5} ${cx+3},${cy}`} fill={drk} stroke="none"/>
-            <ellipse cx={cx} cy={cy-25} rx="2" ry="3" fill={drk}/>
-            {conq && !active && <>
-              <line x1={cx+10} y1={cy-22} x2={cx+10} y2={cy-32} stroke={sc} strokeWidth="0.8"/>
-              <polygon points={`${cx+10},${cy-32} ${cx+17},${cy-28} ${cx+10},${cy-24}`} fill="#8a1a0a" opacity="0.85"/>
-            </>}
-          </>;
+          castle = (
+            <>
+              {showSmoke && <Smoke x={cx} y={cy-32} />}
+              {active && <text x={cx} y={cy-40} textAnchor="middle" fontSize="13" fill="#9a1a08">⚔</text>}
+              <rect x={cx-6} y={cy-13} width={12} height={13} fill={fc} stroke={sc} strokeWidth="0.8"/>
+              <rect x={cx-9} y={cy-22} width={18} height={11} rx="9" fill={fc} stroke={sc} strokeWidth="0.8"/>
+              <polygon points={`${cx},${cy-34} ${cx-9},${cy-22} ${cx+9},${cy-22}`} fill={fc} stroke={sc} strokeWidth="0.8"/>
+              <path d={`M${cx-3},${cy} Q${cx},${cy-5} ${cx+3},${cy}`} fill={drk} stroke="none"/>
+              <ellipse cx={cx} cy={cy-25} rx="2" ry="3" fill={drk}/>
+              {conq && !active && (
+                <>
+                  <line x1={cx+10} y1={cy-22} x2={cx+10} y2={cy-32} stroke={sc} strokeWidth="0.8"/>
+                  <polygon points={`${cx+10},${cy-32} ${cx+17},${cy-28} ${cx+10},${cy-24}`} fill="#8a1a0a" opacity="0.85"/>
+                </>
+              )}
+            </>
+          );
         } else if (i === 1) {
-          castle = <>
-            {active && <text x={cx} y={cy-37} textAnchor="middle" fontSize="13" fill="#9a1a08">⚔</text>}
-            <rect x={cx-13} y={cy-23} width={8} height={23} fill={fc} stroke={sc} strokeWidth="0.8"/>
-            <rect x={cx+5}  y={cy-23} width={8} height={23} fill={fc} stroke={sc} strokeWidth="0.8"/>
-            {[-12,-9,-6].map((dx,j)=><rect key={j} x={cx+dx} y={cy-28} width={2.5} height={6} fill={fc} stroke={sc} strokeWidth="0.5"/>)}
-            {[6,9,12].map((dx,j)=><rect key={j} x={cx+dx} y={cy-28} width={2.5} height={6} fill={fc} stroke={sc} strokeWidth="0.5"/>)}
-            <rect x={cx-5} y={cy-14} width={10} height={14} fill={fc} stroke={sc} strokeWidth="0.8"/>
-            <path d={`M${cx-3},${cy} Q${cx},${cy-7} ${cx+3},${cy}`} fill={drk} stroke="none"/>
-            <rect x={cx-11} y={cy-18} width={3} height={5} fill={drk}/>
-            <rect x={cx+8}  y={cy-18} width={3} height={5} fill={drk}/>
-            {conq && !active && <>
-              <line x1={cx+14} y1={cy-23} x2={cx+14} y2={cy-33} stroke={sc} strokeWidth="0.8"/>
-              <polygon points={`${cx+14},${cy-33} ${cx+21},${cy-29} ${cx+14},${cy-25}`} fill="#8a1a0a" opacity="0.85"/>
-            </>}
-          </>;
+          castle = (
+            <>
+              {showSmoke && <Smoke x={cx} y={cy-34} />}
+              {active && <text x={cx} y={cy-37} textAnchor="middle" fontSize="13" fill="#9a1a08">⚔</text>}
+              <rect x={cx-13} y={cy-23} width={8} height={23} fill={fc} stroke={sc} strokeWidth="0.8"/>
+              <rect x={cx+5}  y={cy-23} width={8} height={23} fill={fc} stroke={sc} strokeWidth="0.8"/>
+              {[-12,-9,-6].map((dx,j)=><rect key={j} x={cx+dx} y={cy-28} width={2.5} height={6} fill={fc} stroke={sc} strokeWidth="0.5"/>)}
+              {[6,9,12].map((dx,j)=><rect key={j} x={cx+dx} y={cy-28} width={2.5} height={6} fill={fc} stroke={sc} strokeWidth="0.5"/>)}
+              <rect x={cx-5} y={cy-14} width={10} height={14} fill={fc} stroke={sc} strokeWidth="0.8"/>
+              <path d={`M${cx-3},${cy} Q${cx},${cy-7} ${cx+3},${cy}`} fill={drk} stroke="none"/>
+              <rect x={cx-11} y={cy-18} width={3} height={5} fill={drk}/>
+              <rect x={cx+8}  y={cy-18} width={3} height={5} fill={drk}/>
+              {conq && !active && (
+                <>
+                  <line x1={cx+14} y1={cy-23} x2={cx+14} y2={cy-33} stroke={sc} strokeWidth="0.8"/>
+                  <polygon points={`${cx+14},${cy-33} ${cx+21},${cy-29} ${cx+14},${cy-25}`} fill="#8a1a0a" opacity="0.85"/>
+                </>
+              )}
+            </>
+          );
         } else if (i === 2) {
-          castle = <>
-            {active && <text x={cx} y={cy-44} textAnchor="middle" fontSize="13" fill="#9a1a08">⚔</text>}
-            <rect x={cx-5} y={cy-30} width={10} height={30} fill={fc} stroke={sc} strokeWidth="0.8"/>
-            {[-4,-1,2].map((dx,j)=><rect key={j} x={cx+dx} y={cy-36} width={2.5} height={7} fill={fc} stroke={sc} strokeWidth="0.5"/>)}
-            <rect x={cx-1.5} y={cy-24} width={3} height={7} fill={drk}/>
-            <rect x={cx-1.5} y={cy-12} width={3} height={6} fill={drk}/>
-            <path d={`M${cx-2.5},${cy} L${cx-2.5},${cy-6} Q${cx},${cy-9} ${cx+2.5},${cy-6} L${cx+2.5},${cy}`} fill={drk} stroke="none"/>
-            {conq && !active && <>
-              <line x1={cx+6} y1={cy-30} x2={cx+6} y2={cy-40} stroke={sc} strokeWidth="0.8"/>
-              <polygon points={`${cx+6},${cy-40} ${cx+13},${cy-36} ${cx+6},${cy-32}`} fill="#8a1a0a" opacity="0.85"/>
-            </>}
-          </>;
+          castle = (
+            <>
+              {showSmoke && <Smoke x={cx} y={cy-42} />}
+              {active && <text x={cx} y={cy-44} textAnchor="middle" fontSize="13" fill="#9a1a08">⚔</text>}
+              <rect x={cx-5} y={cy-30} width={10} height={30} fill={fc} stroke={sc} strokeWidth="0.8"/>
+              {[-4,-1,2].map((dx,j)=><rect key={j} x={cx+dx} y={cy-36} width={2.5} height={7} fill={fc} stroke={sc} strokeWidth="0.5"/>)}
+              <rect x={cx-1.5} y={cy-24} width={3} height={7} fill={drk}/>
+              <rect x={cx-1.5} y={cy-12} width={3} height={6} fill={drk}/>
+              <path d={`M${cx-2.5},${cy} L${cx-2.5},${cy-6} Q${cx},${cy-9} ${cx+2.5},${cy-6} L${cx+2.5},${cy}`} fill={drk} stroke="none"/>
+              {conq && !active && (
+                <>
+                  <line x1={cx+6} y1={cy-30} x2={cx+6} y2={cy-40} stroke={sc} strokeWidth="0.8"/>
+                  <polygon points={`${cx+6},${cy-40} ${cx+13},${cy-36} ${cx+6},${cy-32}`} fill="#8a1a0a" opacity="0.85"/>
+                </>
+              )}
+            </>
+          );
         } else if (i === 3) {
-          castle = <>
-            {active && <text x={cx} y={cy-42} textAnchor="middle" fontSize="13" fill="#9a1a08">⚔</text>}
-            <rect x={cx-14} y={cy-10} width={28} height={10} fill={fc} stroke={sc} strokeWidth="0.8"/>
-            <rect x={cx-14} y={cy-20} width={7}  height={20} fill={fc} stroke={sc} strokeWidth="0.8"/>
-            <rect x={cx+7}  y={cy-20} width={7}  height={20} fill={fc} stroke={sc} strokeWidth="0.8"/>
-            <rect x={cx-4}  y={cy-28} width={8}  height={28} fill={fc} stroke={sc} strokeWidth="0.8"/>
-            {[-3,0,3].map((dx,j)=><rect key={j} x={cx+dx} y={cy-34} width={2.5} height={7} fill={fc} stroke={sc} strokeWidth="0.5"/>)}
-            {[-13,-10].map((dx,j)=><rect key={j} x={cx+dx} y={cy-26} width={2.5} height={7} fill={fc} stroke={sc} strokeWidth="0.5"/>)}
-            {[8,11].map((dx,j)=><rect key={j} x={cx+dx} y={cy-26} width={2.5} height={7} fill={fc} stroke={sc} strokeWidth="0.5"/>)}
-            <path d={`M${cx-3},${cy} Q${cx},${cy-6} ${cx+3},${cy}`} fill={drk} stroke="none"/>
-            <rect x={cx-12} y={cy-15} width={3} height={4} fill={drk}/>
-            <rect x={cx+9}  y={cy-15} width={3} height={4} fill={drk}/>
-            {conq && !active && <>
-              <line x1={cx+15} y1={cy-20} x2={cx+15} y2={cy-30} stroke={sc} strokeWidth="0.8"/>
-              <polygon points={`${cx+15},${cy-30} ${cx+22},${cy-26} ${cx+15},${cy-22}`} fill="#8a1a0a" opacity="0.85"/>
-            </>}
-          </>;
+          castle = (
+            <>
+              {showSmoke && <Smoke x={cx} y={cy-40} />}
+              {active && <text x={cx} y={cy-42} textAnchor="middle" fontSize="13" fill="#9a1a08">⚔</text>}
+              <rect x={cx-14} y={cy-10} width={28} height={10} fill={fc} stroke={sc} strokeWidth="0.8"/>
+              <rect x={cx-14} y={cy-20} width={7}  height={20} fill={fc} stroke={sc} strokeWidth="0.8"/>
+              <rect x={cx+7}  y={cy-20} width={7}  height={20} fill={fc} stroke={sc} strokeWidth="0.8"/>
+              <rect x={cx-4}  y={cy-28} width={8}  height={28} fill={fc} stroke={sc} strokeWidth="0.8"/>
+              {[-3,0,3].map((dx,j)=><rect key={j} x={cx+dx} y={cy-34} width={2.5} height={7} fill={fc} stroke={sc} strokeWidth="0.5"/>)}
+              {[-13,-10].map((dx,j)=><rect key={j} x={cx+dx} y={cy-26} width={2.5} height={7} fill={fc} stroke={sc} strokeWidth="0.5"/>)}
+              {[8,11].map((dx,j)=><rect key={j} x={cx+dx} y={cy-26} width={2.5} height={7} fill={fc} stroke={sc} strokeWidth="0.5"/>)}
+              <path d={`M${cx-3},${cy} Q${cx},${cy-6} ${cx+3},${cy}`} fill={drk} stroke="none"/>
+              <rect x={cx-12} y={cy-15} width={3} height={4} fill={drk}/>
+              <rect x={cx+9}  y={cy-15} width={3} height={4} fill={drk}/>
+              {conq && !active && (
+                <>
+                  <line x1={cx+15} y1={cy-20} x2={cx+15} y2={cy-30} stroke={sc} strokeWidth="0.8"/>
+                  <polygon points={`${cx+15},${cy-30} ${cx+22},${cy-26} ${cx+15},${cy-22}`} fill="#8a1a0a" opacity="0.85"/>
+                </>
+              )}
+            </>
+          );
         } else {
-          castle = <>
-            {active && <text x={cx} y={cy-54} textAnchor="middle" fontSize="13" fill="#9a1a08">⚔</text>}
-            <rect x={cx-15} y={cy-8} width={30} height={8} fill={fc} stroke={sc} strokeWidth="0.8"/>
-            <rect x={cx-15} y={cy-24} width={8} height={24} fill={fc} stroke={sc} strokeWidth="0.8"/>
-            <polygon points={`${cx-11},${cy-33} ${cx-15},${cy-24} ${cx-7},${cy-24}`} fill={fc} stroke={sc} strokeWidth="0.8"/>
-            <rect x={cx+7}  y={cy-24} width={8} height={24} fill={fc} stroke={sc} strokeWidth="0.8"/>
-            <polygon points={`${cx+11},${cy-33} ${cx+7},${cy-24} ${cx+15},${cy-24}`} fill={fc} stroke={sc} strokeWidth="0.8"/>
-            <rect x={cx-5}  y={cy-36} width={10} height={36} fill={fc} stroke={sc} strokeWidth="0.8"/>
-            <polygon points={`${cx},${cy-46} ${cx-5},${cy-36} ${cx+5},${cy-36}`} fill={fc} stroke={sc} strokeWidth="0.8"/>
-            <circle cx={cx} cy={cy-22} r="2.5" stroke={drk} strokeWidth="0.8" fill={drk} fillOpacity="0.4"/>
-            <path d={`M${cx-3},${cy} Q${cx},${cy-7} ${cx+3},${cy}`} fill={drk} stroke="none"/>
-            <line x1={cx} y1={cy-46} x2={cx} y2={cy-50} stroke={sc} strokeWidth="0.9"/>
-            <polygon points={`${cx},${cy-50} ${cx+7},${cy-47} ${cx},${cy-44}`} fill={conq ? "#8a1a0a" : fc} opacity="0.9"/>
-          </>;
+          castle = (
+            <>
+              {showSmoke && <Smoke x={cx} y={cy-50} />}
+              {active && <text x={cx} y={cy-54} textAnchor="middle" fontSize="13" fill="#9a1a08">⚔</text>}
+              <rect x={cx-15} y={cy-8} width={30} height={8} fill={fc} stroke={sc} strokeWidth="0.8"/>
+              <rect x={cx-15} y={cy-24} width={8} height={24} fill={fc} stroke={sc} strokeWidth="0.8"/>
+              <polygon points={`${cx-11},${cy-33} ${cx-15},${cy-24} ${cx-7},${cy-24}`} fill={fc} stroke={sc} strokeWidth="0.8"/>
+              <rect x={cx+7}  y={cy-24} width={8} height={24} fill={fc} stroke={sc} strokeWidth="0.8"/>
+              <polygon points={`${cx+11},${cy-33} ${cx+7},${cy-24} ${cx+15},${cy-24}`} fill={fc} stroke={sc} strokeWidth="0.8"/>
+              <rect x={cx-5}  y={cy-36} width={10} height={36} fill={fc} stroke={sc} strokeWidth="0.8"/>
+              <polygon points={`${cx},${cy-46} ${cx-5},${cy-36} ${cx+5},${cy-36}`} fill={fc} stroke={sc} strokeWidth="0.8"/>
+              <circle cx={cx} cy={cy-22} r="2.5" stroke={drk} strokeWidth="0.8" fill={drk} fillOpacity="0.4"/>
+              <path d={`M${cx-3},${cy} Q${cx},${cy-7} ${cx+3},${cy}`} fill={drk} stroke="none"/>
+              <line x1={cx} y1={cy-46} x2={cx} y2={cy-50} stroke={sc} strokeWidth="0.9"/>
+              <polygon points={`${cx},${cy-50} ${cx+7},${cy-47} ${cx},${cy-44}`} fill={conq ? "#8a1a0a" : fc} opacity="0.9"/>
+            </>
+          );
         }
 
         return (
@@ -653,7 +758,7 @@ const CampaignMap = ({ pubs, selectedPub, scoreMap }) => {
               fill={active ? "#8a1a0a" : "#4a2008"}
               letterSpacing="0.02em"
             >
-              {label.length > 12 ? label.slice(0,11)+'…' : label}
+              {label.length > 12 ? `${label.slice(0,11)}…` : label}
             </text>
           </g>
         );
@@ -943,11 +1048,26 @@ export default function GuinnessCrusadeApp() {
 
   const updateGuinnessCount = async (val) => {
     if (!safeJudge) return;
+
     playMetalClink();
-    const count = Math.max(0, Number(val) || 0);
+
     const prevCount = guinnessCounts[safeJudge] || 0;
+    const count = Math.max(0, Number(val) || 0);
+
     setGuinnessCounts(prev => ({ ...prev, [safeJudge]: count }));
-    if (count > prevCount) addChronicleEvent(`${safeJudge} sacked pint #${count} at ${selectedPub}`);
+
+    if (count > prevCount) {
+      addChronicleEvent(`${safeJudge} sacked pint #${count} at ${selectedPub}`);
+    }
+
+    const prevRankIdx = rankIndex(prevCount);
+    const nextRankIdx = rankIndex(count);
+
+    if (nextRankIdx > prevRankIdx) {
+      const newRank = getRank(count).label;
+      addChronicleEvent(`${safeJudge} has been elevated to ${newRank}!`);
+    }
+
     if (supabase) {
       await supabase.from("bar_crawl_scores").upsert({
         pub: GUINNESS_PUB_KEY,
@@ -987,7 +1107,7 @@ export default function GuinnessCrusadeApp() {
     }
   };
 
-  const brand = PUB_BRANDING[selectedPub] || {wordmark: selectedPub.toUpperCase()};
+  const brand = PUB_BRANDING[selectedPub] || { wordmark: selectedPub.toUpperCase() };
 
   return (
     <>
@@ -1051,6 +1171,7 @@ export default function GuinnessCrusadeApp() {
       >
         <div style={{width:"100%",maxWidth:"460px"}}>
           <div className="scroll-rod" />
+
           <div className="parchment-body">
             <div className="parchment-frame">
               <div className="corner corner-tl"><CornerOrnament /></div>
@@ -1060,7 +1181,6 @@ export default function GuinnessCrusadeApp() {
 
               <div style={{display:"flex",flexDirection:"column",gap:"18px"}}>
 
-                {/* HEADER */}
                 <div style={{textAlign:"center",padding:"8px 0 4px"}}>
                   <img src="/logo.png" alt="The Guinness Crusade" className="crusade-logo"/>
                   <div className="cinzel" style={{fontSize:"8px",letterSpacing:"0.5em",color:"#6a3a10",textTransform:"uppercase",marginTop:"6px"}}>
@@ -1088,9 +1208,9 @@ export default function GuinnessCrusadeApp() {
 
                 <div className="ornament">⚔ ✦ ⚔</div>
 
-                {/* MUSTER */}
                 <div className="section-card">
                   <SectionHead icon={Shield}>Muster the Crusade</SectionHead>
+
                   <div style={{display:"grid",gap:"12px"}}>
                     <div>
                       <FieldLabel>Crusader Name</FieldLabel>
@@ -1120,11 +1240,11 @@ export default function GuinnessCrusadeApp() {
                     style={{
                       marginTop:"14px",
                       padding:"14px 12px",
-                      border:"1.5px solid rgba(80,45,8,0.48)",
-                      background:"linear-gradient(180deg,rgba(255,238,188,0.65),rgba(235,200,130,0.6))",
+                      border:"1.5px solid rgba(80,45,8,0.40)",
+                      background:"linear-gradient(180deg,rgba(255,238,188,0.65),rgba(235,200,130,0.55))",
                       borderRadius:"8px",
                       textAlign:"center",
-                      boxShadow:"inset 0 1px 4px rgba(255,230,160,0.4)"
+                      boxShadow:"inset 0 1px 3px rgba(255,230,160,0.28)"
                     }}
                   >
                     <div className="cinzel" style={{fontSize:"8px",letterSpacing:"0.4em",color:"#6a3a10",textTransform:"uppercase",fontWeight:700}}>
@@ -1135,13 +1255,12 @@ export default function GuinnessCrusadeApp() {
                     </div>
                   </div>
 
-                  {/* SACKED GUINNESS */}
                   <div
                     style={{
                       marginTop:"14px",
                       padding:"14px 12px",
-                      border:"1.5px solid rgba(80,45,8,0.48)",
-                      background:"linear-gradient(180deg,rgba(248,228,168,0.55),rgba(230,195,120,0.5))",
+                      border:"1.5px solid rgba(80,45,8,0.40)",
+                      background:"linear-gradient(180deg,rgba(248,228,168,0.55),rgba(230,195,120,0.48))",
                       borderRadius:"8px"
                     }}
                   >
@@ -1167,6 +1286,7 @@ export default function GuinnessCrusadeApp() {
                         <div className="cinzel" style={{fontSize:"8px",letterSpacing:"0.2em",textTransform:"uppercase",color:"#5a2e08",fontWeight:700,marginBottom:"6px",textAlign:"center"}}>
                           Draughts Pillaged
                         </div>
+
                         <button
                           className="stepper-btn"
                           onClick={() => updateGuinnessCount(myGuinnessCount + 1)}
@@ -1175,6 +1295,7 @@ export default function GuinnessCrusadeApp() {
                         >
                           ＋
                         </button>
+
                         <input
                           type="number"
                           min="0"
@@ -1184,6 +1305,7 @@ export default function GuinnessCrusadeApp() {
                           disabled={!safeJudge}
                           style={{borderTop:"none",borderBottom:"none",opacity:safeJudge?1:0.45}}
                         />
+
                         <button
                           className="stepper-btn"
                           onClick={() => updateGuinnessCount(myGuinnessCount - 1)}
@@ -1202,8 +1324,8 @@ export default function GuinnessCrusadeApp() {
                           style={{
                             flex:1,
                             padding:"10px",
-                            background:"rgba(110,58,16,0.18)",
-                            border:"1.5px solid rgba(90,48,10,0.38)",
+                            background:"rgba(110,58,16,0.14)",
+                            border:"1.5px solid rgba(90,48,10,0.28)",
                             borderRadius:"8px",
                             textAlign:"center",
                             display:"flex",
@@ -1230,7 +1352,7 @@ export default function GuinnessCrusadeApp() {
                               style={{
                                 padding:"4px 10px",
                                 background:"rgba(248,228,168,0.7)",
-                                border:"1px solid rgba(90,48,10,0.3)",
+                                border:"1px solid rgba(90,48,10,0.26)",
                                 borderRadius:"999px",
                                 display:"flex",
                                 alignItems:"center",
@@ -1248,9 +1370,9 @@ export default function GuinnessCrusadeApp() {
                   </div>
                 </div>
 
-                {/* SCORE */}
                 <div className="section-card">
                   <SectionHead icon={ScrollText}>Score the Siege</SectionHead>
+
                   <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"10px",marginBottom:"16px"}}>
                     <Btn active={selectedGroup==="pint"} onClick={()=>setSelectedGroup("pint")}>The Pint</Btn>
                     <Btn active={selectedGroup==="pub"}  onClick={()=>setSelectedGroup("pub")}>The Pub</Btn>
@@ -1267,18 +1389,18 @@ export default function GuinnessCrusadeApp() {
                           initial={{opacity:0,y:6}}
                           animate={{opacity:1,y:0}}
                           style={{
-                            border:"1px solid rgba(90,50,10,0.3)",
+                            border:"1px solid rgba(90,50,10,0.24)",
                             background:"linear-gradient(180deg,rgba(255,242,200,0.82),rgba(238,210,152,0.76))",
                             borderRadius:"8px",
                             padding:"13px",
-                            boxShadow:"0 3px 10px rgba(40,18,2,0.1)"
+                            boxShadow:"0 3px 10px rgba(40,18,2,0.08)"
                           }}
                         >
                           <div style={{display:"flex",alignItems:"flex-start",gap:"9px",marginBottom:"10px"}}>
                             <div
                               style={{
                                 padding:"6px",
-                                border:"1px solid rgba(90,50,10,0.32)",
+                                border:"1px solid rgba(90,50,10,0.28)",
                                 background:"rgba(248,225,155,0.8)",
                                 borderRadius:"6px",
                                 color:"#5a2e08",
@@ -1303,9 +1425,9 @@ export default function GuinnessCrusadeApp() {
                             style={{
                               marginBottom:"8px",
                               padding:"5px 10px",
-                              background:"rgba(200,160,80,0.2)",
+                              background:"rgba(200,160,80,0.14)",
                               borderRadius:"6px",
-                              border:"1px solid rgba(90,50,10,0.2)"
+                              border:"1px solid rgba(90,50,10,0.14)"
                             }}
                           >
                             <span className="cinzel" style={{fontSize:"9px",letterSpacing:"0.2em",color:"#5a2e08",textTransform:"uppercase",fontWeight:700}}>
@@ -1344,7 +1466,6 @@ export default function GuinnessCrusadeApp() {
                   </div>
                 </div>
 
-                {/* SCORE SUMMARY */}
                 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:"10px"}}>
                   {[
                     {label:"Pint",    value:fmt(gAvg(currentEntry,"pint"))},
@@ -1362,7 +1483,6 @@ export default function GuinnessCrusadeApp() {
                   ))}
                 </div>
 
-                {/* LEADERBOARD */}
                 <div className="section-card">
                   <SectionHead icon={Trophy}>The Order of Merit</SectionHead>
                   <div style={{display:"flex",flexDirection:"column",gap:"10px"}}>
@@ -1406,7 +1526,7 @@ export default function GuinnessCrusadeApp() {
 
                         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"8px",marginTop:"10px"}}>
                           {[{label:"Pint",v:fmt(item.pint)},{label:"Pub",v:fmt(item.pubScore)}].map(s=>(
-                            <div key={s.label} style={{padding:"7px 10px",background:"rgba(240,212,158,0.65)",borderRadius:"8px"}}>
+                            <div key={s.label} style={{padding:"7px 10px",background:"rgba(240,212,158,0.56)",borderRadius:"8px"}}>
                               <span className="cinzel" style={{fontSize:"9px",letterSpacing:"0.1em",textTransform:"uppercase",color:"#5a2e08",fontWeight:700}}>
                                 {s.label}:
                               </span>{" "}
@@ -1421,17 +1541,17 @@ export default function GuinnessCrusadeApp() {
                   </div>
                 </div>
 
-                {/* HONOURS */}
                 {(mostValiant || bigotOfNight) && (
                   <div className="section-card">
                     <SectionHead icon={Crown}>Honours of the Campaign</SectionHead>
+
                     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"10px"}}>
                       {mostValiant && (
                         <div
                           style={{
                             padding:"12px 10px",
-                            border:"1.5px solid rgba(160,130,10,0.4)",
-                            background:"rgba(248,228,120,0.25)",
+                            border:"1.5px solid rgba(160,130,10,0.28)",
+                            background:"rgba(248,228,120,0.20)",
                             borderRadius:"8px",
                             textAlign:"center"
                           }}
@@ -1454,8 +1574,8 @@ export default function GuinnessCrusadeApp() {
                         <div
                           style={{
                             padding:"12px 10px",
-                            border:"1.5px solid rgba(140,20,10,0.35)",
-                            background:"rgba(200,50,20,0.1)",
+                            border:"1.5px solid rgba(140,20,10,0.26)",
+                            background:"rgba(200,50,20,0.08)",
                             borderRadius:"8px",
                             textAlign:"center"
                           }}
@@ -1477,9 +1597,9 @@ export default function GuinnessCrusadeApp() {
                   </div>
                 )}
 
-                {/* CHRONICLE */}
                 <div className="section-card">
                   <SectionHead icon={ScrollText}>Campaign Chronicle</SectionHead>
+
                   {chronicle.length === 0 ? (
                     <div className="fell" style={{fontSize:"13px",color:"#5a2e08",fontStyle:"italic",textAlign:"center",padding:"8px 0"}}>
                       The chronicle awaits its first entry…
@@ -1510,13 +1630,14 @@ export default function GuinnessCrusadeApp() {
 
                 <div className="ornament">✦ ⚔ ✦</div>
 
-                {/* CAMPAIGN MAP */}
                 <div className="section-card" style={{padding:"12px"}}>
                   <div className="cinzel" style={{fontSize:"9px",letterSpacing:"0.32em",color:"#4e2408",textTransform:"uppercase",fontWeight:700,marginBottom:"10px",textAlign:"center"}}>
                     The Campaign Route
                   </div>
-                  <CampaignMap pubs={pubs} selectedPub={selectedPub} scoreMap={scores}/>
-                  <div style={{marginTop:"8px",display:"flex",justifyContent:"center",gap:"16px"}}>
+
+                  <CampaignMap pubs={pubs} selectedPub={selectedPub} scoreMap={scores} />
+
+                  <div style={{marginTop:"8px",display:"flex",justifyContent:"center",gap:"16px",flexWrap:"wrap"}}>
                     {[{fc:"#b89050",label:"Unconquered"},{fc:"#233b2d",label:"Conquered"},{fc:"#8a1f1f",label:"Current Siege"}].map(({fc,label})=>(
                       <div key={label} style={{display:"flex",alignItems:"center",gap:"5px"}}>
                         <div style={{width:"10px",height:"10px",background:fc,border:"1px solid rgba(50,22,4,0.5)",borderRadius:"2px"}}/>
@@ -1525,6 +1646,12 @@ export default function GuinnessCrusadeApp() {
                         </span>
                       </div>
                     ))}
+                    <div style={{display:"flex",alignItems:"center",gap:"5px"}}>
+                      <div style={{width:"10px",height:"10px",background:"linear-gradient(180deg, rgba(90,90,90,0.55), rgba(180,180,180,0.10))",border:"1px solid rgba(50,22,4,0.25)",borderRadius:"50%"}}/>
+                      <span className="cinzel" style={{fontSize:"7px",letterSpacing:"0.08em",color:"#5a2e08",textTransform:"uppercase",fontWeight:700}}>
+                        Departed Tavern Smoke
+                      </span>
+                    </div>
                   </div>
                 </div>
 
@@ -1533,6 +1660,7 @@ export default function GuinnessCrusadeApp() {
               </div>
             </div>
           </div>
+
           <div className="scroll-rod" />
         </div>
       </div>
