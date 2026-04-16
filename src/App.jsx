@@ -168,7 +168,7 @@ const PUB_BRANDING = {
 const ALL_KEYS = [...CATEGORIES.pint, ...CATEGORIES.pub].map(i => i.key);
 
 const RANKS = [
-  {min:0, max:0,        label:"Civilian",      bg:"rgba(140,110,60,0.2)",  color:"#6a4a1a"},
+  {min:0, max:0,        label:"Peasant",      bg:"rgba(140,110,60,0.2)",  color:"#6a4a1a"},
   {min:1, max:2,        label:"Squire",        bg:"rgba(130,90,20,0.28)",  color:"#7a4a10"},
   {min:3, max:4,        label:"Knight",        bg:"rgba(50,75,120,0.28)",  color:"#2a4a7a"},
   {min:5, max:6,        label:"Templar",       bg:"rgba(160,130,10,0.28)", color:"#8a7010"},
