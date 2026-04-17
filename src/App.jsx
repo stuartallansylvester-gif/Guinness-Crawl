@@ -173,14 +173,22 @@ const GlobalStyles = () => (
     .corner-bl { bottom: -1px; left: -1px; transform: scaleY(-1); }
     .corner-br { bottom: -1px; right: -1px; transform: scale(-1); }
 
-    .crusade-logo {
+    .logo-wrapper {
       display: block;
       width: 240px;
       max-width: 86%;
       margin: 0 auto 6px;
-      background: transparent;
+      position: relative;
+      background: #e8d5a0;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .logo-wrapper img {
+      width: 100%;
+      display: block;
       mix-blend-mode: multiply;
-      filter: drop-shadow(0 2px 5px rgba(60,28,4,0.18));
+      filter: contrast(1.1) saturate(1.1);
     }
 
     .section-card {
@@ -523,33 +531,33 @@ const MAP_LABELS = {
   "The Queen & Beaver": "Q & Beaver",
 };
 
-/* ── Crusader Titles ──────────────────────────────────────────────────────── */
+/* ── Crusader Titles — historically accurate epithets ─────────────────────── */
 const CRUSADER_TITLES = [
-  "The Merciless",
-  "Scourge of Sobriety",
-  "Hammer of Heretics",
-  "The Pint Slayer",
-  "Bane of Barkeeps",
-  "The Unquenchable",
-  "Destroyer of Draughts",
-  "The Black Stout Knight",
-  "Wrath of the Tankard",
-  "Drinker of Darkness",
-  "The Holy Devourer",
-  "Conqueror of Kegs",
-  "The Foam Reaper",
-  "Pillager of Pubs",
-  "Sword of the Session",
-  "The Relentless",
-  "Scourge of the Sober",
-  "The Zealot",
-  "Iron Liver of Antioch",
-  "The Excommunicator",
-  "Vanquisher of Lager",
-  "First of His Rounds",
-  "The Bloodthirsty",
-  "Siege-Breaker",
-  "The Stout Inquisitor",
+  "de Bouillon",
+  "Coeur de Lion",
+  "of Taranto",
+  "Sans Peur",
+  "Bras de Fer",
+  "the Pilgrim",
+  "of Antioch",
+  "the Leper King",
+  "de Lusignan",
+  "of Montferrat",
+  "the Hospitaller",
+  "Sans Avoir",
+  "the Norman",
+  "of Edessa",
+  "de Châtillon",
+  "the Frank",
+  "of Toulouse",
+  "Mailed Fist",
+  "de Payens",
+  "the Confessor",
+  "of Outremer",
+  "the Angevin",
+  "de Montfort",
+  "Fierabras",
+  "the Templar",
 ];
 
 const hashName = (name) => {
@@ -563,6 +571,17 @@ const hashName = (name) => {
 const getCrusaderTitle = (name) => {
   if (!name) return "";
   return CRUSADER_TITLES[hashName(name) % CRUSADER_TITLES.length];
+};
+
+const formatCrusaderName = (name) => {
+  if (!name) return "";
+  const title = getCrusaderTitle(name);
+  // Titles starting with lowercase get comma-separated: "Stuart, the Pilgrim"
+  // Titles starting with uppercase or "de"/"of" get appended: "Stuart de Bouillon"
+  if (title.startsWith("the ") || title.startsWith("Sans ")) {
+    return `${name}, ${title}`;
+  }
+  return `${name} ${title}`;
 };
 
 /* ── Scoring data ─────────────────────────────────────────────────────────── */
@@ -638,54 +657,54 @@ const BATTLE_CRIES = [
 
 /* ── Chronicle message templates ──────────────────────────────────────────── */
 const SIEGE_MESSAGES = [
-  (name, pub) => `${name} storms the gates of ${pub}! The garrison trembles.`,
-  (name, pub) => `${name} has laid siege to ${pub}. May God have mercy on their kegs.`,
-  (name, pub) => `The banner of ${name} is raised before ${pub}. The assault begins.`,
-  (name, pub) => `${name} breaches the walls of ${pub}! The bartender reaches for a glass.`,
+  (name, pub) => `${formatCrusaderName(name)} storms the gates of ${pub}! The garrison trembles.`,
+  (name, pub) => `${formatCrusaderName(name)} has laid siege to ${pub}. May God have mercy on their kegs.`,
+  (name, pub) => `The banner of ${formatCrusaderName(name)} is raised before ${pub}. The assault begins.`,
+  (name, pub) => `${formatCrusaderName(name)} breaches the walls of ${pub}! The bartender reaches for a glass.`,
 ];
 
 const CONQUEST_MESSAGES = [
-  (name, pub) => `${name} has conquered ${pub}! The bodies of empty glasses lie in ruin.`,
-  (name, pub) => `${pub} has fallen to ${name}! Let the conquered weep into their lagers.`,
-  (name, pub) => `VICTORY! ${name} plants the cross atop the smouldering ruins of ${pub}.`,
-  (name, pub) => `${pub} is sacked. ${name} stands alone amid the carnage of drained pints.`,
+  (name, pub) => `${formatCrusaderName(name)} has conquered ${pub}! The bodies of empty glasses lie in ruin.`,
+  (name, pub) => `${pub} has fallen to ${formatCrusaderName(name)}! Let the conquered weep into their lagers.`,
+  (name, pub) => `VICTORY! ${formatCrusaderName(name)} plants the cross atop the smouldering ruins of ${pub}.`,
+  (name, pub) => `${pub} is sacked. ${formatCrusaderName(name)} stands alone amid the carnage of drained pints.`,
 ];
 
 const PINT_MESSAGES = [
-  (name, count, pub) => `${name} claims pint #${count} at ${pub}. The crusade deepens.`,
-  (name, count, pub) => `Pint #${count} falls to ${name}. ${pub}'s cellar grows lighter.`,
-  (name, count, pub) => `${name} pillages draught #${count} from the stores of ${pub}.`,
-  (name, count, pub) => `The dark nectar flows — ${name} seizes pint #${count} at ${pub}.`,
-  (name, count, pub) => `${name} buries pint #${count}. The crusade spares no barrel at ${pub}.`,
+  (name, count, pub) => `${formatCrusaderName(name)} claims pint #${count} at ${pub}. The crusade deepens.`,
+  (name, count, pub) => `Pint #${count} falls to ${formatCrusaderName(name)}. ${pub}'s cellar grows lighter.`,
+  (name, count, pub) => `${formatCrusaderName(name)} pillages draught #${count} from the stores of ${pub}.`,
+  (name, count, pub) => `The dark nectar flows — ${formatCrusaderName(name)} seizes pint #${count} at ${pub}.`,
+  (name, count, pub) => `${formatCrusaderName(name)} buries pint #${count}. The crusade spares no barrel at ${pub}.`,
 ];
 
 const RANK_UP_MESSAGES = [
-  (name, rank) => `${name} has been elevated to ${rank}! Bow before them, ye wretched.`,
-  (name, rank) => `The Order recognises ${name} as ${rank}. Lesser men avert their gaze.`,
-  (name, rank) => `${name} ascends to ${rank}! The weak tremble at their approach.`,
+  (name, rank) => `${formatCrusaderName(name)} has been elevated to ${rank}! Bow before them, ye wretched.`,
+  (name, rank) => `The Order recognises ${formatCrusaderName(name)} as ${rank}. Lesser men avert their gaze.`,
+  (name, rank) => `${formatCrusaderName(name)} ascends to ${rank}! The weak tremble at their approach.`,
 ];
 
 const SLOW_DRINKER_MESSAGES = [
-  (name) => `${name} nurses their pint like a wounded peasant. Pathetic display.`,
-  (name) => `Is ${name} drinking or just holding that glass for warmth? Disgraceful.`,
-  (name) => `${name} has been spotted staring at a full pint. Cowardice in its purest form.`,
-  (name) => `The Order questions ${name}'s commitment. That pint isn't going to drink itself.`,
-  (name) => `${name} falls behind the column. The slowest drinker shames the entire crusade.`,
-  (name) => `${name} drinks with the urgency of a dying snail. The Holy Land weeps.`,
-  (name) => `While others conquer, ${name} contemplates. Pick up the pace or be left behind.`,
-  (name) => `${name} might as well be drinking water at this rate. Actually, water might go faster.`,
+  (name) => `${formatCrusaderName(name)} nurses their pint like a wounded peasant. Pathetic display.`,
+  (name) => `Is ${formatCrusaderName(name)} drinking or just holding that glass for warmth? Disgraceful.`,
+  (name) => `${formatCrusaderName(name)} has been spotted staring at a full pint. Cowardice in its purest form.`,
+  (name) => `The Order questions the commitment of ${formatCrusaderName(name)}. That pint isn't going to drink itself.`,
+  (name) => `${formatCrusaderName(name)} falls behind the column. The slowest drinker shames the entire crusade.`,
+  (name) => `${formatCrusaderName(name)} drinks with the urgency of a dying snail. The Holy Land weeps.`,
+  (name) => `While others conquer, ${formatCrusaderName(name)} contemplates. Pick up the pace or be left behind.`,
+  (name) => `${formatCrusaderName(name)} might as well be drinking water at this rate. Actually, water might go faster.`,
 ];
 
 const LOW_SCORE_MESSAGES = [
-  (name, pub, score) => `${name} damns ${pub} with a score of ${score}. A den of heresy.`,
-  (name, pub, score) => `${pub} earns ${score} from ${name}. The Grand Council is displeased.`,
-  (name, pub, score) => `${name} brands ${pub} with a wretched ${score}. Burn it to the ground.`,
+  (name, pub, score) => `${formatCrusaderName(name)} damns ${pub} with a score of ${score}. A den of heresy.`,
+  (name, pub, score) => `${pub} earns ${score} from ${formatCrusaderName(name)}. The Grand Council is displeased.`,
+  (name, pub, score) => `${formatCrusaderName(name)} brands ${pub} with a wretched ${score}. Burn it to the ground.`,
 ];
 
 const HIGH_SCORE_MESSAGES = [
-  (name, pub) => `${name} declares ${pub} a holy site! Pilgrims shall flock here for generations.`,
-  (name, pub) => `${pub} is blessed by ${name}. The stout here flows like the rivers of paradise.`,
-  (name, pub) => `${name} kneels before ${pub}'s altar. A sacred house of the dark nectar.`,
+  (name, pub) => `${formatCrusaderName(name)} declares ${pub} a holy site! Pilgrims shall flock here for generations.`,
+  (name, pub) => `${pub} is blessed by ${formatCrusaderName(name)}. The stout here flows like the rivers of paradise.`,
+  (name, pub) => `${formatCrusaderName(name)} kneels before ${pub}'s altar. A sacred house of the dark nectar.`,
 ];
 
 const pickRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
@@ -912,12 +931,11 @@ const RankBadge = ({count}) => {
 
 const CrusaderNameDisplay = ({ name, count }) => {
   if (!name) return null;
-  const title = getCrusaderTitle(name);
+  const fullName = formatCrusaderName(name);
   return (
     <div style={{marginTop:"6px",display:"flex",alignItems:"center",gap:"8px",flexWrap:"wrap"}}>
       <RankBadge count={count}/>
-      <span className="fell" style={{fontSize:"12px",color:"#5a2e08",fontStyle:"italic"}}>{name}</span>
-      <span className="cinzel" style={{fontSize:"9px",color:"#8a1a0a",letterSpacing:"0.06em",fontWeight:700}}>"{title}"</span>
+      <span className="fell" style={{fontSize:"12px",color:"#5a2e08",fontStyle:"italic"}}>{fullName}</span>
     </div>
   );
 };
@@ -1126,10 +1144,8 @@ export default function GuinnessCrusadeApp() {
     setTimeout(() => setVictoryBanner(null), 2200);
   };
 
-  /* ── Slow drinker detection ─────────────────────────────────────────────── */
   const checkSlowDrinker = (updatedCounts) => {
     const now = Date.now();
-    // Only check every 60 seconds to avoid spam
     if (now - lastSlowCheckRef.current < 60000) return;
 
     const entries = Object.entries(updatedCounts).filter(([,v]) => v > 0);
@@ -1138,7 +1154,6 @@ export default function GuinnessCrusadeApp() {
     const avgCount = avg(entries.map(([,v]) => Number(v)));
     const slowest = entries.reduce((min, cur) => cur[1] < min[1] ? cur : min);
 
-    // If someone is drinking at less than half the group average and group average is at least 2
     if (avgCount >= 2 && slowest[1] < avgCount * 0.5) {
       lastSlowCheckRef.current = now;
       addChronicleEvent(pickRandom(SLOW_DRINKER_MESSAGES)(slowest[0]));
@@ -1158,8 +1173,6 @@ export default function GuinnessCrusadeApp() {
 
     if (count > prevCount) {
       addChronicleEvent(pickRandom(PINT_MESSAGES)(safeJudge, count, selectedPub));
-
-      // Check for slow drinkers after someone else advances
       setTimeout(() => checkSlowDrinker(updatedCounts), 500);
     }
 
@@ -1292,28 +1305,8 @@ export default function GuinnessCrusadeApp() {
               <div style={{display:"flex",flexDirection:"column",gap:"18px"}}>
 
                 <div style={{textAlign:"center",padding:"8px 0 4px"}}>
-                  <div
-                    style={{
-                      display:"block",
-                      width:"240px",
-                      maxWidth:"86%",
-                      margin:"0 auto 6px",
-                      position:"relative",
-                      overflow:"hidden",
-                      borderRadius:"4px"
-                    }}
-                  >
-                    <img
-                      src="/logo.png"
-                      alt="The Guinness Crusade"
-                      style={{
-                        width:"100%",
-                        display:"block",
-                        mixBlendMode:"multiply",
-                        filter:"drop-shadow(0 2px 5px rgba(60,28,4,0.18)) contrast(1.05)",
-                        background:"transparent"
-                      }}
-                    />
+                  <div className="logo-wrapper">
+                    <img src="/logo.png" alt="The Guinness Crusade" />
                   </div>
                   <div className="cinzel" style={{fontSize:"8px",letterSpacing:"0.5em",color:"#6a3a10",textTransform:"uppercase",marginTop:"6px"}}>
                     Toronto · Anno Domini 2026
@@ -1487,8 +1480,7 @@ export default function GuinnessCrusadeApp() {
                                 flexWrap:"wrap"
                               }}
                             >
-                              <span className="fell" style={{fontSize:"12px",color:"#3a1a06",fontStyle:"italic"}}>{judge}</span>
-                              <span className="cinzel" style={{fontSize:"9px",color:"#8a1a0a",letterSpacing:"0.04em",fontWeight:700}}>"{getCrusaderTitle(judge)}"</span>
+                              <span className="fell" style={{fontSize:"12px",color:"#3a1a06",fontStyle:"italic"}}>{formatCrusaderName(judge)}</span>
                               <span className="cinzel" style={{fontSize:"11px",fontWeight:700,color:"#1e0e04",marginLeft:"auto"}}>{count}</span>
                               <RankBadge count={Number(count)}/>
                             </div>
@@ -1739,11 +1731,8 @@ export default function GuinnessCrusadeApp() {
                           <div className="cinzel" style={{fontSize:"8px",letterSpacing:"0.18em",textTransform:"uppercase",color:"#7a6010",fontWeight:700,marginBottom:"6px"}}>
                             Most Valiant
                           </div>
-                          <div className="cinzel" style={{fontSize:"13px",fontWeight:700,color:"#1e0e04",marginBottom:"2px"}}>
-                            {mostValiant.player}
-                          </div>
-                          <div className="cinzel" style={{fontSize:"8px",color:"#8a1a0a",fontWeight:700,marginBottom:"4px"}}>
-                            "{getCrusaderTitle(mostValiant.player)}"
+                          <div className="cinzel" style={{fontSize:"13px",fontWeight:700,color:"#1e0e04",marginBottom:"4px"}}>
+                            {formatCrusaderName(mostValiant.player)}
                           </div>
                           <div className="fell" style={{fontSize:"11px",color:"#5a2e08",fontStyle:"italic"}}>
                             avg {mostValiant.avgScore.toFixed(2)}
@@ -1766,11 +1755,8 @@ export default function GuinnessCrusadeApp() {
                           <div className="cinzel" style={{fontSize:"8px",letterSpacing:"0.18em",textTransform:"uppercase",color:"#8a1a0a",fontWeight:700,marginBottom:"6px"}}>
                             Bigot of the Night
                           </div>
-                          <div className="cinzel" style={{fontSize:"13px",fontWeight:700,color:"#1e0e04",marginBottom:"2px"}}>
-                            {bigotOfNight.player}
-                          </div>
-                          <div className="cinzel" style={{fontSize:"8px",color:"#8a1a0a",fontWeight:700,marginBottom:"4px"}}>
-                            "{getCrusaderTitle(bigotOfNight.player)}"
+                          <div className="cinzel" style={{fontSize:"13px",fontWeight:700,color:"#1e0e04",marginBottom:"4px"}}>
+                            {formatCrusaderName(bigotOfNight.player)}
                           </div>
                           <div className="fell" style={{fontSize:"11px",color:"#5a2e08",fontStyle:"italic"}}>
                             most infidels spotted
