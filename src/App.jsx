@@ -479,6 +479,16 @@ const GlobalStyles = () => (
       text-transform: uppercase;
       opacity: 0.9;
     }
+
+    .chronicle-scroll {
+      max-height: 420px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(122,31,31,0.4) rgba(248,228,168,0.3);
+    }
+    .chronicle-scroll::-webkit-scrollbar { width: 6px; }
+    .chronicle-scroll::-webkit-scrollbar-track { background: rgba(248,228,168,0.3); border-radius: 3px; }
+    .chronicle-scroll::-webkit-scrollbar-thumb { background: rgba(122,31,31,0.4); border-radius: 3px; }
   `}</style>
 );
 
@@ -511,6 +521,48 @@ const MAP_LABELS = {
   "McVeigh's":          "McVeigh's",
   "P.J. O'Brien":       "P.J. O'Brien",
   "The Queen & Beaver": "Q & Beaver",
+};
+
+/* ── Crusader Titles ──────────────────────────────────────────────────────── */
+const CRUSADER_TITLES = [
+  "The Merciless",
+  "Scourge of Sobriety",
+  "Hammer of Heretics",
+  "The Pint Slayer",
+  "Bane of Barkeeps",
+  "The Unquenchable",
+  "Destroyer of Draughts",
+  "The Black Stout Knight",
+  "Wrath of the Tankard",
+  "Drinker of Darkness",
+  "The Holy Devourer",
+  "Conqueror of Kegs",
+  "The Foam Reaper",
+  "Pillager of Pubs",
+  "Sword of the Session",
+  "The Relentless",
+  "Scourge of the Sober",
+  "The Zealot",
+  "Iron Liver of Antioch",
+  "The Excommunicator",
+  "Vanquisher of Lager",
+  "First of His Rounds",
+  "The Bloodthirsty",
+  "Siege-Breaker",
+  "The Stout Inquisitor",
+];
+
+const hashName = (name) => {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) {
+    h = ((h << 5) - h + name.charCodeAt(i)) | 0;
+  }
+  return Math.abs(h);
+};
+
+const getCrusaderTitle = (name) => {
+  if (!name) return "";
+  return CRUSADER_TITLES[hashName(name) % CRUSADER_TITLES.length];
 };
 
 /* ── Scoring data ─────────────────────────────────────────────────────────── */
@@ -578,7 +630,65 @@ const BATTLE_CRIES = [
   "Victory for the Order!",
   "The siege is won!",
   "Advance the banner!",
+  "No quarter for the sober!",
+  "Blood and stout!",
+  "By the Holy Tap!",
+  "The heathen lagers tremble!",
 ];
+
+/* ── Chronicle message templates ──────────────────────────────────────────── */
+const SIEGE_MESSAGES = [
+  (name, pub) => `${name} storms the gates of ${pub}! The garrison trembles.`,
+  (name, pub) => `${name} has laid siege to ${pub}. May God have mercy on their kegs.`,
+  (name, pub) => `The banner of ${name} is raised before ${pub}. The assault begins.`,
+  (name, pub) => `${name} breaches the walls of ${pub}! The bartender reaches for a glass.`,
+];
+
+const CONQUEST_MESSAGES = [
+  (name, pub) => `${name} has conquered ${pub}! The bodies of empty glasses lie in ruin.`,
+  (name, pub) => `${pub} has fallen to ${name}! Let the conquered weep into their lagers.`,
+  (name, pub) => `VICTORY! ${name} plants the cross atop the smouldering ruins of ${pub}.`,
+  (name, pub) => `${pub} is sacked. ${name} stands alone amid the carnage of drained pints.`,
+];
+
+const PINT_MESSAGES = [
+  (name, count, pub) => `${name} claims pint #${count} at ${pub}. The crusade deepens.`,
+  (name, count, pub) => `Pint #${count} falls to ${name}. ${pub}'s cellar grows lighter.`,
+  (name, count, pub) => `${name} pillages draught #${count} from the stores of ${pub}.`,
+  (name, count, pub) => `The dark nectar flows — ${name} seizes pint #${count} at ${pub}.`,
+  (name, count, pub) => `${name} buries pint #${count}. The crusade spares no barrel at ${pub}.`,
+];
+
+const RANK_UP_MESSAGES = [
+  (name, rank) => `${name} has been elevated to ${rank}! Bow before them, ye wretched.`,
+  (name, rank) => `The Order recognises ${name} as ${rank}. Lesser men avert their gaze.`,
+  (name, rank) => `${name} ascends to ${rank}! The weak tremble at their approach.`,
+];
+
+const SLOW_DRINKER_MESSAGES = [
+  (name) => `${name} nurses their pint like a wounded peasant. Pathetic display.`,
+  (name) => `Is ${name} drinking or just holding that glass for warmth? Disgraceful.`,
+  (name) => `${name} has been spotted staring at a full pint. Cowardice in its purest form.`,
+  (name) => `The Order questions ${name}'s commitment. That pint isn't going to drink itself.`,
+  (name) => `${name} falls behind the column. The slowest drinker shames the entire crusade.`,
+  (name) => `${name} drinks with the urgency of a dying snail. The Holy Land weeps.`,
+  (name) => `While others conquer, ${name} contemplates. Pick up the pace or be left behind.`,
+  (name) => `${name} might as well be drinking water at this rate. Actually, water might go faster.`,
+];
+
+const LOW_SCORE_MESSAGES = [
+  (name, pub, score) => `${name} damns ${pub} with a score of ${score}. A den of heresy.`,
+  (name, pub, score) => `${pub} earns ${score} from ${name}. The Grand Council is displeased.`,
+  (name, pub, score) => `${name} brands ${pub} with a wretched ${score}. Burn it to the ground.`,
+];
+
+const HIGH_SCORE_MESSAGES = [
+  (name, pub) => `${name} declares ${pub} a holy site! Pilgrims shall flock here for generations.`,
+  (name, pub) => `${pub} is blessed by ${name}. The stout here flows like the rivers of paradise.`,
+  (name, pub) => `${name} kneels before ${pub}'s altar. A sacred house of the dark nectar.`,
+];
+
+const pickRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
 /* ── Helpers ──────────────────────────────────────────────────────────────── */
 const avg    = arr => arr.length ? arr.reduce((s,v)=>s+v,0)/arr.length : 0;
@@ -800,6 +910,18 @@ const RankBadge = ({count}) => {
   );
 };
 
+const CrusaderNameDisplay = ({ name, count }) => {
+  if (!name) return null;
+  const title = getCrusaderTitle(name);
+  return (
+    <div style={{marginTop:"6px",display:"flex",alignItems:"center",gap:"8px",flexWrap:"wrap"}}>
+      <RankBadge count={count}/>
+      <span className="fell" style={{fontSize:"12px",color:"#5a2e08",fontStyle:"italic"}}>{name}</span>
+      <span className="cinzel" style={{fontSize:"9px",color:"#8a1a0a",letterSpacing:"0.06em",fontWeight:700}}>"{title}"</span>
+    </div>
+  );
+};
+
 /* ── Main App ─────────────────────────────────────────────────────────────── */
 export default function GuinnessCrusadeApp() {
   const [pubs, setPubs]                     = useState(DEFAULT_PUBS);
@@ -814,6 +936,7 @@ export default function GuinnessCrusadeApp() {
   const [battleCry, setBattleCry]           = useState(null);
   const [victoryBanner, setVictoryBanner]   = useState(null);
   const audioCtxRef                         = useRef(null);
+  const lastSlowCheckRef                    = useRef(0);
 
   useEffect(() => {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -868,7 +991,7 @@ export default function GuinnessCrusadeApp() {
 
       setScores(inc);
       setGuinnessCounts(gc);
-      setChronicle(cr.sort((a,b)=>b.ts-a.ts).slice(0,25));
+      setChronicle(cr.sort((a,b)=>b.ts-a.ts).slice(0,50));
       setSyncStatus("Live");
 
       ch = supabase
@@ -879,7 +1002,7 @@ export default function GuinnessCrusadeApp() {
             setGuinnessCounts(prev => ({ ...prev, [r.judge]: Number(r.scores?.count || 0) }));
           } else if (r.pub === CHRONICLE_PUB_KEY) {
             if (r.scores?.text && r.scores?.ts) {
-              setChronicle(prev => [{ text:r.scores.text, ts:r.scores.ts }, ...prev].slice(0,25));
+              setChronicle(prev => [{ text:r.scores.text, ts:r.scores.ts }, ...prev].slice(0,50));
             }
           } else {
             setScores(prev => ({ ...prev, [`${r.pub}__${r.judge}`]: r.scores || {} }));
@@ -983,7 +1106,7 @@ export default function GuinnessCrusadeApp() {
 
   const addChronicleEvent = async (text) => {
     const ts = Date.now();
-    setChronicle(prev => [{text, ts}, ...prev].slice(0,25));
+    setChronicle(prev => [{text, ts}, ...prev].slice(0,50));
     if (supabase) {
       await supabase.from("bar_crawl_scores").upsert({
         pub: CHRONICLE_PUB_KEY,
@@ -1003,6 +1126,25 @@ export default function GuinnessCrusadeApp() {
     setTimeout(() => setVictoryBanner(null), 2200);
   };
 
+  /* ── Slow drinker detection ─────────────────────────────────────────────── */
+  const checkSlowDrinker = (updatedCounts) => {
+    const now = Date.now();
+    // Only check every 60 seconds to avoid spam
+    if (now - lastSlowCheckRef.current < 60000) return;
+
+    const entries = Object.entries(updatedCounts).filter(([,v]) => v > 0);
+    if (entries.length < 2) return;
+
+    const avgCount = avg(entries.map(([,v]) => Number(v)));
+    const slowest = entries.reduce((min, cur) => cur[1] < min[1] ? cur : min);
+
+    // If someone is drinking at less than half the group average and group average is at least 2
+    if (avgCount >= 2 && slowest[1] < avgCount * 0.5) {
+      lastSlowCheckRef.current = now;
+      addChronicleEvent(pickRandom(SLOW_DRINKER_MESSAGES)(slowest[0]));
+    }
+  };
+
   const updateGuinnessCount = async (val) => {
     if (!safeJudge) return;
 
@@ -1011,10 +1153,14 @@ export default function GuinnessCrusadeApp() {
     const prevCount = guinnessCounts[safeJudge] || 0;
     const count = Math.max(0, Number(val) || 0);
 
-    setGuinnessCounts(prev => ({ ...prev, [safeJudge]: count }));
+    const updatedCounts = { ...guinnessCounts, [safeJudge]: count };
+    setGuinnessCounts(updatedCounts);
 
     if (count > prevCount) {
-      addChronicleEvent(`${safeJudge} sacked pint #${count} at ${selectedPub}`);
+      addChronicleEvent(pickRandom(PINT_MESSAGES)(safeJudge, count, selectedPub));
+
+      // Check for slow drinkers after someone else advances
+      setTimeout(() => checkSlowDrinker(updatedCounts), 500);
     }
 
     const prevRankIdx = rankIndex(prevCount);
@@ -1022,7 +1168,7 @@ export default function GuinnessCrusadeApp() {
 
     if (nextRankIdx > prevRankIdx) {
       const newRank = getRank(count).label;
-      addChronicleEvent(`${safeJudge} has been elevated to ${newRank}!`);
+      addChronicleEvent(pickRandom(RANK_UP_MESSAGES)(safeJudge, newRank));
     }
 
     if (supabase) {
@@ -1044,14 +1190,21 @@ export default function GuinnessCrusadeApp() {
     triggerBattleCry();
 
     if (Object.keys(currentEntry).length === 0) {
-      addChronicleEvent(`${selectedPub} falls under siege by ${safeJudge}!`);
+      addChronicleEvent(pickRandom(SIEGE_MESSAGES)(safeJudge, selectedPub));
     }
 
     const wasComplete = ALL_KEYS.every(k => currentEntry[k]);
     const isComplete  = ALL_KEYS.every(k => next[k]);
 
     if (!wasComplete && isComplete) {
-      addChronicleEvent(`${safeJudge} has conquered ${selectedPub}!`);
+      const overallScore = eAvg(next, ALL_KEYS);
+      if (overallScore >= 4) {
+        addChronicleEvent(pickRandom(HIGH_SCORE_MESSAGES)(safeJudge, selectedPub));
+      } else if (overallScore <= 2) {
+        addChronicleEvent(pickRandom(LOW_SCORE_MESSAGES)(safeJudge, selectedPub, overallScore.toFixed(1)));
+      } else {
+        addChronicleEvent(pickRandom(CONQUEST_MESSAGES)(safeJudge, selectedPub));
+      }
       triggerVictoryBanner(selectedPub);
     }
 
@@ -1139,7 +1292,29 @@ export default function GuinnessCrusadeApp() {
               <div style={{display:"flex",flexDirection:"column",gap:"18px"}}>
 
                 <div style={{textAlign:"center",padding:"8px 0 4px"}}>
-                  <img src="/logo.png" alt="The Guinness Crusade" className="crusade-logo"/>
+                  <div
+                    style={{
+                      display:"block",
+                      width:"240px",
+                      maxWidth:"86%",
+                      margin:"0 auto 6px",
+                      position:"relative",
+                      overflow:"hidden",
+                      borderRadius:"4px"
+                    }}
+                  >
+                    <img
+                      src="/logo.png"
+                      alt="The Guinness Crusade"
+                      style={{
+                        width:"100%",
+                        display:"block",
+                        mixBlendMode:"multiply",
+                        filter:"drop-shadow(0 2px 5px rgba(60,28,4,0.18)) contrast(1.05)",
+                        background:"transparent"
+                      }}
+                    />
+                  </div>
                   <div className="cinzel" style={{fontSize:"8px",letterSpacing:"0.5em",color:"#6a3a10",textTransform:"uppercase",marginTop:"6px"}}>
                     Toronto · Anno Domini 2026
                   </div>
@@ -1177,12 +1352,7 @@ export default function GuinnessCrusadeApp() {
                         placeholder="Enter your name"
                         className="parchment-input"
                       />
-                      {safeJudge && (
-                        <div style={{marginTop:"6px",display:"flex",alignItems:"center",gap:"8px"}}>
-                          <RankBadge count={myGuinnessCount}/>
-                          <span className="fell" style={{fontSize:"12px",color:"#5a2e08",fontStyle:"italic"}}>{safeJudge}</span>
-                        </div>
-                      )}
+                      <CrusaderNameDisplay name={safeJudge} count={myGuinnessCount} />
                     </div>
 
                     <div>
@@ -1299,7 +1469,7 @@ export default function GuinnessCrusadeApp() {
                     </div>
 
                     {Object.keys(guinnessCounts).length > 0 && (
-                      <div style={{marginTop:"10px",display:"flex",flexWrap:"wrap",gap:"6px"}}>
+                      <div style={{marginTop:"10px",display:"flex",flexDirection:"column",gap:"6px"}}>
                         {Object.entries(guinnessCounts)
                           .filter(([,v])=>v>0)
                           .sort((a,b)=>b[1]-a[1])
@@ -1307,18 +1477,19 @@ export default function GuinnessCrusadeApp() {
                             <div
                               key={judge}
                               style={{
-                                padding:"4px 10px",
+                                padding:"6px 10px",
                                 background:"rgba(248,228,168,0.7)",
                                 border:"1px solid rgba(90,48,10,0.26)",
-                                borderRadius:"999px",
+                                borderRadius:"8px",
                                 display:"flex",
                                 alignItems:"center",
-                                gap:"6px",
+                                gap:"8px",
                                 flexWrap:"wrap"
                               }}
                             >
                               <span className="fell" style={{fontSize:"12px",color:"#3a1a06",fontStyle:"italic"}}>{judge}</span>
-                              <span className="cinzel" style={{fontSize:"11px",fontWeight:700,color:"#1e0e04"}}>{count}</span>
+                              <span className="cinzel" style={{fontSize:"9px",color:"#8a1a0a",letterSpacing:"0.04em",fontWeight:700}}>"{getCrusaderTitle(judge)}"</span>
+                              <span className="cinzel" style={{fontSize:"11px",fontWeight:700,color:"#1e0e04",marginLeft:"auto"}}>{count}</span>
                               <RankBadge count={Number(count)}/>
                             </div>
                           ))}
@@ -1568,8 +1739,11 @@ export default function GuinnessCrusadeApp() {
                           <div className="cinzel" style={{fontSize:"8px",letterSpacing:"0.18em",textTransform:"uppercase",color:"#7a6010",fontWeight:700,marginBottom:"6px"}}>
                             Most Valiant
                           </div>
-                          <div className="cinzel" style={{fontSize:"13px",fontWeight:700,color:"#1e0e04",marginBottom:"4px"}}>
+                          <div className="cinzel" style={{fontSize:"13px",fontWeight:700,color:"#1e0e04",marginBottom:"2px"}}>
                             {mostValiant.player}
+                          </div>
+                          <div className="cinzel" style={{fontSize:"8px",color:"#8a1a0a",fontWeight:700,marginBottom:"4px"}}>
+                            "{getCrusaderTitle(mostValiant.player)}"
                           </div>
                           <div className="fell" style={{fontSize:"11px",color:"#5a2e08",fontStyle:"italic"}}>
                             avg {mostValiant.avgScore.toFixed(2)}
@@ -1592,8 +1766,11 @@ export default function GuinnessCrusadeApp() {
                           <div className="cinzel" style={{fontSize:"8px",letterSpacing:"0.18em",textTransform:"uppercase",color:"#8a1a0a",fontWeight:700,marginBottom:"6px"}}>
                             Bigot of the Night
                           </div>
-                          <div className="cinzel" style={{fontSize:"13px",fontWeight:700,color:"#1e0e04",marginBottom:"4px"}}>
+                          <div className="cinzel" style={{fontSize:"13px",fontWeight:700,color:"#1e0e04",marginBottom:"2px"}}>
                             {bigotOfNight.player}
+                          </div>
+                          <div className="cinzel" style={{fontSize:"8px",color:"#8a1a0a",fontWeight:700,marginBottom:"4px"}}>
+                            "{getCrusaderTitle(bigotOfNight.player)}"
                           </div>
                           <div className="fell" style={{fontSize:"11px",color:"#5a2e08",fontStyle:"italic"}}>
                             most infidels spotted
@@ -1613,7 +1790,7 @@ export default function GuinnessCrusadeApp() {
                       The chronicle awaits its first entry…
                     </div>
                   ) : (
-                    <div style={{display:"flex",flexDirection:"column",gap:"5px"}}>
+                    <div className="chronicle-scroll" style={{display:"flex",flexDirection:"column",gap:"5px"}}>
                       <AnimatePresence initial={false}>
                         {chronicle.map(event => (
                           <motion.div
